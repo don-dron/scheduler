@@ -41,11 +41,11 @@ void Allocate(StackBuilder* builder,size_t bytes)
   builder->top_ -= bytes;
 }
 
-void Setup(void (*trampoline)(),ExecutionContext* context)
+void* Setup(void (*trampoline)(),ExecutionContext* context)
 { 
-  void * mem = malloc(1024*1024);
+  void * mem = malloc(STACK_SIZE);
 
-  StackBuilder* stackBuilder = NewStackBuilder(mem+1024*1024);
+  StackBuilder* stackBuilder = NewStackBuilder(mem+STACK_SIZE);
   AlignNextPush(stackBuilder,16);
   Allocate(stackBuilder,sizeof(StackSavedContext));
 
@@ -54,4 +54,8 @@ void Setup(void (*trampoline)(),ExecutionContext* context)
   saved_context->rip = (void *)trampoline;
 
   context->rsp_ = saved_context;
+
+  free(stackBuilder);
+
+  return mem;
 }

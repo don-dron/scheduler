@@ -35,6 +35,9 @@ void test1()
 
     Resume(first);
     Resume(second);
+
+    FreeCoroutine(first);
+    FreeCoroutine(second);
 }
 
 void test2Foo()
@@ -63,6 +66,9 @@ void test2()
         Resume(first);
         Resume(second);
     }
+
+    FreeCoroutine(first);
+    FreeCoroutine(second);
 }
 
 const size_t kSteps = 123;
@@ -145,9 +151,14 @@ void treeTest()
 }
 int main()
 {
+    printf("Start\n");
     test1();
+    printf("Test 1 \n");
     test2();
-    test3();
-    treeTest();
+    printf("Test 2 \n");
+    // test3();
+    // printf("Test 3 \n");
+    // treeTest();
+    // printf("Test 4 \n");
     return 0;
 }

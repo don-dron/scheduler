@@ -6,6 +6,14 @@
 *.ko
 *.obj
 *.elf
+/build
+/CMakeFiles
+*.CMakeFiles
+*.tcl
+Makefile
+scheduler
+/.vscode
+*Cache.txt
 
 # Linker output
 *.ilk

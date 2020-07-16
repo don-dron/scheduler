@@ -16,6 +16,7 @@ struct Coroutine
     ExecutionContext *caller_context;
     Coroutine *external_routine;
     int complete;
+    void* stackMemory;
 };
 
 static Coroutine *current = 0;

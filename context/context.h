@@ -5,6 +5,8 @@
 #ifndef CONTEXT
 #define CONTEXT
  
+static const size_t STACK_SIZE = 1024*1024;
+
 struct ExecutionContext;
 
 typedef struct ExecutionContext ExecutionContext;
@@ -22,6 +24,6 @@ struct StackBuilder {
 
 typedef struct StackBuilder StackBuilder;
 
-void Setup(void (*Trampoline)(),ExecutionContext* context);
+void* Setup(void (*Trampoline)(),ExecutionContext* context);
 
 #endif
