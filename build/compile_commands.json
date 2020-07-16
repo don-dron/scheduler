@@ -1,0 +1,22 @@
+[
+{
+  "directory": "/home/dron/Рабочий стол/scheduler/scheduler/build",
+  "command": "/bin/clang-10  -I\"/home/dron/Рабочий стол/scheduler/scheduler/context\" -I\"/home/dron/Рабочий стол/scheduler/scheduler/jsoncpp/coroutine\"  -g   -o CMakeFiles/scheduler.dir/main.c.o   -c \"/home/dron/Рабочий стол/scheduler/scheduler/main.c\"",
+  "file": "/home/dron/Рабочий стол/scheduler/scheduler/main.c"
+},
+{
+  "directory": "/home/dron/Рабочий стол/scheduler/scheduler/build",
+  "command": "/bin/clang-10  -I\"/home/dron/Рабочий стол/scheduler/scheduler/context\" -I\"/home/dron/Рабочий стол/scheduler/scheduler/jsoncpp/coroutine\"  -g   -o CMakeFiles/scheduler.dir/coroutine/coroutine.c.o   -c \"/home/dron/Рабочий стол/scheduler/scheduler/coroutine/coroutine.c\"",
+  "file": "/home/dron/Рабочий стол/scheduler/scheduler/coroutine/coroutine.c"
+},
+{
+  "directory": "/home/dron/Рабочий стол/scheduler/scheduler/build",
+  "command": "/bin/clang-10  -I\"/home/dron/Рабочий стол/scheduler/scheduler/context\" -I\"/home/dron/Рабочий стол/scheduler/scheduler/jsoncpp/coroutine\"  -g   -o CMakeFiles/scheduler.dir/context/context.c.o   -c \"/home/dron/Рабочий стол/scheduler/scheduler/context/context.c\"",
+  "file": "/home/dron/Рабочий стол/scheduler/scheduler/context/context.c"
+},
+{
+  "directory": "/home/dron/Рабочий стол/scheduler/scheduler/build",
+  "command": "/bin/clang-10  -I\"/home/dron/Рабочий стол/scheduler/scheduler/context\" -I\"/home/dron/Рабочий стол/scheduler/scheduler/jsoncpp/coroutine\"  -g   -o CMakeFiles/scheduler.dir/context/switch_context.S.o   -c \"/home/dron/Рабочий стол/scheduler/scheduler/context/switch_context.S\"",
+  "file": "/home/dron/Рабочий стол/scheduler/scheduler/context/switch_context.S"
+}
+]

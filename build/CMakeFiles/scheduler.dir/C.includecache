@@ -1,0 +1,50 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/dron/Рабочий стол/scheduler/scheduler/context/context.c
+stdlib.h
+/home/dron/Рабочий стол/scheduler/scheduler/context/stdlib.h
+context.h
+/home/dron/Рабочий стол/scheduler/scheduler/context/context.h
+
+/home/dron/Рабочий стол/scheduler/scheduler/context/context.h
+stdio.h
+-
+
+/home/dron/Рабочий стол/scheduler/scheduler/context/switch_context.S
+
+/home/dron/Рабочий стол/scheduler/scheduler/coroutine/coroutine.c
+coroutine.h
+/home/dron/Рабочий стол/scheduler/scheduler/coroutine/coroutine.h
+stdlib.h
+/home/dron/Рабочий стол/scheduler/scheduler/coroutine/stdlib.h
+
+/home/dron/Рабочий стол/scheduler/scheduler/coroutine/coroutine.h
+stdio.h
+-
+../context/context.h
+/home/dron/Рабочий стол/scheduler/scheduler/context/context.h
+
+/home/dron/Рабочий стол/scheduler/scheduler/main.c
+context/context.h
+/home/dron/Рабочий стол/scheduler/scheduler/context/context.h
+coroutine/coroutine.h
+/home/dron/Рабочий стол/scheduler/scheduler/coroutine/coroutine.h
+stdio.h
+-
+stdlib.h
+-
+assert.h
+-
+testTree.h
+/home/dron/Рабочий стол/scheduler/scheduler/testTree.h
+
+/home/dron/Рабочий стол/scheduler/scheduler/testTree.h
+stdlib.h
+-
+
