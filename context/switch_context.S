@@ -9,17 +9,16 @@
 # SwitchContext(from, to)
 
 FUNCTION_NAME(SwitchContext):
-
-    pushq %r15
+pushq %r15
     pushq %r14
     pushq %r13
     pushq %r12
 
     pushq %rbx
     pushq %rbp
-
+    
     movq %rsp, (%rdi)
-    movq (%rsi), %rsp
+    movq (%rsi), %rsp 
 
     popq %rbp
     popq %rbx

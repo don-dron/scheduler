@@ -7,12 +7,19 @@ enable_testing()
 set(CAN_USE_ASSEMBLER TRUE)
 enable_language(ASM)
 
+set(CMAKE_BUILD_TYPE Debug)
+
 set_property(SOURCE context/switch_context.S PROPERTY LANGUAGE C)
 
-add_executable(scheduler main.c coroutine/coroutine.h coroutine/coroutine.c context/context.h context/context.c context/switch_context.S)
+add_executable(scheduler main.c coroutine/coroutine.h coroutine/coroutine.c context/context.h context/switch_context.S 
+lockfree/stack/stack.c lockfree/stack/stack.h)
+
+set(THREADS_PREFER_PTHREAD_FLAG ON)
+find_package(Threads REQUIRED)
+target_link_libraries(scheduler PRIVATE Threads::Threads)
 
 include_directories("${CMAKE_SOURCE_DIR}/context"
-    "${CMAKE_SOURCE_DIR}/jsoncpp/coroutine")
+    "${CMAKE_SOURCE_DIR}/coroutine" "${CMAKE_SOURCE_DIR}/lockfree")
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})

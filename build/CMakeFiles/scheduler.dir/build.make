@@ -83,22 +83,9 @@ CMakeFiles/scheduler.dir/coroutine/coroutine.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/scheduler.dir/coroutine/coroutine.c.s"
 	/bin/clang-10 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S "/home/dron/Рабочий стол/scheduler/scheduler/coroutine/coroutine.c" -o CMakeFiles/scheduler.dir/coroutine/coroutine.c.s
 
-CMakeFiles/scheduler.dir/context/context.c.o: CMakeFiles/scheduler.dir/flags.make
-CMakeFiles/scheduler.dir/context/context.c.o: ../context/context.c
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir="/home/dron/Рабочий стол/scheduler/scheduler/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_3) "Building C object CMakeFiles/scheduler.dir/context/context.c.o"
-	/bin/clang-10 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/scheduler.dir/context/context.c.o   -c "/home/dron/Рабочий стол/scheduler/scheduler/context/context.c"
-
-CMakeFiles/scheduler.dir/context/context.c.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/scheduler.dir/context/context.c.i"
-	/bin/clang-10 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E "/home/dron/Рабочий стол/scheduler/scheduler/context/context.c" > CMakeFiles/scheduler.dir/context/context.c.i
-
-CMakeFiles/scheduler.dir/context/context.c.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/scheduler.dir/context/context.c.s"
-	/bin/clang-10 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S "/home/dron/Рабочий стол/scheduler/scheduler/context/context.c" -o CMakeFiles/scheduler.dir/context/context.c.s
-
 CMakeFiles/scheduler.dir/context/switch_context.S.o: CMakeFiles/scheduler.dir/flags.make
 CMakeFiles/scheduler.dir/context/switch_context.S.o: ../context/switch_context.S
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir="/home/dron/Рабочий стол/scheduler/scheduler/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_4) "Building C object CMakeFiles/scheduler.dir/context/switch_context.S.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir="/home/dron/Рабочий стол/scheduler/scheduler/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_3) "Building C object CMakeFiles/scheduler.dir/context/switch_context.S.o"
 	/bin/clang-10 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/scheduler.dir/context/switch_context.S.o   -c "/home/dron/Рабочий стол/scheduler/scheduler/context/switch_context.S"
 
 CMakeFiles/scheduler.dir/context/switch_context.S.i: cmake_force
@@ -109,20 +96,33 @@ CMakeFiles/scheduler.dir/context/switch_context.S.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/scheduler.dir/context/switch_context.S.s"
 	/bin/clang-10 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S "/home/dron/Рабочий стол/scheduler/scheduler/context/switch_context.S" -o CMakeFiles/scheduler.dir/context/switch_context.S.s
 
+CMakeFiles/scheduler.dir/lockfree/stack/stack.c.o: CMakeFiles/scheduler.dir/flags.make
+CMakeFiles/scheduler.dir/lockfree/stack/stack.c.o: ../lockfree/stack/stack.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir="/home/dron/Рабочий стол/scheduler/scheduler/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_4) "Building C object CMakeFiles/scheduler.dir/lockfree/stack/stack.c.o"
+	/bin/clang-10 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/scheduler.dir/lockfree/stack/stack.c.o   -c "/home/dron/Рабочий стол/scheduler/scheduler/lockfree/stack/stack.c"
+
+CMakeFiles/scheduler.dir/lockfree/stack/stack.c.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/scheduler.dir/lockfree/stack/stack.c.i"
+	/bin/clang-10 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E "/home/dron/Рабочий стол/scheduler/scheduler/lockfree/stack/stack.c" > CMakeFiles/scheduler.dir/lockfree/stack/stack.c.i
+
+CMakeFiles/scheduler.dir/lockfree/stack/stack.c.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/scheduler.dir/lockfree/stack/stack.c.s"
+	/bin/clang-10 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S "/home/dron/Рабочий стол/scheduler/scheduler/lockfree/stack/stack.c" -o CMakeFiles/scheduler.dir/lockfree/stack/stack.c.s
+
 # Object files for target scheduler
 scheduler_OBJECTS = \
 "CMakeFiles/scheduler.dir/main.c.o" \
 "CMakeFiles/scheduler.dir/coroutine/coroutine.c.o" \
-"CMakeFiles/scheduler.dir/context/context.c.o" \
-"CMakeFiles/scheduler.dir/context/switch_context.S.o"
+"CMakeFiles/scheduler.dir/context/switch_context.S.o" \
+"CMakeFiles/scheduler.dir/lockfree/stack/stack.c.o"
 
 # External object files for target scheduler
 scheduler_EXTERNAL_OBJECTS =
 
 scheduler: CMakeFiles/scheduler.dir/main.c.o
 scheduler: CMakeFiles/scheduler.dir/coroutine/coroutine.c.o
-scheduler: CMakeFiles/scheduler.dir/context/context.c.o
 scheduler: CMakeFiles/scheduler.dir/context/switch_context.S.o
+scheduler: CMakeFiles/scheduler.dir/lockfree/stack/stack.c.o
 scheduler: CMakeFiles/scheduler.dir/build.make
 scheduler: CMakeFiles/scheduler.dir/link.txt
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir="/home/dron/Рабочий стол/scheduler/scheduler/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_5) "Linking C executable scheduler"
