@@ -1,29 +1,39 @@
 #pragma once
 
 #include <stdio.h>
+#include "stdlib.h"
+#include <sys/mman.h>
+
+
 
 #ifndef CONTEXT
 #define CONTEXT
- 
-static const size_t STACK_SIZE = 1024*1024;
 
 struct ExecutionContext;
 
 typedef struct ExecutionContext ExecutionContext;
 
-extern void SwitchContext(ExecutionContext* from, ExecutionContext* to);
+extern unsigned long SwitchContext(ExecutionContext *from, ExecutionContext *to);
 
-struct ExecutionContext {
-  void *rsp_; 
-}; 
-
-struct StackBuilder { 
-  int kWordSize;
-  char* top_;
+struct ExecutionContext
+{
+  void *rsp_;
+  void *stack;
 };
 
-typedef struct StackBuilder StackBuilder;
+struct StackSavedContext
+{
+  void *rbp;
+  void *rbx;
 
-void* Setup(void (*Trampoline)(),ExecutionContext* context);
+  void *r12;
+  void *r13;
+  void *r14;
+  void *r15;
+
+  void *rip;
+};
+
+typedef struct StackSavedContext StackSavedContext;
 
 #endif

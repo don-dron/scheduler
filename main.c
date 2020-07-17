@@ -1,9 +1,12 @@
+
+#define __USE_MISC 1
 #include "context/context.h"
 #include "coroutine/coroutine.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
 #include "testTree.h"
+#include "lockfree/stack/stack.h"
 
 int step = 0;
 
@@ -27,17 +30,17 @@ void test1Bar()
 
 void test1()
 {
-    Coroutine *first = NewCoroutine(test1Foo);
-    Coroutine *second = NewCoroutine(test1Bar);
+    Coroutine first = NewCoroutineOnStack(test1Foo);
+    Coroutine second = NewCoroutineOnStack(test1Bar);
 
-    Resume(first);
-    Resume(second);
+    Resume(&first);
+    Resume(&second);
 
-    Resume(first);
-    Resume(second);
+    Resume(&first);
+    Resume(&second);
 
-    FreeCoroutine(first);
-    FreeCoroutine(second);
+    FreeCoroutineOnStack(&first);
+    FreeCoroutineOnStack(&second);
 }
 
 void test2Foo()
@@ -58,52 +61,70 @@ void test2Bar()
 
 void test2()
 {
-    Coroutine *first = NewCoroutine(test2Foo);
-    Coroutine *second = NewCoroutine(test2Bar);
+    Coroutine first = NewCoroutineOnStack(test2Foo);
+    Coroutine second = NewCoroutineOnStack(test2Bar);
 
-    while (!(first->complete && second->complete))
+    while (!(first.complete && second.complete))
     {
-        Resume(first);
-        Resume(second);
+        Resume(&first);
+        Resume(&second);
     }
 
-    FreeCoroutine(first);
-    FreeCoroutine(second);
+    FreeCoroutineOnStack(&first);
+    FreeCoroutineOnStack(&second);
 }
 
-const size_t kSteps = 123;
+const int kSteps = 123;
 
-size_t inner_step_count = 0;
+int inner_step_count = 0;
+
+void kek()
+{
+}
 
 void test3Foo()
 {
-    for (size_t i = 0; i < kSteps; ++i)
+    printf("%d\n", 88);
+    for (int i = 0; i <123; ++i)
     {
+        Coroutine first = NewCoroutineOnStack(kek);
+        Resume(&first);
         ++inner_step_count;
         Suspend();
+
+        FreeCoroutineOnStack(&first);
     }
+    printf("%d\n", 99);
 }
 
 void test3Bar()
 {
-    Coroutine *first = NewCoroutine(test3Foo);
-    while (!first->complete)
+    Coroutine first = NewCoroutineOnStack(test3Foo);
+    while (!first.complete)
     {
-        Resume(first);
+        Resume(&first);
         Suspend();
     }
+    printf("%d\n", 55);
+    // FreeCoroutine(first);
+    printf("%d\n", 77);
+
+    FreeCoroutineOnStack(&first);
 }
 
 void test3()
 {
-    Coroutine *second = NewCoroutine(test3Bar);
-    while (!second->complete)
+    Coroutine second = NewCoroutineOnStack(test3Bar);
+    while (!second.complete)
     {
-        Resume(second);
+        Resume(&second);
     }
 
+    printf("%d\n", 66);
     assert(inner_step_count == kSteps);
     printf("%d == %d\n", inner_step_count, kSteps);
+    
+    FreeCoroutineOnStack(&second);
 }
 
 void TreeWalk(TreeNode *node)
@@ -133,14 +154,14 @@ void treeTest()
             Create(CreateLeaf(), CreateLeaf()),
             CreateLeaf()));
 
-    Coroutine *walker = NewCoroutine(walk);
+    Coroutine walker = NewCoroutineOnStack(walk);
 
     size_t node_count = 0;
 
     while (1)
     {
-        Resume(walker);
-        if (walker->complete)
+        Resume(&walker);
+        if (walker.complete)
         {
             break;
         }
@@ -148,7 +169,28 @@ void treeTest()
     }
 
     assert(node_count == 7);
+
+    FreeCoroutineOnStack(&walker);
 }
+
+void stackTest()
+{
+    LockFreeStack *stack = NewStack();
+
+    Push(stack, 1);
+    Push(stack, 2);
+
+    int item = 0;
+
+    Pop(stack, &item);
+    assert(2 == item);
+
+    Pop(stack, &item);
+    assert(1 == item);
+
+    FreeStack(stack);
+}
+
 int main()
 {
     printf("Start\n");
@@ -156,9 +198,11 @@ int main()
     printf("Test 1 \n");
     test2();
     printf("Test 2 \n");
-    // test3();
-    // printf("Test 3 \n");
+    test3();
+    printf("Test 3 \n");
     // treeTest();
-    // printf("Test 4 \n");
+    printf("Test 4 \n");
+    
+    stackTest();
     return 0;
 }

@@ -6,5 +6,5 @@ C_FLAGS = -g
 
 C_DEFINES = 
 
-C_INCLUDES = -I"/home/dron/Рабочий стол/scheduler/scheduler/context" -I"/home/dron/Рабочий стол/scheduler/scheduler/jsoncpp/coroutine" 
+C_INCLUDES = -I"/home/dron/Рабочий стол/scheduler/scheduler/context" -I"/home/dron/Рабочий стол/scheduler/scheduler/coroutine" -I"/home/dron/Рабочий стол/scheduler/scheduler/lockfree" 
 

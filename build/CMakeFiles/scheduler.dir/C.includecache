@@ -9,12 +9,32 @@
 /home/dron/Рабочий стол/scheduler/scheduler/context/context.h
 stdio.h
 -
+stdlib.h
+/home/dron/Рабочий стол/scheduler/scheduler/context/stdlib.h
+sys/mman.h
+-
+
+/home/dron/Рабочий стол/scheduler/scheduler/coroutine/coroutine.c
+coroutine.h
+/home/dron/Рабочий стол/scheduler/scheduler/coroutine/coroutine.h
 
 /home/dron/Рабочий стол/scheduler/scheduler/coroutine/coroutine.h
+sys/mman.h
+-
 stdio.h
+-
+stdlib.h
 -
 ../context/context.h
 /home/dron/Рабочий стол/scheduler/scheduler/context/context.h
+valgrind/valgrind.h
+-
+
+/home/dron/Рабочий стол/scheduler/scheduler/lockfree/stack/stack.h
+stdlib.h
+-
+unistd.h
+-
 
 /home/dron/Рабочий стол/scheduler/scheduler/main.c
 context/context.h
@@ -29,6 +49,8 @@ assert.h
 -
 testTree.h
 /home/dron/Рабочий стол/scheduler/scheduler/testTree.h
+lockfree/stack/stack.h
+/home/dron/Рабочий стол/scheduler/scheduler/lockfree/stack/stack.h
 
 /home/dron/Рабочий стол/scheduler/scheduler/testTree.h
 stdlib.h

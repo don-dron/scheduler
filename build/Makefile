@@ -520,33 +520,6 @@ scheduler/fast:
 	$(MAKE) -f CMakeFiles/scheduler.dir/build.make CMakeFiles/scheduler.dir/build
 .PHONY : scheduler/fast
 
-context/context.o: context/context.c.o
-
-.PHONY : context/context.o
-
-# target to build an object file
-context/context.c.o:
-	$(MAKE) -f CMakeFiles/scheduler.dir/build.make CMakeFiles/scheduler.dir/context/context.c.o
-.PHONY : context/context.c.o
-
-context/context.i: context/context.c.i
-
-.PHONY : context/context.i
-
-# target to preprocess a source file
-context/context.c.i:
-	$(MAKE) -f CMakeFiles/scheduler.dir/build.make CMakeFiles/scheduler.dir/context/context.c.i
-.PHONY : context/context.c.i
-
-context/context.s: context/context.c.s
-
-.PHONY : context/context.s
-
-# target to generate assembly for a file
-context/context.c.s:
-	$(MAKE) -f CMakeFiles/scheduler.dir/build.make CMakeFiles/scheduler.dir/context/context.c.s
-.PHONY : context/context.c.s
-
 context/switch_context.o: context/switch_context.S.o
 
 .PHONY : context/switch_context.o
@@ -600,6 +573,33 @@ coroutine/coroutine.s: coroutine/coroutine.c.s
 coroutine/coroutine.c.s:
 	$(MAKE) -f CMakeFiles/scheduler.dir/build.make CMakeFiles/scheduler.dir/coroutine/coroutine.c.s
 .PHONY : coroutine/coroutine.c.s
+
+lockfree/stack/stack.o: lockfree/stack/stack.c.o
+
+.PHONY : lockfree/stack/stack.o
+
+# target to build an object file
+lockfree/stack/stack.c.o:
+	$(MAKE) -f CMakeFiles/scheduler.dir/build.make CMakeFiles/scheduler.dir/lockfree/stack/stack.c.o
+.PHONY : lockfree/stack/stack.c.o
+
+lockfree/stack/stack.i: lockfree/stack/stack.c.i
+
+.PHONY : lockfree/stack/stack.i
+
+# target to preprocess a source file
+lockfree/stack/stack.c.i:
+	$(MAKE) -f CMakeFiles/scheduler.dir/build.make CMakeFiles/scheduler.dir/lockfree/stack/stack.c.i
+.PHONY : lockfree/stack/stack.c.i
+
+lockfree/stack/stack.s: lockfree/stack/stack.c.s
+
+.PHONY : lockfree/stack/stack.s
+
+# target to generate assembly for a file
+lockfree/stack/stack.c.s:
+	$(MAKE) -f CMakeFiles/scheduler.dir/build.make CMakeFiles/scheduler.dir/lockfree/stack/stack.c.s
+.PHONY : lockfree/stack/stack.c.s
 
 main.o: main.c.o
 
@@ -668,15 +668,15 @@ help:
 	@echo "... NightlyStart"
 	@echo "... ExperimentalCoverage"
 	@echo "... scheduler"
-	@echo "... context/context.o"
-	@echo "... context/context.i"
-	@echo "... context/context.s"
 	@echo "... context/switch_context.o"
 	@echo "... context/switch_context.i"
 	@echo "... context/switch_context.s"
 	@echo "... coroutine/coroutine.o"
 	@echo "... coroutine/coroutine.i"
 	@echo "... coroutine/coroutine.s"
+	@echo "... lockfree/stack/stack.o"
+	@echo "... lockfree/stack/stack.i"
+	@echo "... lockfree/stack/stack.s"
 	@echo "... main.o"
 	@echo "... main.i"
 	@echo "... main.s"
