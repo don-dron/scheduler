@@ -84,7 +84,7 @@ void Setup(Coroutine *coroutine, void (*trampoline)())
 
 Coroutine NewCoroutineOnStack(void (*routine)())
 {
-    Coroutine new_coroutine; // = (Coroutine *)malloc(sizeof(Coroutine));
+    Coroutine new_coroutine;
 
     new_coroutine.routine = routine;
     new_coroutine.complete = 0;

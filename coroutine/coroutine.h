@@ -4,8 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "../context/context.h"
-
-
+#include <threads.h>
 #if defined USE_VALGRIND
 #include <valgrind/valgrind.h>
 #endif
@@ -13,7 +12,7 @@
 #ifndef COROUTINE
 #define COROUTINE
 
-static const size_t STACK_SIZE = 64*1024;
+static const size_t STACK_SIZE = 64 * 1024;
 struct Coroutine;
 typedef struct Coroutine Coroutine;
 
@@ -27,14 +26,16 @@ struct Coroutine
     void *stack;
 };
 
-volatile static Coroutine *current = NULL;
+thread_local volatile static Coroutine *current = NULL;
 void Suspend();
 void Resume(Coroutine *this);
-Coroutine NewCoroutineOnStack(void (*routine)());
-void SwitchToCaller(Coroutine *coroutine);
 
+Coroutine NewCoroutineOnStack(void (*routine)());
+
+void SwitchToCaller(Coroutine *coroutine);
 void Setup(Coroutine *coroutine, void (*Trampoline)());
 
-
+void FreeCoroutineOnStack(Coroutine *coroutine);
+void FreeCoroutineOnHeap(Coroutine *coroutine);
 
 #endif

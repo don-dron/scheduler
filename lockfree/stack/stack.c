@@ -39,6 +39,8 @@ void Push(LockFreeStack *stack, int item)
         oldhead = stack->head->next;
         tb->next = oldhead;
     }
+
+    __atomic_fetch_add(&stack->size, 1, __ATOMIC_SEQ_CST);
 }
 
 void Delete_nodes(LockFreeStack *stack)
@@ -76,6 +78,7 @@ int Pop(LockFreeStack *stack, int *item)
         flag = 1;
         *item = current->data;
         free(current);
+        __atomic_fetch_sub(&stack->size, 1, __ATOMIC_SEQ_CST);
     }
 
     while (!__sync_bool_compare_and_swap(&(stack->head->list_mutex), 1, 0))

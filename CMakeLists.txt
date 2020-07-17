@@ -14,6 +14,10 @@ set_property(SOURCE context/switch_context.S PROPERTY LANGUAGE C)
 add_executable(scheduler main.c coroutine/coroutine.h coroutine/coroutine.c context/context.h context/switch_context.S 
 lockfree/stack/stack.c lockfree/stack/stack.h)
 
+set(THREADS_PREFER_PTHREAD_FLAG ON)
+find_package(Threads REQUIRED)
+target_link_libraries(scheduler PRIVATE Threads::Threads)
+
 include_directories("${CMAKE_SOURCE_DIR}/context"
     "${CMAKE_SOURCE_DIR}/coroutine" "${CMAKE_SOURCE_DIR}/lockfree")
 

@@ -7,6 +7,7 @@
 #include <assert.h>
 #include "testTree.h"
 #include "lockfree/stack/stack.h"
+#include <pthread.h>
 
 int step = 0;
 
@@ -85,7 +86,7 @@ void kek()
 void test3Foo()
 {
     printf("%d\n", 88);
-    for (int i = 0; i <123; ++i)
+    for (int i = 0; i < 123; ++i)
     {
         Coroutine first = NewCoroutineOnStack(kek);
         Resume(&first);
@@ -123,7 +124,7 @@ void test3()
     printf("%d\n", 66);
     assert(inner_step_count == kSteps);
     printf("%d == %d\n", inner_step_count, kSteps);
-    
+
     FreeCoroutineOnStack(&second);
 }
 
@@ -191,6 +192,53 @@ void stackTest()
     FreeStack(stack);
 }
 
+LockFreeStack *results;
+
+void *worker(void *arg)
+{
+    int i = 10000;
+    long long *int_data;
+    while (i--)
+    {
+        int_data = (long long *)malloc(sizeof(long long));
+        assert(int_data != NULL);
+        *int_data = i;
+        int data;
+        for (int j = 0; j < 100; j++)
+        {
+            Push(results, i);
+        }
+        for (int j = 0; j < 100; j++)
+        {
+            Pop(results, &data);
+        }
+
+        free(int_data);
+    }
+
+    return NULL;
+}
+
+void stack_test()
+{
+    results = NewStack();
+    int nthreads = sysconf(_SC_NPROCESSORS_ONLN);
+    int i;
+
+    pthread_t threads[nthreads];
+    printf("Using %d thread%s.\n", nthreads, nthreads == 1 ? "" : "s");
+    for (i = 0; i < nthreads; i++)
+        pthread_create(threads + i, NULL, worker, NULL);
+
+    for (i = 0; i < nthreads; i++)
+        pthread_join(threads[i], NULL);
+
+    printf("Size = %d\n", results->size);
+    assert(results->size == 0);
+
+    FreeStack(results);
+}
+
 int main()
 {
     printf("Start\n");
@@ -202,7 +250,8 @@ int main()
     printf("Test 3 \n");
     // treeTest();
     printf("Test 4 \n");
-    
+
     stackTest();
+    stack_test();
     return 0;
 }

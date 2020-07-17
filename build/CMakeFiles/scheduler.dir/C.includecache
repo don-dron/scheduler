@@ -14,10 +14,6 @@ stdlib.h
 sys/mman.h
 -
 
-/home/dron/Рабочий стол/scheduler/scheduler/coroutine/coroutine.c
-coroutine.h
-/home/dron/Рабочий стол/scheduler/scheduler/coroutine/coroutine.h
-
 /home/dron/Рабочий стол/scheduler/scheduler/coroutine/coroutine.h
 sys/mman.h
 -
@@ -27,6 +23,8 @@ stdlib.h
 -
 ../context/context.h
 /home/dron/Рабочий стол/scheduler/scheduler/context/context.h
+threads.h
+-
 valgrind/valgrind.h
 -
 
@@ -51,6 +49,8 @@ testTree.h
 /home/dron/Рабочий стол/scheduler/scheduler/testTree.h
 lockfree/stack/stack.h
 /home/dron/Рабочий стол/scheduler/scheduler/lockfree/stack/stack.h
+pthread.h
+-
 
 /home/dron/Рабочий стол/scheduler/scheduler/testTree.h
 stdlib.h
