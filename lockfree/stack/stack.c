@@ -1,34 +1,33 @@
 #include "stack.h"
 
-Node *NewNode(int item, Node *next_node)
+stack_node *create_node(stack_node *next_node)
 {
-    Node *node = (Node *)malloc(sizeof(Node));
-    node->next = next_node;
-    node->data = item;
-    node->list_mutex = 0;
-    return node;
+    stack_node *created_node = (stack_node *)malloc(sizeof(stack_node));
+    created_node->next = next_node;
+    created_node->list_mutex = 0;
+    return created_node;
 }
 
-Head *NewHead(Node *next_node)
+head *create_head(stack_node *next_node)
 {
-    Head *head = (Head *)malloc(sizeof(Head));
-    head->next = next_node;
-    head->list_mutex = 0;
-    return head;
+    head *created_head = (head *)malloc(sizeof(head));
+    created_head->next = next_node;
+    created_head->list_mutex = 0;
+    return created_head;
 }
 
-LockFreeStack *NewStack()
+lf_stack *create_stack()
 {
-    LockFreeStack *lockFreeStack = (LockFreeStack *)malloc(sizeof(LockFreeStack));
-    lockFreeStack->head = NewHead(0);
+    lf_stack *lockFreeStack = (lf_stack *)malloc(sizeof(lf_stack));
+    lockFreeStack->head = create_head(0);
     lockFreeStack->head->next = 0;
     return lockFreeStack;
 }
 
-void Push(LockFreeStack *stack, int item)
+void push(lf_stack *stack, stack_node *node)
 {
-    Node *tb, *oldhead;
-    tb = NewNode(item, 0);
+    stack_node *tb, *oldhead;
+    tb = node;
 
     oldhead = stack->head->next;
     tb->next = oldhead;
@@ -43,10 +42,10 @@ void Push(LockFreeStack *stack, int item)
     __atomic_fetch_add(&stack->size, 1, __ATOMIC_SEQ_CST);
 }
 
-void Delete_nodes(LockFreeStack *stack)
+void free_nodes(lf_stack *stack)
 {
-    Node *top = stack->head->next;
-    Node *curr_top = top;
+    stack_node *top = stack->head->next;
+    stack_node *curr_top = top;
     while (top != 0)
     {
         curr_top = top;
@@ -55,10 +54,9 @@ void Delete_nodes(LockFreeStack *stack)
     }
 }
 
-int Pop(LockFreeStack *stack, int *item)
+stack_node* pop(lf_stack *stack)
 {
-    Node *current;
-    int flag = 0;
+    stack_node *current;
 
     while (!__sync_bool_compare_and_swap(&(stack->head->list_mutex), 0, 1))
     {
@@ -75,9 +73,6 @@ int Pop(LockFreeStack *stack, int *item)
 
     if (current)
     {
-        flag = 1;
-        *item = current->data;
-        free(current);
         __atomic_fetch_sub(&stack->size, 1, __ATOMIC_SEQ_CST);
     }
 
@@ -86,12 +81,12 @@ int Pop(LockFreeStack *stack, int *item)
         usleep(1);
     }
 
-    return flag;
+    return current;
 }
 
-void FreeStack(LockFreeStack *stack)
+void free_stack(lf_stack *stack)
 {
-    Delete_nodes(stack);
+    free_nodes(stack);
     free(stack->head);
     free(stack);
 }

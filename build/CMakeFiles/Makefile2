@@ -53,7 +53,7 @@ CMAKE_BINARY_DIR = "/home/dron/Рабочий стол/scheduler/scheduler/build
 # Directory level rules for the build root directory
 
 # The main recursive "all" target.
-all: CMakeFiles/scheduler.dir/all
+all: CMakeFiles/Scheduler.dir/all
 
 .PHONY : all
 
@@ -80,6 +80,8 @@ clean: CMakeFiles/ExperimentalConfigure.dir/clean
 clean: CMakeFiles/Continuous.dir/clean
 clean: CMakeFiles/Nightly.dir/clean
 clean: CMakeFiles/NightlySubmit.dir/clean
+clean: CMakeFiles/NightlyStart.dir/clean
+clean: CMakeFiles/ExperimentalCoverage.dir/clean
 clean: CMakeFiles/NightlyCoverage.dir/clean
 clean: CMakeFiles/ExperimentalStart.dir/clean
 clean: CMakeFiles/NightlyBuild.dir/clean
@@ -89,9 +91,7 @@ clean: CMakeFiles/ContinuousStart.dir/clean
 clean: CMakeFiles/ContinuousMemCheck.dir/clean
 clean: CMakeFiles/ContinuousTest.dir/clean
 clean: CMakeFiles/ContinuousSubmit.dir/clean
-clean: CMakeFiles/NightlyStart.dir/clean
-clean: CMakeFiles/ExperimentalCoverage.dir/clean
-clean: CMakeFiles/scheduler.dir/clean
+clean: CMakeFiles/Scheduler.dir/clean
 
 .PHONY : clean
 
@@ -555,6 +555,60 @@ CMakeFiles/NightlySubmit.dir/clean:
 .PHONY : CMakeFiles/NightlySubmit.dir/clean
 
 #=============================================================================
+# Target rules for target CMakeFiles/NightlyStart.dir
+
+# All Build rule for target.
+CMakeFiles/NightlyStart.dir/all:
+	$(MAKE) -f CMakeFiles/NightlyStart.dir/build.make CMakeFiles/NightlyStart.dir/depend
+	$(MAKE) -f CMakeFiles/NightlyStart.dir/build.make CMakeFiles/NightlyStart.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir="/home/dron/Рабочий стол/scheduler/scheduler/build/CMakeFiles" --progress-num= "Built target NightlyStart"
+.PHONY : CMakeFiles/NightlyStart.dir/all
+
+# Build rule for subdir invocation for target.
+CMakeFiles/NightlyStart.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start "/home/dron/Рабочий стол/scheduler/scheduler/build/CMakeFiles" 0
+	$(MAKE) -f CMakeFiles/Makefile2 CMakeFiles/NightlyStart.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start "/home/dron/Рабочий стол/scheduler/scheduler/build/CMakeFiles" 0
+.PHONY : CMakeFiles/NightlyStart.dir/rule
+
+# Convenience name for target.
+NightlyStart: CMakeFiles/NightlyStart.dir/rule
+
+.PHONY : NightlyStart
+
+# clean rule for target.
+CMakeFiles/NightlyStart.dir/clean:
+	$(MAKE) -f CMakeFiles/NightlyStart.dir/build.make CMakeFiles/NightlyStart.dir/clean
+.PHONY : CMakeFiles/NightlyStart.dir/clean
+
+#=============================================================================
+# Target rules for target CMakeFiles/ExperimentalCoverage.dir
+
+# All Build rule for target.
+CMakeFiles/ExperimentalCoverage.dir/all:
+	$(MAKE) -f CMakeFiles/ExperimentalCoverage.dir/build.make CMakeFiles/ExperimentalCoverage.dir/depend
+	$(MAKE) -f CMakeFiles/ExperimentalCoverage.dir/build.make CMakeFiles/ExperimentalCoverage.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir="/home/dron/Рабочий стол/scheduler/scheduler/build/CMakeFiles" --progress-num= "Built target ExperimentalCoverage"
+.PHONY : CMakeFiles/ExperimentalCoverage.dir/all
+
+# Build rule for subdir invocation for target.
+CMakeFiles/ExperimentalCoverage.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start "/home/dron/Рабочий стол/scheduler/scheduler/build/CMakeFiles" 0
+	$(MAKE) -f CMakeFiles/Makefile2 CMakeFiles/ExperimentalCoverage.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start "/home/dron/Рабочий стол/scheduler/scheduler/build/CMakeFiles" 0
+.PHONY : CMakeFiles/ExperimentalCoverage.dir/rule
+
+# Convenience name for target.
+ExperimentalCoverage: CMakeFiles/ExperimentalCoverage.dir/rule
+
+.PHONY : ExperimentalCoverage
+
+# clean rule for target.
+CMakeFiles/ExperimentalCoverage.dir/clean:
+	$(MAKE) -f CMakeFiles/ExperimentalCoverage.dir/build.make CMakeFiles/ExperimentalCoverage.dir/clean
+.PHONY : CMakeFiles/ExperimentalCoverage.dir/clean
+
+#=============================================================================
 # Target rules for target CMakeFiles/NightlyCoverage.dir
 
 # All Build rule for target.
@@ -798,85 +852,31 @@ CMakeFiles/ContinuousSubmit.dir/clean:
 .PHONY : CMakeFiles/ContinuousSubmit.dir/clean
 
 #=============================================================================
-# Target rules for target CMakeFiles/NightlyStart.dir
+# Target rules for target CMakeFiles/Scheduler.dir
 
 # All Build rule for target.
-CMakeFiles/NightlyStart.dir/all:
-	$(MAKE) -f CMakeFiles/NightlyStart.dir/build.make CMakeFiles/NightlyStart.dir/depend
-	$(MAKE) -f CMakeFiles/NightlyStart.dir/build.make CMakeFiles/NightlyStart.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir="/home/dron/Рабочий стол/scheduler/scheduler/build/CMakeFiles" --progress-num= "Built target NightlyStart"
-.PHONY : CMakeFiles/NightlyStart.dir/all
+CMakeFiles/Scheduler.dir/all:
+	$(MAKE) -f CMakeFiles/Scheduler.dir/build.make CMakeFiles/Scheduler.dir/depend
+	$(MAKE) -f CMakeFiles/Scheduler.dir/build.make CMakeFiles/Scheduler.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir="/home/dron/Рабочий стол/scheduler/scheduler/build/CMakeFiles" --progress-num=1,2,3,4,5,6,7 "Built target Scheduler"
+.PHONY : CMakeFiles/Scheduler.dir/all
 
 # Build rule for subdir invocation for target.
-CMakeFiles/NightlyStart.dir/rule: cmake_check_build_system
+CMakeFiles/Scheduler.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start "/home/dron/Рабочий стол/scheduler/scheduler/build/CMakeFiles" 7
+	$(MAKE) -f CMakeFiles/Makefile2 CMakeFiles/Scheduler.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start "/home/dron/Рабочий стол/scheduler/scheduler/build/CMakeFiles" 0
-	$(MAKE) -f CMakeFiles/Makefile2 CMakeFiles/NightlyStart.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start "/home/dron/Рабочий стол/scheduler/scheduler/build/CMakeFiles" 0
-.PHONY : CMakeFiles/NightlyStart.dir/rule
+.PHONY : CMakeFiles/Scheduler.dir/rule
 
 # Convenience name for target.
-NightlyStart: CMakeFiles/NightlyStart.dir/rule
+Scheduler: CMakeFiles/Scheduler.dir/rule
 
-.PHONY : NightlyStart
-
-# clean rule for target.
-CMakeFiles/NightlyStart.dir/clean:
-	$(MAKE) -f CMakeFiles/NightlyStart.dir/build.make CMakeFiles/NightlyStart.dir/clean
-.PHONY : CMakeFiles/NightlyStart.dir/clean
-
-#=============================================================================
-# Target rules for target CMakeFiles/ExperimentalCoverage.dir
-
-# All Build rule for target.
-CMakeFiles/ExperimentalCoverage.dir/all:
-	$(MAKE) -f CMakeFiles/ExperimentalCoverage.dir/build.make CMakeFiles/ExperimentalCoverage.dir/depend
-	$(MAKE) -f CMakeFiles/ExperimentalCoverage.dir/build.make CMakeFiles/ExperimentalCoverage.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir="/home/dron/Рабочий стол/scheduler/scheduler/build/CMakeFiles" --progress-num= "Built target ExperimentalCoverage"
-.PHONY : CMakeFiles/ExperimentalCoverage.dir/all
-
-# Build rule for subdir invocation for target.
-CMakeFiles/ExperimentalCoverage.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start "/home/dron/Рабочий стол/scheduler/scheduler/build/CMakeFiles" 0
-	$(MAKE) -f CMakeFiles/Makefile2 CMakeFiles/ExperimentalCoverage.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start "/home/dron/Рабочий стол/scheduler/scheduler/build/CMakeFiles" 0
-.PHONY : CMakeFiles/ExperimentalCoverage.dir/rule
-
-# Convenience name for target.
-ExperimentalCoverage: CMakeFiles/ExperimentalCoverage.dir/rule
-
-.PHONY : ExperimentalCoverage
+.PHONY : Scheduler
 
 # clean rule for target.
-CMakeFiles/ExperimentalCoverage.dir/clean:
-	$(MAKE) -f CMakeFiles/ExperimentalCoverage.dir/build.make CMakeFiles/ExperimentalCoverage.dir/clean
-.PHONY : CMakeFiles/ExperimentalCoverage.dir/clean
-
-#=============================================================================
-# Target rules for target CMakeFiles/scheduler.dir
-
-# All Build rule for target.
-CMakeFiles/scheduler.dir/all:
-	$(MAKE) -f CMakeFiles/scheduler.dir/build.make CMakeFiles/scheduler.dir/depend
-	$(MAKE) -f CMakeFiles/scheduler.dir/build.make CMakeFiles/scheduler.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir="/home/dron/Рабочий стол/scheduler/scheduler/build/CMakeFiles" --progress-num=1,2,3,4,5 "Built target scheduler"
-.PHONY : CMakeFiles/scheduler.dir/all
-
-# Build rule for subdir invocation for target.
-CMakeFiles/scheduler.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start "/home/dron/Рабочий стол/scheduler/scheduler/build/CMakeFiles" 5
-	$(MAKE) -f CMakeFiles/Makefile2 CMakeFiles/scheduler.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start "/home/dron/Рабочий стол/scheduler/scheduler/build/CMakeFiles" 0
-.PHONY : CMakeFiles/scheduler.dir/rule
-
-# Convenience name for target.
-scheduler: CMakeFiles/scheduler.dir/rule
-
-.PHONY : scheduler
-
-# clean rule for target.
-CMakeFiles/scheduler.dir/clean:
-	$(MAKE) -f CMakeFiles/scheduler.dir/build.make CMakeFiles/scheduler.dir/clean
-.PHONY : CMakeFiles/scheduler.dir/clean
+CMakeFiles/Scheduler.dir/clean:
+	$(MAKE) -f CMakeFiles/Scheduler.dir/build.make CMakeFiles/Scheduler.dir/clean
+.PHONY : CMakeFiles/Scheduler.dir/clean
 
 #=============================================================================
 # Special targets to cleanup operation of make.

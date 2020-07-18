@@ -170,7 +170,7 @@ CMAKE_PROJECT_DESCRIPTION:STATIC=
 CMAKE_PROJECT_HOMEPAGE_URL:STATIC=
 
 //Value Computed by CMake
-CMAKE_PROJECT_NAME:STATIC=scheduler
+CMAKE_PROJECT_NAME:STATIC=Scheduler
 
 //Value Computed by CMake
 CMAKE_PROJECT_VERSION:STATIC=0.1.0
@@ -348,6 +348,12 @@ SLURM_SRUN_COMMAND:FILEPATH=SLURM_SRUN_COMMAND-NOTFOUND
 
 //Path to a program.
 SVNCOMMAND:FILEPATH=SVNCOMMAND-NOTFOUND
+
+//Value Computed by CMake
+Scheduler_BINARY_DIR:STATIC=/home/dron/Рабочий стол/scheduler/scheduler/build
+
+//Value Computed by CMake
+Scheduler_SOURCE_DIR:STATIC=/home/dron/Рабочий стол/scheduler/scheduler
 
 //Value Computed by CMake
 scheduler_BINARY_DIR:STATIC=/home/dron/Рабочий стол/scheduler/scheduler/build

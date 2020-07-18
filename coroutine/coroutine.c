@@ -1,61 +1,26 @@
 #include "coroutine.h"
 
-struct Stack
-{
-    void *memory;
-    size_t size;
-};
-
-typedef struct Stack Stack;
-
-char *Bottom(Stack *stack);
-
-struct StackBuilder
-{
-    int kWordSize;
-    char *top_;
-};
-
-typedef struct StackBuilder StackBuilder;
-
-void AlignNextPush(StackBuilder *builder, size_t alignment)
-{
-    size_t shift = (size_t)(builder->top_ - builder->kWordSize) % alignment;
-    builder->top_ -= shift;
-}
-
-void Allocate(StackBuilder *builder, size_t bytes)
-{
-    builder->top_ -= bytes;
-}
-
-void Suspend()
-{
-    Coroutine *newCoroutine = current;
-    current = newCoroutine->external_routine;
-    SwitchToCaller(newCoroutine);
-}
-
-void Trampoline()
-{
-    current->routine();
-
-    current->complete = 1;
-
-    Suspend();
-}
-
-static size_t PagesToBytes(size_t count)
-{
-    static const size_t kPageSize = 4096;
-
-    return count * kPageSize;
-}
-
 #define VALGRIND_STACK_REGISTER(a, b) (void)0
 
-void Setup(Coroutine *coroutine, void (*trampoline)())
+void suspend()
 {
+    coroutine *next_coroutine = current_coroutine;
+    current_coroutine = next_coroutine->external_routine;
+    switch_to_caller(next_coroutine);
+}
+
+void trampoline()
+{
+    current_coroutine->routine();
+
+    current_coroutine->complete = 1;
+
+    suspend();
+}
+
+void setup(coroutine *coroutine_, void (*trampoline)())
+{
+    // Allocate memory for stack and context
     void *start = mmap(/*addr=*/0, /*length=*/STACK_SIZE,
                        /*prot=*/PROT_READ | PROT_WRITE,
                        /*flags=*/MAP_PRIVATE | 0x20,
@@ -67,71 +32,97 @@ void Setup(Coroutine *coroutine, void (*trampoline)())
 
     (void)VALGRIND_STACK_REGISTER(start, start + STACK_SIZE);
 
-    StackBuilder stackBuilder;
-    stackBuilder.top_ = start + STACK_SIZE - 1;
+    stack_builder stackBuilder;
+    // Set top stack address 
+    //
+    // Programm heap 
+    //
+    // 0xfffff
+    //   ^
+    //   |
+    //   |
+    //   ^
+    //   |------------------ top = start + stack_size - 1   - Because stack grows downward
+    //   |                                                                  |
+    //   |                   Coroutine stack memory.                        |
+    //   |                                                                  |
+    //   |------------------ start                                          v    
+    //   ^
+    //   |
+    //   |
+    //   0
+    stackBuilder.top = start + STACK_SIZE - 1;
 
-    stackBuilder.kWordSize = sizeof(void *);
+    // Machine word size, usually 8 bytes
+    stackBuilder.word_size = sizeof(void *);
 
+    // For rbp register(shift 16 bytes)
     AlignNextPush(&stackBuilder, 16);
-    Allocate(&stackBuilder, sizeof(StackSavedContext));
+    // Allocate stack on allocated memory
+    Allocate(&stackBuilder, sizeof(stack_saved_context));
 
-    StackSavedContext *saved_context = (StackSavedContext *)stackBuilder.top_;
+    stack_saved_context *saved_context = (stack_saved_context *)stackBuilder.top;
+
+    // Rsp - stack pointer - new stack saved context - pointer to top allocated stack.
+    // Rip - instruction pointer to trampoline function, after switch context automatically executed trampoline function.
+
     saved_context->rip = (void *)trampoline;
+    coroutine_->routine_context.rsp = saved_context;
 
-    coroutine->routine_context.rsp_ = saved_context;
-    coroutine->stack = start;
+    // Save allocated memory pointer
+    coroutine_->stack = start;
 }
 
-Coroutine NewCoroutineOnStack(void (*routine)())
+coroutine create_coroutine_on_stack(void (*routine)())
 {
-    Coroutine new_coroutine;
+    coroutine new_coroutine;
 
     new_coroutine.routine = routine;
     new_coroutine.complete = 0;
 
-    Setup(&new_coroutine, Trampoline);
+    setup(&new_coroutine, trampoline);
 
-    new_coroutine.external_routine = current;
+    new_coroutine.external_routine = current_coroutine;
     return new_coroutine;
 }
 
-Coroutine *NewCoroutineOnHeap(void (*routine)())
+coroutine *create_coroutine_on_heap(void (*routine)())
 {
-    Coroutine *new_coroutine = (Coroutine *)malloc(sizeof(Coroutine));
+    coroutine *new_coroutine = (coroutine *)malloc(sizeof(coroutine));
 
     new_coroutine->routine = routine;
     new_coroutine->complete = 0;
 
-    Setup(new_coroutine, Trampoline);
+    setup(new_coroutine, trampoline);
 
-    new_coroutine->external_routine = current;
+    new_coroutine->external_routine = current_coroutine;
     return new_coroutine;
 }
 
-void Resume(Coroutine *this)
+void resume(coroutine *coroutine_by_resume)
 {
-    if (this->complete)
+    if (coroutine_by_resume->complete)
     {
         return;
     }
 
-    current = this;
+    current_coroutine = coroutine_by_resume;
 
-    SwitchContext(&this->caller_context, &this->routine_context);
+    switch_context(&coroutine_by_resume->caller_context, &coroutine_by_resume->routine_context);
 }
 
-void SwitchToCaller(Coroutine *coroutine)
+void switch_to_caller(coroutine *coroutine_)
 {
-    SwitchContext(&coroutine->routine_context, &coroutine->caller_context);
+    switch_context(&coroutine_->routine_context, &coroutine_->caller_context);
 }
 
-void FreeCoroutineOnStack(Coroutine *coroutine)
+void free_coroutine_on_stack(coroutine *coroutine_)
 {
-    munmap(coroutine->routine_context.stack, STACK_SIZE);
+    munmap(coroutine_->routine_context.stack, STACK_SIZE);
 }
 
-void FreeCoroutineOnHeap(Coroutine *coroutine)
+void free_coroutine_on_heap(coroutine *coroutine_)
 {
-    munmap(coroutine->routine_context.stack, STACK_SIZE);
-    free(coroutine);
+    munmap(coroutine_->routine_context.stack, STACK_SIZE);
+    free(coroutine_);
 }

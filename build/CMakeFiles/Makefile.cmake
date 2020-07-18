@@ -84,6 +84,8 @@ set(CMAKE_DEPEND_INFO_FILES
   "CMakeFiles/Continuous.dir/DependInfo.cmake"
   "CMakeFiles/Nightly.dir/DependInfo.cmake"
   "CMakeFiles/NightlySubmit.dir/DependInfo.cmake"
+  "CMakeFiles/NightlyStart.dir/DependInfo.cmake"
+  "CMakeFiles/ExperimentalCoverage.dir/DependInfo.cmake"
   "CMakeFiles/NightlyCoverage.dir/DependInfo.cmake"
   "CMakeFiles/ExperimentalStart.dir/DependInfo.cmake"
   "CMakeFiles/NightlyBuild.dir/DependInfo.cmake"
@@ -93,7 +95,5 @@ set(CMAKE_DEPEND_INFO_FILES
   "CMakeFiles/ContinuousMemCheck.dir/DependInfo.cmake"
   "CMakeFiles/ContinuousTest.dir/DependInfo.cmake"
   "CMakeFiles/ContinuousSubmit.dir/DependInfo.cmake"
-  "CMakeFiles/NightlyStart.dir/DependInfo.cmake"
-  "CMakeFiles/ExperimentalCoverage.dir/DependInfo.cmake"
-  "CMakeFiles/scheduler.dir/DependInfo.cmake"
+  "CMakeFiles/Scheduler.dir/DependInfo.cmake"
   )

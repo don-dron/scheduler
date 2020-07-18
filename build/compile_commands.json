@@ -1,22 +1,32 @@
 [
 {
   "directory": "/home/dron/Рабочий стол/scheduler/scheduler/build",
-  "command": "/bin/clang-10  -I\"/home/dron/Рабочий стол/scheduler/scheduler/context\" -I\"/home/dron/Рабочий стол/scheduler/scheduler/coroutine\" -I\"/home/dron/Рабочий стол/scheduler/scheduler/lockfree\"  -g   -pthread -o CMakeFiles/scheduler.dir/main.c.o   -c \"/home/dron/Рабочий стол/scheduler/scheduler/main.c\"",
+  "command": "/bin/clang-10  -I\"/home/dron/Рабочий стол/scheduler/scheduler/context\" -I\"/home/dron/Рабочий стол/scheduler/scheduler/coroutine\" -I\"/home/dron/Рабочий стол/scheduler/scheduler/lockfree\" -I\"/home/dron/Рабочий стол/scheduler/scheduler/scheduler\"  -g   -pthread -o CMakeFiles/Scheduler.dir/main.c.o   -c \"/home/dron/Рабочий стол/scheduler/scheduler/main.c\"",
   "file": "/home/dron/Рабочий стол/scheduler/scheduler/main.c"
 },
 {
   "directory": "/home/dron/Рабочий стол/scheduler/scheduler/build",
-  "command": "/bin/clang-10  -I\"/home/dron/Рабочий стол/scheduler/scheduler/context\" -I\"/home/dron/Рабочий стол/scheduler/scheduler/coroutine\" -I\"/home/dron/Рабочий стол/scheduler/scheduler/lockfree\"  -g   -pthread -o CMakeFiles/scheduler.dir/coroutine/coroutine.c.o   -c \"/home/dron/Рабочий стол/scheduler/scheduler/coroutine/coroutine.c\"",
+  "command": "/bin/clang-10  -I\"/home/dron/Рабочий стол/scheduler/scheduler/context\" -I\"/home/dron/Рабочий стол/scheduler/scheduler/coroutine\" -I\"/home/dron/Рабочий стол/scheduler/scheduler/lockfree\" -I\"/home/dron/Рабочий стол/scheduler/scheduler/scheduler\"  -g   -pthread -o CMakeFiles/Scheduler.dir/coroutine/coroutine.c.o   -c \"/home/dron/Рабочий стол/scheduler/scheduler/coroutine/coroutine.c\"",
   "file": "/home/dron/Рабочий стол/scheduler/scheduler/coroutine/coroutine.c"
 },
 {
   "directory": "/home/dron/Рабочий стол/scheduler/scheduler/build",
-  "command": "/bin/clang-10  -I\"/home/dron/Рабочий стол/scheduler/scheduler/context\" -I\"/home/dron/Рабочий стол/scheduler/scheduler/coroutine\" -I\"/home/dron/Рабочий стол/scheduler/scheduler/lockfree\"  -g   -pthread -o CMakeFiles/scheduler.dir/context/switch_context.S.o   -c \"/home/dron/Рабочий стол/scheduler/scheduler/context/switch_context.S\"",
+  "command": "/bin/clang-10  -I\"/home/dron/Рабочий стол/scheduler/scheduler/context\" -I\"/home/dron/Рабочий стол/scheduler/scheduler/coroutine\" -I\"/home/dron/Рабочий стол/scheduler/scheduler/lockfree\" -I\"/home/dron/Рабочий стол/scheduler/scheduler/scheduler\"  -g   -pthread -o CMakeFiles/Scheduler.dir/context/switch_context.S.o   -c \"/home/dron/Рабочий стол/scheduler/scheduler/context/switch_context.S\"",
   "file": "/home/dron/Рабочий стол/scheduler/scheduler/context/switch_context.S"
 },
 {
   "directory": "/home/dron/Рабочий стол/scheduler/scheduler/build",
-  "command": "/bin/clang-10  -I\"/home/dron/Рабочий стол/scheduler/scheduler/context\" -I\"/home/dron/Рабочий стол/scheduler/scheduler/coroutine\" -I\"/home/dron/Рабочий стол/scheduler/scheduler/lockfree\"  -g   -pthread -o CMakeFiles/scheduler.dir/lockfree/stack/stack.c.o   -c \"/home/dron/Рабочий стол/scheduler/scheduler/lockfree/stack/stack.c\"",
+  "command": "/bin/clang-10  -I\"/home/dron/Рабочий стол/scheduler/scheduler/context\" -I\"/home/dron/Рабочий стол/scheduler/scheduler/coroutine\" -I\"/home/dron/Рабочий стол/scheduler/scheduler/lockfree\" -I\"/home/dron/Рабочий стол/scheduler/scheduler/scheduler\"  -g   -pthread -o CMakeFiles/Scheduler.dir/lockfree/stack/stack.c.o   -c \"/home/dron/Рабочий стол/scheduler/scheduler/lockfree/stack/stack.c\"",
   "file": "/home/dron/Рабочий стол/scheduler/scheduler/lockfree/stack/stack.c"
+},
+{
+  "directory": "/home/dron/Рабочий стол/scheduler/scheduler/build",
+  "command": "/bin/clang-10  -I\"/home/dron/Рабочий стол/scheduler/scheduler/context\" -I\"/home/dron/Рабочий стол/scheduler/scheduler/coroutine\" -I\"/home/dron/Рабочий стол/scheduler/scheduler/lockfree\" -I\"/home/dron/Рабочий стол/scheduler/scheduler/scheduler\"  -g   -pthread -o CMakeFiles/Scheduler.dir/scheduler/fiber.c.o   -c \"/home/dron/Рабочий стол/scheduler/scheduler/scheduler/fiber.c\"",
+  "file": "/home/dron/Рабочий стол/scheduler/scheduler/scheduler/fiber.c"
+},
+{
+  "directory": "/home/dron/Рабочий стол/scheduler/scheduler/build",
+  "command": "/bin/clang-10  -I\"/home/dron/Рабочий стол/scheduler/scheduler/context\" -I\"/home/dron/Рабочий стол/scheduler/scheduler/coroutine\" -I\"/home/dron/Рабочий стол/scheduler/scheduler/lockfree\" -I\"/home/dron/Рабочий стол/scheduler/scheduler/scheduler\"  -g   -pthread -o CMakeFiles/Scheduler.dir/scheduler/scheduler.c.o   -c \"/home/dron/Рабочий стол/scheduler/scheduler/scheduler/scheduler.c\"",
+  "file": "/home/dron/Рабочий стол/scheduler/scheduler/scheduler/scheduler.c"
 }
 ]

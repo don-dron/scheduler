@@ -6,5 +6,5 @@ C_FLAGS = -g   -pthread
 
 C_DEFINES = 
 
-C_INCLUDES = -I"/home/dron/Рабочий стол/scheduler/scheduler/context" -I"/home/dron/Рабочий стол/scheduler/scheduler/coroutine" -I"/home/dron/Рабочий стол/scheduler/scheduler/lockfree" 
+C_INCLUDES = -I"/home/dron/Рабочий стол/scheduler/scheduler/context" -I"/home/dron/Рабочий стол/scheduler/scheduler/coroutine" -I"/home/dron/Рабочий стол/scheduler/scheduler/lockfree" -I"/home/dron/Рабочий стол/scheduler/scheduler/scheduler" 
 

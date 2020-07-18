@@ -14,5 +14,12 @@ CMakeFiles/scheduler.dir/main.c.o: ../context/context.h
 CMakeFiles/scheduler.dir/main.c.o: ../coroutine/coroutine.h
 CMakeFiles/scheduler.dir/main.c.o: ../lockfree/stack/stack.h
 CMakeFiles/scheduler.dir/main.c.o: ../main.c
+CMakeFiles/scheduler.dir/main.c.o: ../scheduler/fiber.h
 CMakeFiles/scheduler.dir/main.c.o: ../testTree.h
+
+CMakeFiles/scheduler.dir/scheduler/fiber.c.o: ../context/context.h
+CMakeFiles/scheduler.dir/scheduler/fiber.c.o: ../scheduler/fiber.c
+CMakeFiles/scheduler.dir/scheduler/fiber.c.o: ../scheduler/fiber.h
+
+CMakeFiles/scheduler.dir/scheduler/scheduler.c.o: ../scheduler/scheduler.c
 
