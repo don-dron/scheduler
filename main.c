@@ -1,5 +1,6 @@
 
 #define __USE_MISC 1
+
 #include "context/context.h"
 #include "coroutine/coroutine.h"
 #include <stdio.h>
@@ -7,7 +8,9 @@
 #include <assert.h>
 #include "testTree.h"
 #include "lockfree/stack/stack.h"
+#include "scheduler/fiber.h"
 #include <pthread.h>
+#include "lockfree/list/list.h"
 
 int step = 0;
 
@@ -15,7 +18,7 @@ void test1Foo()
 {
     assert(step == 0);
     step = 1;
-    Suspend();
+    suspend();
     assert(step == 2);
     step = 3;
 }
@@ -24,31 +27,31 @@ void test1Bar()
 {
     assert(step == 1);
     step = 2;
-    Suspend();
+    suspend();
     assert(step == 3);
     step = 4;
 }
 
 void test1()
 {
-    Coroutine first = NewCoroutineOnStack(test1Foo);
-    Coroutine second = NewCoroutineOnStack(test1Bar);
+    coroutine first = create_coroutine_on_stack(test1Foo);
+    coroutine second = create_coroutine_on_stack(test1Bar);
 
-    Resume(&first);
-    Resume(&second);
+    resume(&first);
+    resume(&second);
 
-    Resume(&first);
-    Resume(&second);
+    resume(&first);
+    resume(&second);
 
-    FreeCoroutineOnStack(&first);
-    FreeCoroutineOnStack(&second);
+    free_coroutine_on_stack(&first);
+    free_coroutine_on_stack(&second);
 }
 
 void test2Foo()
 {
     for (int i = 0; i < 100; i++)
     {
-        Suspend();
+        suspend();
     }
 }
 
@@ -56,23 +59,23 @@ void test2Bar()
 {
     for (int i = 0; i < 100; i++)
     {
-        Suspend();
+        suspend();
     }
 }
 
 void test2()
 {
-    Coroutine first = NewCoroutineOnStack(test2Foo);
-    Coroutine second = NewCoroutineOnStack(test2Bar);
+    coroutine first = create_coroutine_on_stack(test2Foo);
+    coroutine second = create_coroutine_on_stack(test2Bar);
 
     while (!(first.complete && second.complete))
     {
-        Resume(&first);
-        Resume(&second);
+        resume(&first);
+        resume(&second);
     }
 
-    FreeCoroutineOnStack(&first);
-    FreeCoroutineOnStack(&second);
+    free_coroutine_on_stack(&first);
+    free_coroutine_on_stack(&second);
 }
 
 const int kSteps = 123;
@@ -88,44 +91,44 @@ void test3Foo()
     printf("%d\n", 88);
     for (int i = 0; i < 123; ++i)
     {
-        Coroutine first = NewCoroutineOnStack(kek);
-        Resume(&first);
+        coroutine first = create_coroutine_on_stack(kek);
+        resume(&first);
         ++inner_step_count;
-        Suspend();
+        suspend();
 
-        FreeCoroutineOnStack(&first);
+        free_coroutine_on_stack(&first);
     }
     printf("%d\n", 99);
 }
 
 void test3Bar()
 {
-    Coroutine first = NewCoroutineOnStack(test3Foo);
+    coroutine first = create_coroutine_on_stack(test3Foo);
     while (!first.complete)
     {
-        Resume(&first);
-        Suspend();
+        resume(&first);
+        suspend();
     }
     printf("%d\n", 55);
     // FreeCoroutine(first);
     printf("%d\n", 77);
 
-    FreeCoroutineOnStack(&first);
+    free_coroutine_on_stack(&first);
 }
 
 void test3()
 {
-    Coroutine second = NewCoroutineOnStack(test3Bar);
+    coroutine second = create_coroutine_on_stack(test3Bar);
     while (!second.complete)
     {
-        Resume(&second);
+        resume(&second);
     }
 
     printf("%d\n", 66);
     assert(inner_step_count == kSteps);
     printf("%d == %d\n", inner_step_count, kSteps);
 
-    FreeCoroutineOnStack(&second);
+    free_coroutine_on_stack(&second);
 }
 
 void TreeWalk(TreeNode *node)
@@ -134,7 +137,7 @@ void TreeWalk(TreeNode *node)
     {
         TreeWalk(node->left_);
     }
-    Suspend();
+    suspend();
     if (node->right_)
     {
         TreeWalk(node->right_);
@@ -155,13 +158,13 @@ void treeTest()
             Create(CreateLeaf(), CreateLeaf()),
             CreateLeaf()));
 
-    Coroutine walker = NewCoroutineOnStack(walk);
+    coroutine walker = create_coroutine_on_stack(walk);
 
     size_t node_count = 0;
 
     while (1)
     {
-        Resume(&walker);
+        resume(&walker);
         if (walker.complete)
         {
             break;
@@ -171,32 +174,21 @@ void treeTest()
 
     assert(node_count == 7);
 
-    FreeCoroutineOnStack(&walker);
+    free_coroutine_on_stack(&walker);
 }
 
-void stackTest()
+lf_stack *results;
+
+struct stack_data_node
 {
-    LockFreeStack *stack = NewStack();
-
-    Push(stack, 1);
-    Push(stack, 2);
-
-    int item = 0;
-
-    Pop(stack, &item);
-    assert(2 == item);
-
-    Pop(stack, &item);
-    assert(1 == item);
-
-    FreeStack(stack);
-}
-
-LockFreeStack *results;
+    stack_node lst_node;
+    int data;
+};
+typedef struct stack_data_node stack_data_node;
 
 void *worker(void *arg)
 {
-    int i = 10000;
+    int i = 1000;
     long long *int_data;
     while (i--)
     {
@@ -206,11 +198,20 @@ void *worker(void *arg)
         int data;
         for (int j = 0; j < 100; j++)
         {
-            Push(results, i);
+            stack_data_node *stackNode = (stack_data_node *)malloc(sizeof(stack_data_node));
+            stackNode->data = j;
+            stackNode->lst_node.list_mutex = 0;
+
+            push(results, stackNode);
         }
         for (int j = 0; j < 100; j++)
         {
-            Pop(results, &data);
+            stack_data_node *node = pop(results);
+            if (node != 0)
+            {
+                printf("%d\n", node->data);
+                free(node);
+            }
         }
 
         free(int_data);
@@ -221,7 +222,7 @@ void *worker(void *arg)
 
 void stack_test()
 {
-    results = NewStack();
+    results = create_stack();
     int nthreads = sysconf(_SC_NPROCESSORS_ONLN);
     int i;
 
@@ -234,9 +235,109 @@ void stack_test()
         pthread_join(threads[i], NULL);
 
     printf("Size = %d\n", results->size);
-    assert(results->size == 0);
 
-    FreeStack(results);
+    free_stack(results);
+}
+
+list *lst;
+
+struct data_node
+{
+    list_node lst_node;
+    int data;
+};
+
+typedef struct data_node data_node;
+
+void list_worker(void *arg)
+{
+    int i = 10000;
+    long long *int_data;
+    while (i--)
+    {
+        int_data = (long long *)malloc(sizeof(long long));
+        assert(int_data != NULL);
+        *int_data = i;
+        int data;
+        for (int j = 0; j < 100; j++)
+        {
+            data_node *nd = (data_node *)malloc(sizeof(data_node));
+            nd->data = j;
+            push_front(lst, nd);
+        }
+        for (int j = 0; j < 100; j++)
+        {
+            void *item = pop_front(lst);
+
+            if (item != 0)
+            {
+                free(item);
+            }
+        }
+        for (int j = 0; j < 100; j++)
+        {
+            data_node *nd = (data_node *)malloc(sizeof(data_node));
+            nd->data = j;
+
+            push_back(lst, nd);
+        }
+        for (int j = 0; j < 100; j++)
+        {
+            void *item = pop_back(lst);
+            if (item != 0)
+            {
+                free(item);
+            }
+        }
+
+        free(int_data);
+    }
+}
+
+void list_test()
+{
+    lst = create_list();
+    int nthreads = sysconf(_SC_NPROCESSORS_ONLN);
+    int i;
+
+    pthread_t threads[nthreads];
+    printf("Using %d thread%s.\n", nthreads, nthreads == 1 ? "" : "s");
+    for (i = 0; i < nthreads; i++)
+        pthread_create(threads + i, NULL, list_worker, NULL);
+
+    for (i = 0; i < nthreads; i++)
+        pthread_join(threads[i], NULL);
+
+    free_list(lst);
+}
+
+void list_test1()
+{
+    lst = create_list();
+
+    data_node *nd = (data_node *)malloc(sizeof(data_node));
+    nd->data = 10;
+    push_front(lst, nd);
+
+    void *item = pop_front(lst);
+
+    if (item != 0)
+    {
+        free(item);
+    }
+
+    nd = (data_node *)malloc(sizeof(data_node));
+    nd->data = 10;
+    push_front(lst, nd);
+
+    item = pop_front(lst);
+
+    if (item != 0)
+    {
+        free(item);
+    }
+
+    free_list(lst);
 }
 
 int main()
@@ -251,7 +352,9 @@ int main()
     // treeTest();
     printf("Test 4 \n");
 
-    stackTest();
     stack_test();
+
+    list_test1();
+    list_test();
     return 0;
 }

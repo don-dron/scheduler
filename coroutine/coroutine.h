@@ -5,37 +5,33 @@
 #include <stdlib.h>
 #include "../context/context.h"
 #include <threads.h>
+
 #if defined USE_VALGRIND
 #include <valgrind/valgrind.h>
 #endif
 
-#ifndef COROUTINE
-#define COROUTINE
+struct coroutine;
+typedef struct coroutine coroutine;
 
-static const size_t STACK_SIZE = 64 * 1024;
-struct Coroutine;
-typedef struct Coroutine Coroutine;
-
-struct Coroutine
+struct coroutine
 {
     void (*routine)();
-    ExecutionContext routine_context;
-    ExecutionContext caller_context;
-    Coroutine *external_routine;
+    execution_context routine_context;
+    execution_context caller_context;
+    coroutine *external_routine;
     volatile int complete;
     void *stack;
 };
 
-thread_local volatile static Coroutine *current = NULL;
-void Suspend();
-void Resume(Coroutine *this);
+thread_local volatile static coroutine *current_coroutine = NULL;
+void suspend();
+void resume(coroutine *this);
 
-Coroutine NewCoroutineOnStack(void (*routine)());
+coroutine *create_coroutine_on_heap(void (*routine)());
+coroutine create_coroutine_on_stack(void (*routine)());
 
-void SwitchToCaller(Coroutine *coroutine);
-void Setup(Coroutine *coroutine, void (*Trampoline)());
+void switch_to_caller(coroutine *coroutine);
+void setup(coroutine *coroutine, void (*Trampoline)());
 
-void FreeCoroutineOnStack(Coroutine *coroutine);
-void FreeCoroutineOnHeap(Coroutine *coroutine);
-
-#endif
+void free_coroutine_on_stack(coroutine *coroutine);
+void free_coroutine_on_heap(coroutine *coroutine);

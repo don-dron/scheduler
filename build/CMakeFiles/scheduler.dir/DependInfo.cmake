@@ -8,6 +8,8 @@ set(CMAKE_DEPENDS_CHECK_C
   "/home/dron/Рабочий стол/scheduler/scheduler/coroutine/coroutine.c" "/home/dron/Рабочий стол/scheduler/scheduler/build/CMakeFiles/scheduler.dir/coroutine/coroutine.c.o"
   "/home/dron/Рабочий стол/scheduler/scheduler/lockfree/stack/stack.c" "/home/dron/Рабочий стол/scheduler/scheduler/build/CMakeFiles/scheduler.dir/lockfree/stack/stack.c.o"
   "/home/dron/Рабочий стол/scheduler/scheduler/main.c" "/home/dron/Рабочий стол/scheduler/scheduler/build/CMakeFiles/scheduler.dir/main.c.o"
+  "/home/dron/Рабочий стол/scheduler/scheduler/scheduler/fiber.c" "/home/dron/Рабочий стол/scheduler/scheduler/build/CMakeFiles/scheduler.dir/scheduler/fiber.c.o"
+  "/home/dron/Рабочий стол/scheduler/scheduler/scheduler/scheduler.c" "/home/dron/Рабочий стол/scheduler/scheduler/build/CMakeFiles/scheduler.dir/scheduler/scheduler.c.o"
   )
 set(CMAKE_C_COMPILER_ID "Clang")
 
@@ -16,6 +18,7 @@ set(CMAKE_C_TARGET_INCLUDE_PATH
   "../context"
   "../coroutine"
   "../lockfree"
+  "../scheduler"
   )
 
 # Targets to which this target links.

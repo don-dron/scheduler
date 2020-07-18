@@ -49,8 +49,18 @@ testTree.h
 /home/dron/Рабочий стол/scheduler/scheduler/testTree.h
 lockfree/stack/stack.h
 /home/dron/Рабочий стол/scheduler/scheduler/lockfree/stack/stack.h
+scheduler/fiber.h
+/home/dron/Рабочий стол/scheduler/scheduler/scheduler/fiber.h
 pthread.h
 -
+
+/home/dron/Рабочий стол/scheduler/scheduler/scheduler/fiber.c
+fiber.h
+/home/dron/Рабочий стол/scheduler/scheduler/scheduler/fiber.h
+
+/home/dron/Рабочий стол/scheduler/scheduler/scheduler/fiber.h
+../context/context.h
+/home/dron/Рабочий стол/scheduler/scheduler/context/context.h
 
 /home/dron/Рабочий стол/scheduler/scheduler/testTree.h
 stdlib.h

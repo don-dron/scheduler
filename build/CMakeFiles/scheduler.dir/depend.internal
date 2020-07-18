@@ -15,4 +15,11 @@ CMakeFiles/scheduler.dir/main.c.o
  /home/dron/Рабочий стол/scheduler/scheduler/coroutine/coroutine.h
  /home/dron/Рабочий стол/scheduler/scheduler/lockfree/stack/stack.h
  /home/dron/Рабочий стол/scheduler/scheduler/main.c
+ /home/dron/Рабочий стол/scheduler/scheduler/scheduler/fiber.h
  /home/dron/Рабочий стол/scheduler/scheduler/testTree.h
+CMakeFiles/scheduler.dir/scheduler/fiber.c.o
+ /home/dron/Рабочий стол/scheduler/scheduler/context/context.h
+ /home/dron/Рабочий стол/scheduler/scheduler/scheduler/fiber.c
+ /home/dron/Рабочий стол/scheduler/scheduler/scheduler/fiber.h
+CMakeFiles/scheduler.dir/scheduler/scheduler.c.o
+ /home/dron/Рабочий стол/scheduler/scheduler/scheduler/scheduler.c

@@ -2,41 +2,40 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-struct Node;
-struct Head;
-struct LockFreeStack;
+struct stack_node;
+struct head;
+struct lf_stack;
 
-typedef struct Node Node;
-typedef struct Head Head;
-typedef struct LockFreeStack LockFreeStack;
+typedef struct stack_node stack_node;
+typedef struct head head;
+typedef struct lf_stack lf_stack;
 
-struct Node
+struct stack_node
 {
-    int data;
+    stack_node *next;
     size_t list_mutex;
-    Node *next;
 };
-struct Head
+struct head
 {
+    stack_node *next;
     size_t list_mutex;
-    Node *next;
 };
-struct LockFreeStack
+struct lf_stack
 {
+    head *head;
     size_t size;
-    Head *head;
 };
 
-Node *NewNode(int item, Node *next_node);
+stack_node *create_node(stack_node *next_node);
 
-Head *NewHead(Node *next_node);
+head *create_head(stack_node *next_node);
 
-LockFreeStack *NewStack();
+lf_stack *create_stack();
 
-void Push(LockFreeStack *stack, int item);
+void push(lf_stack *stack, stack_node *node);
 
-void Delete_nodes(LockFreeStack *stack);
+void free_nodes(lf_stack *stack);
 
-int Pop(LockFreeStack *stack, int *item);
+stack_node* pop(lf_stack *stack);
 
-void FreeStack(LockFreeStack *stack);
+void free_stack(lf_stack *stack);

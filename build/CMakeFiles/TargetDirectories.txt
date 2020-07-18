@@ -19,6 +19,8 @@
 /home/dron/Рабочий стол/scheduler/scheduler/build/CMakeFiles/Continuous.dir
 /home/dron/Рабочий стол/scheduler/scheduler/build/CMakeFiles/Nightly.dir
 /home/dron/Рабочий стол/scheduler/scheduler/build/CMakeFiles/NightlySubmit.dir
+/home/dron/Рабочий стол/scheduler/scheduler/build/CMakeFiles/NightlyStart.dir
+/home/dron/Рабочий стол/scheduler/scheduler/build/CMakeFiles/ExperimentalCoverage.dir
 /home/dron/Рабочий стол/scheduler/scheduler/build/CMakeFiles/NightlyCoverage.dir
 /home/dron/Рабочий стол/scheduler/scheduler/build/CMakeFiles/ExperimentalStart.dir
 /home/dron/Рабочий стол/scheduler/scheduler/build/CMakeFiles/package.dir
@@ -29,6 +31,4 @@
 /home/dron/Рабочий стол/scheduler/scheduler/build/CMakeFiles/ContinuousMemCheck.dir
 /home/dron/Рабочий стол/scheduler/scheduler/build/CMakeFiles/ContinuousTest.dir
 /home/dron/Рабочий стол/scheduler/scheduler/build/CMakeFiles/ContinuousSubmit.dir
-/home/dron/Рабочий стол/scheduler/scheduler/build/CMakeFiles/NightlyStart.dir
-/home/dron/Рабочий стол/scheduler/scheduler/build/CMakeFiles/ExperimentalCoverage.dir
-/home/dron/Рабочий стол/scheduler/scheduler/build/CMakeFiles/scheduler.dir
+/home/dron/Рабочий стол/scheduler/scheduler/build/CMakeFiles/Scheduler.dir

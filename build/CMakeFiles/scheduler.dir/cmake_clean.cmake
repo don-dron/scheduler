@@ -3,6 +3,8 @@ file(REMOVE_RECURSE
   "CMakeFiles/scheduler.dir/coroutine/coroutine.c.o"
   "CMakeFiles/scheduler.dir/lockfree/stack/stack.c.o"
   "CMakeFiles/scheduler.dir/main.c.o"
+  "CMakeFiles/scheduler.dir/scheduler/fiber.c.o"
+  "CMakeFiles/scheduler.dir/scheduler/scheduler.c.o"
   "scheduler"
   "scheduler.pdb"
 )

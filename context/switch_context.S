@@ -4,12 +4,12 @@
   #define FUNCTION_NAME(name) name
 #endif
 
-    .global FUNCTION_NAME(SwitchContext)
+.global FUNCTION_NAME(switch_context)
 
-# SwitchContext(from, to)
 
-FUNCTION_NAME(SwitchContext):
-pushq %r15
+FUNCTION_NAME(switch_context):
+    
+    pushq %r15
     pushq %r14
     pushq %r13
     pushq %r12
