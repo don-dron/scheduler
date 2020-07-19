@@ -13,6 +13,12 @@ typedef struct execution_context execution_context;
 struct stack_saved_context;
 typedef struct stack_saved_context stack_saved_context;
 
+struct stack;
+typedef struct stack stack;
+
+struct stack_builder;
+typedef struct stack_builder stack_builder;
+
 struct execution_context
 {
   void *rsp;
@@ -31,17 +37,11 @@ struct stack_saved_context
   void *rip;
 };
 
-extern unsigned long switch_context(execution_context *from, execution_context *to);
-
 struct stack
 {
   void *memory;
   size_t size;
 };
-
-typedef struct stack stack;
-
-char *bottom(stack *stack);
 
 struct stack_builder
 {
@@ -49,22 +49,10 @@ struct stack_builder
   char *top;
 };
 
-typedef struct stack_builder stack_builder;
+extern unsigned long switch_context(execution_context *from, execution_context *to);
 
-static void AlignNextPush(stack_builder *builder, size_t alignment)
-{
-  size_t shift = (size_t)(builder->top - builder->word_size) % alignment;
-  builder->top -= shift;
-}
+void AlignNextPush(stack_builder *builder, size_t alignment);
 
-static void Allocate(stack_builder *builder, size_t bytes)
-{
-  builder->top -= bytes;
-}
+void Allocate(stack_builder *builder, size_t bytes);
 
-static size_t PagesToBytes(size_t count)
-{
-  static const size_t kPageSize = 4096;
-
-  return count * kPageSize;
-}
+size_t PagesToBytes(size_t count);
