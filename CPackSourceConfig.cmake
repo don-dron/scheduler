@@ -41,7 +41,7 @@ set(CPACK_IGNORE_FILES "/CVS/;/\\.svn/;/\\.bzr/;/\\.hg/;/\\.git/;\\.swp\$;\\.#;/
 set(CPACK_INSTALLED_DIRECTORIES "/home/dron/Рабочий стол/scheduler/scheduler;/")
 set(CPACK_INSTALL_CMAKE_PROJECTS "")
 set(CPACK_INSTALL_PREFIX "/usr/local")
-set(CPACK_MODULE_PATH "")
+set(CPACK_MODULE_PATH "/home/dron/Рабочий стол/scheduler/scheduler/cmake/")
 set(CPACK_NSIS_DISPLAY_NAME "Scheduler 0.1.0")
 set(CPACK_NSIS_INSTALLER_ICON_CODE "")
 set(CPACK_NSIS_INSTALLER_MUI_ICON_CODE "")
