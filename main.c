@@ -13,6 +13,8 @@
 #include "lockfree/list/list.h"
 #include "scheduler/fiber.h"
 #include "scheduler/scheduler.h"
+#include <time.h>
+#include <sys/time.h>
 
 int step = 0;
 
@@ -346,9 +348,15 @@ int atom = 0;
 
 void c()
 {
+    yield();
+    __atomic_fetch_add(&atom, 1, __ATOMIC_SEQ_CST);
+    yield();
+    sum++;
+    yield();
     sum++;
     yield();
     __atomic_fetch_add(&atom, 1, __ATOMIC_SEQ_CST);
+    yield();
 }
 
 void func()
@@ -378,7 +386,6 @@ int main()
     // list_test();
 
     new_scheduler();
-    run_scheduler();
 
     for (int i = 0; i < 100; i++)
     {
@@ -390,8 +397,18 @@ int main()
         spawn(func);
     }
 
+    struct timeval stop, start;
+    gettimeofday(&start, NULL);
+
+    run_scheduler();
     terminate_scheduler();
 
+    gettimeofday(&stop, NULL);
+
+    unsigned long delta_us = (stop.tv_sec - start.tv_sec) * 1000000 + (stop.tv_usec - start.tv_usec);
+
+    printf("Time microseconds %ld , milliseconds %ld\n",
+           delta_us, delta_us / 1000);
     printf("atomic %d sum %d\n", atom, sum);
     return 0;
 }
