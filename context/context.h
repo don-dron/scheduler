@@ -16,7 +16,6 @@ typedef struct stack_saved_context stack_saved_context;
 struct execution_context
 {
   void *rsp;
-  void *stack;
 };
 
 struct stack_saved_context

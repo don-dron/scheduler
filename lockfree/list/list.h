@@ -22,7 +22,7 @@ struct list
 
 typedef struct list list;
 
-list *create_list()
+static list *create_list()
 {
     list *lst = (list *)malloc(sizeof(list));
     lst->start = 0;
@@ -36,7 +36,7 @@ list *create_list()
     return lst;
 }
 
-void push_back(list *lst, list_node *node)
+static void push_back(list *lst, list_node *node)
 {
     lock_spinlock(&lst->lock);
 
@@ -63,7 +63,7 @@ void push_back(list *lst, list_node *node)
     unlock_spinlock(&lst->lock);
 }
 
-void push_front(list *lst, list_node *node)
+static void push_front(list *lst, list_node *node)
 {
     lock_spinlock(&lst->lock);
     if (lst->size == 0)
@@ -88,7 +88,7 @@ void push_front(list *lst, list_node *node)
     unlock_spinlock(&lst->lock);
 }
 
-list_node *pop_back(list *lst)
+static list_node *pop_back(list *lst)
 {
     lock_spinlock(&lst->lock);
     if (lst->size == 0)
@@ -116,7 +116,7 @@ list_node *pop_back(list *lst)
     }
 }
 
-list_node *pop_front(list *lst)
+static list_node *pop_front(list *lst)
 {
     lock_spinlock(&lst->lock);
     if (lst->size == 0)
@@ -144,7 +144,7 @@ list_node *pop_front(list *lst)
     }
 }
 
-void free_list(list *lst)
+static void free_list(list *lst)
 {
     lock_spinlock(&lst->lock);
 
