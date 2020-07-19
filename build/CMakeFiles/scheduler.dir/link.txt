@@ -1,1 +1,0 @@
-/bin/clang-10 -g   CMakeFiles/scheduler.dir/main.c.o CMakeFiles/scheduler.dir/coroutine/coroutine.c.o CMakeFiles/scheduler.dir/context/switch_context.S.o CMakeFiles/scheduler.dir/lockfree/stack/stack.c.o CMakeFiles/scheduler.dir/scheduler/fiber.c.o CMakeFiles/scheduler.dir/scheduler/scheduler.c.o  -o scheduler  -pthread 
