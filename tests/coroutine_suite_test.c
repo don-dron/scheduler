@@ -18,28 +18,6 @@
 
 int step = 0;
 
-struct TreeNode;
-typedef struct TreeNode TreeNode;
-
-struct TreeNode
-{
-    TreeNode *left_;
-    TreeNode *right_;
-};
-
-TreeNode *Create(TreeNode *left, TreeNode *right)
-{
-    TreeNode *treeNode = (TreeNode *)malloc(sizeof(TreeNode));
-    treeNode->left_ = left;
-    treeNode->right_ = right;
-    return treeNode;
-}
-
-TreeNode *CreateLeaf()
-{
-    return (TreeNode *)malloc(sizeof(TreeNode));
-}
-
 void test1Foo()
 {
     assert(step == 0);
@@ -155,52 +133,6 @@ void test3()
     printf("%d == %d\n", inner_step_count, kSteps);
 
     free_coroutine_on_stack(&second);
-}
-
-void TreeWalk(TreeNode *node)
-{
-    if (node->left_)
-    {
-        TreeWalk(node->left_);
-    }
-    suspend();
-    if (node->right_)
-    {
-        TreeWalk(node->right_);
-    }
-}
-TreeNode *root;
-
-void walk()
-{
-    TreeWalk(root);
-}
-
-void treeTest()
-{
-    root = Create(
-        CreateLeaf(),
-        Create(
-            Create(CreateLeaf(), CreateLeaf()),
-            CreateLeaf()));
-
-    coroutine walker = create_coroutine_on_stack(walk);
-
-    size_t node_count = 0;
-
-    while (1)
-    {
-        resume(&walker);
-        if (walker.complete)
-        {
-            break;
-        }
-        ++node_count;
-    }
-
-    assert(node_count == 7);
-
-    free_coroutine_on_stack(&walker);
 }
 
 lf_stack *results;
@@ -392,20 +324,19 @@ void func()
 
 int main()
 {
-    // printf("Start\n");
-    // test1();
-    // printf("Test 1 \n");
-    // test2();
-    // printf("Test 2 \n");
-    // test3();
-    // printf("Test 3 \n");
-    // // treeTest();
-    // printf("Test 4 \n");
+    printf("Start\n");
+    test1();
+    printf("Test 1 \n");
+    test2();
+    printf("Test 2 \n");
+    test3();
+    printf("Test 3 \n");
+    printf("Test 4 \n");
 
-    // stack_test();
+    stack_test();
 
-    // list_test1();
-    // list_test();
+    list_test1();
+    list_test();
 
     new_scheduler();
 
@@ -432,5 +363,5 @@ int main()
     printf("Time microseconds %ld , milliseconds %ld\n",
            delta_us, delta_us / 1000);
     printf("atomic %d sum %d\n", atom, sum);
-    return 0;
+    return EXIT_SUCCESS;
 }
