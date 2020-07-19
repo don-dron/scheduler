@@ -2,7 +2,7 @@
 
 #include <threads.h>
 
-#include <context.h>
+#include <scheduler/context.h>
 
 enum fiber_state
 {

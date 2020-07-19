@@ -1,6 +1,6 @@
 #pragma once
 
-#include <thin_heap.h>
+#include <structures/thin_heap.h>
 
 int is_thin_node(thin_node *node)
 {

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <scheduler.h>
+#include <scheduler/scheduler.h>
 
 struct thread_node;
 typedef struct thread_node thread_node;

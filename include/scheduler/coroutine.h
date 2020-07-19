@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <threads.h>
 
-#include <context.h>
+#include <scheduler/context.h>
 
 struct coroutine;
 typedef struct coroutine coroutine;

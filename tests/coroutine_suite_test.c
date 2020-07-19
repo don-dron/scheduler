@@ -8,13 +8,7 @@
 #include <time.h>
 #include <sys/time.h>
 
-#include <context.h>
-#include <coroutine.h>
-#include <lf_stack.h>
-#include <fiber.h>
-#include <thin_heap.h>
-#include <list.h>
-#include <scheduler.h>
+#include <scheduler/coroutine.h>
 
 int step = 0;
 
@@ -86,7 +80,7 @@ const int kSteps = 123;
 
 int inner_step_count = 0;
 
-void kek()
+void nop()
 {
     // nop
 }
@@ -95,7 +89,7 @@ void test3Foo()
 {
     for (int i = 0; i < 123; ++i)
     {
-        coroutine first = create_coroutine_on_stack(kek);
+        coroutine first = create_coroutine_on_stack(nop);
         resume(&first);
         ++inner_step_count;
         suspend();
