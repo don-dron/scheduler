@@ -1,3 +1,5 @@
+#pragma once
+
 #include <scheduler.h>
 
 struct thread_node;

@@ -1,3 +1,5 @@
+#pragma once
+
 #include <fiber.h>
 
 extern thread_local fiber *current_fiber = 0;

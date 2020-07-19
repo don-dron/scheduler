@@ -6,12 +6,13 @@ set_property(SOURCE switch_context.S PROPERTY LANGUAGE C)
 project(lib_scheduler)		
 
 set(SOURCE_LIB 
- 
+    context.c
     coroutine.c 
     fiber.c
     lf_stack.c 
+    list.c
     scheduler.c
-    
+    spinlock.c
     switch_context.S
     thin_heap.c  )
 
