@@ -1,0 +1,37 @@
+[
+{
+  "directory": "/home/dron/Рабочий стол/scheduler/scheduler/build/src",
+  "command": "/bin/clang-10  -I\"/home/dron/Рабочий стол/scheduler/scheduler/include\"  -g   -o CMakeFiles/lib_scheduler.dir/coroutine.c.o   -c \"/home/dron/Рабочий стол/scheduler/scheduler/src/coroutine.c\"",
+  "file": "/home/dron/Рабочий стол/scheduler/scheduler/src/coroutine.c"
+},
+{
+  "directory": "/home/dron/Рабочий стол/scheduler/scheduler/build/src",
+  "command": "/bin/clang-10  -I\"/home/dron/Рабочий стол/scheduler/scheduler/include\"  -g   -o CMakeFiles/lib_scheduler.dir/fiber.c.o   -c \"/home/dron/Рабочий стол/scheduler/scheduler/src/fiber.c\"",
+  "file": "/home/dron/Рабочий стол/scheduler/scheduler/src/fiber.c"
+},
+{
+  "directory": "/home/dron/Рабочий стол/scheduler/scheduler/build/src",
+  "command": "/bin/clang-10  -I\"/home/dron/Рабочий стол/scheduler/scheduler/include\"  -g   -o CMakeFiles/lib_scheduler.dir/lf_stack.c.o   -c \"/home/dron/Рабочий стол/scheduler/scheduler/src/lf_stack.c\"",
+  "file": "/home/dron/Рабочий стол/scheduler/scheduler/src/lf_stack.c"
+},
+{
+  "directory": "/home/dron/Рабочий стол/scheduler/scheduler/build/src",
+  "command": "/bin/clang-10  -I\"/home/dron/Рабочий стол/scheduler/scheduler/include\"  -g   -o CMakeFiles/lib_scheduler.dir/scheduler.c.o   -c \"/home/dron/Рабочий стол/scheduler/scheduler/src/scheduler.c\"",
+  "file": "/home/dron/Рабочий стол/scheduler/scheduler/src/scheduler.c"
+},
+{
+  "directory": "/home/dron/Рабочий стол/scheduler/scheduler/build/src",
+  "command": "/bin/clang-10  -I\"/home/dron/Рабочий стол/scheduler/scheduler/include\"  -g   -o CMakeFiles/lib_scheduler.dir/switch_context.S.o   -c \"/home/dron/Рабочий стол/scheduler/scheduler/src/switch_context.S\"",
+  "file": "/home/dron/Рабочий стол/scheduler/scheduler/src/switch_context.S"
+},
+{
+  "directory": "/home/dron/Рабочий стол/scheduler/scheduler/build/src",
+  "command": "/bin/clang-10  -I\"/home/dron/Рабочий стол/scheduler/scheduler/include\"  -g   -o CMakeFiles/lib_scheduler.dir/thin_heap.c.o   -c \"/home/dron/Рабочий стол/scheduler/scheduler/src/thin_heap.c\"",
+  "file": "/home/dron/Рабочий стол/scheduler/scheduler/src/thin_heap.c"
+},
+{
+  "directory": "/home/dron/Рабочий стол/scheduler/scheduler/build/tests",
+  "command": "/bin/clang-10  -I\"/home/dron/Рабочий стол/scheduler/scheduler/include\"  -g   -pthread -o CMakeFiles/test_main.dir/main.c.o   -c \"/home/dron/Рабочий стол/scheduler/scheduler/tests/main.c\"",
+  "file": "/home/dron/Рабочий стол/scheduler/scheduler/tests/main.c"
+}
+]
