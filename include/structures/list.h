@@ -2,7 +2,7 @@
 
 #include <stdlib.h>
 
-#include <spinlock.h>
+#include <locks/spinlock.h>
 
 struct list_node;
 typedef struct list_node list_node;

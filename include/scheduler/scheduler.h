@@ -6,8 +6,8 @@
 #include <threads.h>
 #include <stdlib.h>
 
-#include <fiber.h>
-#include <list.h>
+#include <scheduler/fiber.h>
+#include <structures/list.h>
 
 struct scheduler;
 typedef struct scheduler scheduler;

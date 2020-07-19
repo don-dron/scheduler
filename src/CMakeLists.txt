@@ -1,19 +1,11 @@
-set(CAN_USE_ASSEMBLER TRUE)
-enable_language(ASM)
-set_property(SOURCE switch_context.S PROPERTY LANGUAGE C)
-
-
 project(lib_scheduler)		
 
-set(SOURCE_LIB 
-    context.c
-    coroutine.c 
-    fiber.c
-    lf_stack.c 
-    list.c
-    scheduler.c
-    spinlock.c
-    switch_context.S
-    thin_heap.c  )
+add_subdirectory(locks)
+add_subdirectory(scheduler)
+add_subdirectory(structures)
+
+set(SOURCE_LIB default.c)
 
 add_library(lib_scheduler STATIC ${SOURCE_LIB})
+
+target_link_libraries (lib_scheduler LINK_PUBLIC locks scheduler structures)

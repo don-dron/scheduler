@@ -8,13 +8,7 @@
 #include <time.h>
 #include <sys/time.h>
 
-#include <context.h>
-#include <coroutine.h>
-#include <lf_stack.h>
-#include <fiber.h>
-#include <thin_heap.h>
-#include <list.h>
-#include <scheduler.h>
+#include <structures/list.h>
 
 list *lst;
 

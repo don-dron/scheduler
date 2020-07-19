@@ -1,6 +1,6 @@
 #pragma once
 
-#include <spinlock.h>
+#include <locks/spinlock.h>
 
 void lock_spinlock(spinlock *spin_lock)
 {

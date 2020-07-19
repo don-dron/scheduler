@@ -8,13 +8,7 @@
 #include <time.h>
 #include <sys/time.h>
 
-#include <context.h>
-#include <coroutine.h>
-#include <lf_stack.h>
-#include <fiber.h>
-#include <thin_heap.h>
-#include <list.h>
-#include <scheduler.h>
+#include <scheduler/scheduler.h>
 
 int sum = 0;
 int atom = 0;

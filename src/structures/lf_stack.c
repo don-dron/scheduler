@@ -1,6 +1,6 @@
 #pragma once
 
-#include <lf_stack.h>
+#include <structures/lf_stack.h>
 
 stack_node *create_node(stack_node *next_node)
 {

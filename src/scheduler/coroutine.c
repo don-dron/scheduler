@@ -1,6 +1,6 @@
 #pragma once
 
-#include <coroutine.h>
+#include <scheduler/coroutine.h>
 
 void suspend()
 {
