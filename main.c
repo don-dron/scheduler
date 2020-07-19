@@ -11,6 +11,8 @@
 #include "scheduler/fiber.h"
 #include <pthread.h>
 #include "lockfree/list/list.h"
+#include "scheduler/fiber.h"
+#include "scheduler/scheduler.h"
 
 int step = 0;
 
@@ -301,7 +303,6 @@ void list_test()
     int i;
 
     pthread_t threads[nthreads];
-    printf("Using %d thread%s.\n", nthreads, nthreads == 1 ? "" : "s");
     for (i = 0; i < nthreads; i++)
         pthread_create(threads + i, NULL, list_worker, NULL);
 
@@ -340,21 +341,57 @@ void list_test1()
     free_list(lst);
 }
 
+int sum = 0;
+int atom = 0;
+
+void c()
+{
+    sum++;
+    yield();
+    __atomic_fetch_add(&atom, 1, __ATOMIC_SEQ_CST);
+}
+
+void func()
+{
+    for (int i = 0; i < 100; i++)
+    {
+        submit(c);
+        yield();
+    }
+}
+
 int main()
 {
-    printf("Start\n");
-    test1();
-    printf("Test 1 \n");
-    test2();
-    printf("Test 2 \n");
-    test3();
-    printf("Test 3 \n");
-    // treeTest();
-    printf("Test 4 \n");
+    // printf("Start\n");
+    // test1();
+    // printf("Test 1 \n");
+    // test2();
+    // printf("Test 2 \n");
+    // test3();
+    // printf("Test 3 \n");
+    // // treeTest();
+    // printf("Test 4 \n");
 
-    stack_test();
+    // stack_test();
 
-    list_test1();
-    list_test();
+    // list_test1();
+    // list_test();
+
+    new_scheduler();
+    run_scheduler();
+
+    for (int i = 0; i < 100; i++)
+    {
+        spawn(func);
+        spawn(func);
+        spawn(func);
+        spawn(func);
+        spawn(func);
+        spawn(func);
+    }
+
+    terminate_scheduler();
+
+    printf("atomic %d sum %d\n", atom, sum);
     return 0;
 }

@@ -53,7 +53,7 @@ void setup(coroutine *coroutine_, void (*trampoline)())
     //   0
     stackBuilder.top = start + STACK_SIZE - 1;
 
-    // Machine word size, usually 8 bytes
+    // Machine word size, usually 8 bytes(x86)
     stackBuilder.word_size = sizeof(void *);
 
     // For rbp register(shift 16 bytes)
@@ -118,11 +118,11 @@ void switch_to_caller(coroutine *coroutine_)
 
 void free_coroutine_on_stack(coroutine *coroutine_)
 {
-    munmap(coroutine_->routine_context.stack, STACK_SIZE);
+    munmap(coroutine_->stack, STACK_SIZE);
 }
 
 void free_coroutine_on_heap(coroutine *coroutine_)
 {
-    munmap(coroutine_->routine_context.stack, STACK_SIZE);
+    munmap(coroutine_->stack, STACK_SIZE);
     free(coroutine_);
 }
