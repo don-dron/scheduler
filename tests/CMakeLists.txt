@@ -35,16 +35,16 @@ set_tests_properties(Lock_Free_Stack_Tests PROPERTIES TIMEOUT ${TIMEOUT})
 
 
 ######################################
-# Free list test.
+# List test.
 ######################################
 
 
-add_executable(free_list_test free_list_test.c)
-add_dependencies(free_list_test lib_scheduler)
-target_link_libraries(free_list_test PRIVATE Threads::Threads lib_scheduler)
-add_test(NAME Free_List_Tests COMMAND free_list_test)
+add_executable(list_test list_test.c)
+add_dependencies(list_test lib_scheduler)
+target_link_libraries(list_test PRIVATE Threads::Threads lib_scheduler)
+add_test(NAME List_Tests COMMAND list_test)
 
-set_tests_properties(Free_List_Tests PROPERTIES TIMEOUT ${TIMEOUT})
+set_tests_properties(List_Tests PROPERTIES TIMEOUT ${TIMEOUT})
 
 
 

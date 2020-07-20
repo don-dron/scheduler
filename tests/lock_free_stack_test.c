@@ -14,7 +14,7 @@ lf_stack *results;
 
 struct stack_data_node
 {
-    stack_node lst_node;
+    lf_stack_node lst_node;
     int data;
 };
 typedef struct stack_data_node stack_data_node;
@@ -35,11 +35,11 @@ void *worker(void *arg)
             stackNode->data = j;
             stackNode->lst_node.list_mutex = 0;
 
-            push(results, stackNode);
+            push_lf_stack(results, stackNode);
         }
         for (int j = 0; j < 100; j++)
         {
-            stack_data_node *node = pop(results);
+            stack_data_node *node = pop_lf_stack(results);
             if (node != 0)
             {
                 free(node);
@@ -54,7 +54,7 @@ void *worker(void *arg)
 
 void stack_test()
 {
-    results = create_stack();
+    results = create_lf_stack();
     int nthreads = sysconf(_SC_NPROCESSORS_ONLN);
     int i;
 
@@ -69,7 +69,7 @@ void stack_test()
     printf("Size = %d\n", results->size);
     assert(results->size == 0);
 
-    free_stack(results);
+    free_lf_stack(results);
 }
 
 int main()

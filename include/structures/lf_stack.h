@@ -3,40 +3,40 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-struct stack_node;
-struct head;
+struct lf_stack_node;
+struct lf_stack_head;
 struct lf_stack;
 
-typedef struct stack_node stack_node;
-typedef struct head head;
+typedef struct lf_stack_node lf_stack_node;
+typedef struct lf_stack_head lf_stack_head;
 typedef struct lf_stack lf_stack;
 
-struct stack_node
+struct lf_stack_node
 {
-    stack_node *next;
+    lf_stack_node *next;
     size_t list_mutex;
 };
-struct head
+struct lf_stack_head
 {
-    stack_node *next;
+    lf_stack_node *next;
     size_t list_mutex;
 };
 struct lf_stack
 {
-    head *head;
+    lf_stack_head *head;
     size_t size;
 };
 
-stack_node *create_node(stack_node *next_node);
+lf_stack_node *create_lf_stack_node(lf_stack_node *next_node);
 
-head *create_head(stack_node *next_node);
+lf_stack_head *create_lf_stack_head(lf_stack_node *next_node);
 
-lf_stack *create_stack();
+lf_stack *create_lf_stack();
 
-void push(lf_stack *stack, stack_node *node);
+void push_lf_stack(lf_stack *stack, lf_stack_node *node);
 
-void free_nodes(lf_stack *stack);
+void free_lf_stack_nodes(lf_stack *stack);
 
-stack_node* pop(lf_stack *stack);
+lf_stack_node* pop_lf_stack(lf_stack *stack);
 
-void free_stack(lf_stack *stack);
+void free_lf_stack(lf_stack *stack);
