@@ -23,6 +23,7 @@ lf_stack *create_lf_stack()
     lf_stack *lockFreeStack = (lf_stack *)malloc(sizeof(lf_stack));
     lockFreeStack->head = create_lf_stack_head(0);
     lockFreeStack->head->next = 0;
+    lockFreeStack->size = 0;
     return lockFreeStack;
 }
 

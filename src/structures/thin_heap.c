@@ -104,7 +104,7 @@ thin_node *extract_min_thin_heap(thin_heap *heap)
         }
         node->left = 0;
         next = node->right;
-        insert(heap, node);
+        insert_to_thin_heap(heap, node);
         node = next;
     }
 
@@ -125,8 +125,10 @@ thin_node *extract_min_thin_heap(thin_heap *heap)
         {
             next = node->right;
             if (heap->comparator(aux[node->rank], node))
-            {
-                swap(aux[node->rank], node);
+            {   
+                thin_node* temp = aux[node->rank];
+                aux[node->rank] = node;
+                node = temp;
             }
             aux[node->rank]->right = node->child;
             node->child->left = aux[node->rank];
@@ -147,7 +149,7 @@ thin_node *extract_min_thin_heap(thin_heap *heap)
     int i = 0;
     while (i <= max)
     {
-        insert(heap, aux[i]);
+        insert_to_thin_heap(heap, aux[i]);
         i = i + 1;
     }
     return result;

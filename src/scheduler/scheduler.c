@@ -18,10 +18,9 @@ struct fiber_node
     fiber *fib;
 };
 
-void free_fiber(fiber *fiber_)
+void return_to_queue(fiber_node *node, int thread_index)
 {
-    munmap(fiber_->stack, STACK_SIZE);
-    free(fiber_);
+    list_push_back(current_scheduler->queues[(thread_index + current_scheduler->threads - 1) % current_scheduler->threads], (list_node *)node);
 }
 
 void run_task(fiber *routine, int t)
@@ -34,7 +33,7 @@ void run_task(fiber *routine, int t)
     {
         fiber_node *fib_node = (fiber_node *)malloc(sizeof(fiber_node));
         fib_node->fib = current_fiber;
-        list_push_back(current_scheduler->queues[(t + current_scheduler->threads - 1) % current_scheduler->threads], (list_node *)fib_node);
+        return_to_queue(fib_node, t);
     }
     else
     {
@@ -146,11 +145,8 @@ void run_scheduler()
     current_scheduler->threads_run = 1;
 }
 
-fiber *insert_fiber(fiber_routine routine)
+void insert_to_minimum_queue(fiber *fib)
 {
-    fiber *fib = create_fiber(routine);
-    __atomic_fetch_add(&current_scheduler->count, 1, __ATOMIC_SEQ_CST);
-
     int index = 0;
     int threads = current_scheduler->threads;
 
@@ -165,6 +161,14 @@ fiber *insert_fiber(fiber_routine routine)
     fiber_node *fib_node = (fiber_node *)malloc(sizeof(fiber_node));
     fib_node->fib = fib;
     list_push_back(current_scheduler->queues[index], (list_node *)fib_node);
+}
+
+fiber *insert_fiber(fiber_routine routine)
+{
+    fiber *fib = create_fiber(routine);
+    __atomic_fetch_add(&current_scheduler->count, 1, __ATOMIC_SEQ_CST);
+
+    insert_to_minimum_queue(fib);
 
     return fib;
 }
@@ -172,6 +176,31 @@ fiber *insert_fiber(fiber_routine routine)
 void spawn(fiber_routine routine)
 {
     insert_fiber(routine);
+}
+
+void switch_to_scheduler(fiber *fib)
+{
+    fiber *next = fib;
+
+    while (next->parent)
+    {
+        next = next->parent;
+    }
+
+    switch_context(&fib->context, &next->external_context);
+}
+
+void sleep_for(unsigned long duration)
+{
+    fiber *fib = current_fiber;
+    fib->state = sleeping;
+
+    {
+        fib->state = runnable;
+        insert_to_minimum_queue(fib);
+    }
+
+    switch_to_scheduler(current_fiber);
 }
 
 void submit(fiber_routine routine)

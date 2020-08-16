@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stdlib.h>
+
 struct thin_node;
 typedef struct thin_node thin_node;
 

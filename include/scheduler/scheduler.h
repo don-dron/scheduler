@@ -35,4 +35,5 @@ void spawn(fiber_routine routine);
 void yield();
 void terminate_scheduler();
 void shutdown();
+void sleep_for(unsigned long duration);
 void notify_workers();

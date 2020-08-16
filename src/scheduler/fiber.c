@@ -16,6 +16,7 @@ fiber *create_fiber(fiber_routine routine)
     new_fiber->id = GenerateId();
     new_fiber->routine = routine;
     new_fiber->state = starting;
+    new_fiber->parent = current_fiber;
 
     setup_trampoline(new_fiber);
 
@@ -33,6 +34,12 @@ void fiber_trampoline()
     current_fiber->state = terminated;
 
     switch_context(&current_fiber->context, &current_fiber->external_context);
+}
+
+void free_fiber(fiber *fiber_)
+{
+    munmap(fiber_->stack, STACK_SIZE);
+    free(fiber_);
 }
 
 void setup_trampoline(fiber *new_fiber)

@@ -9,6 +9,7 @@ enum fiber_state
     starting,
     runnable,
     running,
+    sleeping,
     suspended,
     terminated
 };
@@ -24,6 +25,7 @@ struct fiber
     execution_context context;
     fiber_state state;
     fiber_routine routine;
+    struct fiber* parent;
     unsigned long id;
 };
 
@@ -31,4 +33,5 @@ typedef struct fiber fiber;
 extern thread_local fiber *current_fiber;
 
 fiber *create_fiber(fiber_routine routine);
+void free_fiber(fiber *fiber_);
 void setup_trampoline(fiber *fiber);
