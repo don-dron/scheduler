@@ -70,3 +70,16 @@ target_link_libraries(sleep_test.test PRIVATE Threads::Threads lib_scheduler)
 add_test(NAME Sleep_Tests COMMAND sleep_test.test)
 
 set_tests_properties(Sleep_Tests PROPERTIES TIMEOUT ${TIMEOUT})
+
+
+######################################
+# Multiply schedulers
+######################################
+
+
+add_executable(multiply_scheduler.test multiply_scheduler_test.c)
+add_dependencies(multiply_scheduler.test lib_scheduler)
+target_link_libraries(multiply_scheduler.test PRIVATE Threads::Threads lib_scheduler)
+add_test(NAME Multiply_Schedulers COMMAND multiply_scheduler.test)
+
+set_tests_properties(Multiply_Schedulers PROPERTIES TIMEOUT ${TIMEOUT})

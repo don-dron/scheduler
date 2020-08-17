@@ -14,22 +14,23 @@ typedef struct scheduler
     size_t threads;
     list **queues;
     list *threads_pool;
-    int threads_run;
-    int end_threads;
+    int threads_running;
+    int terminate;
     size_t count;
-    size_t task_now;
     spinlock lock_spinlock;
 } scheduler;
 
-static scheduler *current_scheduler;
+static thread_local scheduler *current_scheduler;
 static thread_local size_t number;
 
-void new_scheduler();
+scheduler *new_default_scheduler();
+scheduler *new_scheduler(unsigned int using_threads);
+
 void run_scheduler();
 
-fiber* submit(fiber_routine routine);
-fiber* spawn(fiber_routine routine);
-void join(fiber* fib);
+fiber *submit(fiber_routine routine);
+fiber *spawn(scheduler *sched, fiber_routine routine);
+void join(fiber *fib);
 void yield();
 void terminate_scheduler();
 void shutdown();

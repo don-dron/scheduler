@@ -37,23 +37,23 @@ void func()
 
 int main()
 {
-    new_scheduler();
+    scheduler *sched = new_default_scheduler();
 
     for (int i = 0; i < 100; i++)
     {
-        spawn(func);
-        spawn(func);
-        spawn(func);
-        spawn(func);
-        spawn(func);
-        spawn(func);
+        spawn(sched, func);
+        spawn(sched, func);
+        spawn(sched, func);
+        spawn(sched, func);
+        spawn(sched, func);
+        spawn(sched, func);
     }
 
     struct timeval stop, start;
     gettimeofday(&start, NULL);
 
-    run_scheduler();
-    terminate_scheduler();
+    run_scheduler(sched);
+    terminate_scheduler(sched);
 
     print_statistic();
     assert(atom == 120000);
