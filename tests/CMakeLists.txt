@@ -12,10 +12,10 @@ set(TIMEOUT 40)
 # Coroutine test, switch context test.
 ######################################
 
-add_executable(coroutine_suite_test coroutine_suite_test.c)
-add_dependencies(coroutine_suite_test lib_scheduler)
-target_link_libraries(coroutine_suite_test PRIVATE Threads::Threads lib_scheduler)
-add_test(NAME Coroutine_Test COMMAND coroutine_suite_test)
+add_executable(coroutine_suite_test.test coroutine_suite_test.c)
+add_dependencies(coroutine_suite_test.test lib_scheduler)
+target_link_libraries(coroutine_suite_test.test PRIVATE Threads::Threads lib_scheduler)
+add_test(NAME Coroutine_Test COMMAND coroutine_suite_test.test)
 
 set_tests_properties(Coroutine_Test PROPERTIES TIMEOUT ${TIMEOUT})
 
@@ -25,28 +25,25 @@ set_tests_properties(Coroutine_Test PROPERTIES TIMEOUT ${TIMEOUT})
 ######################################
 
 
-add_executable(lock_free_stack_test lock_free_stack_test.c)
-add_dependencies(lock_free_stack_test lib_scheduler)
-target_link_libraries(lock_free_stack_test PRIVATE Threads::Threads lib_scheduler)
-add_test(NAME Lock_Free_Stack_Tests COMMAND lock_free_stack_test)
+add_executable(lock_free_stack_test.test lock_free_stack_test.c)
+add_dependencies(lock_free_stack_test.test lib_scheduler)
+target_link_libraries(lock_free_stack_test.test PRIVATE Threads::Threads lib_scheduler)
+add_test(NAME Lock_Free_Stack_Tests COMMAND lock_free_stack_test.test)
 
 set_tests_properties(Lock_Free_Stack_Tests PROPERTIES TIMEOUT ${TIMEOUT})
 
 
-
 ######################################
-# Free list test.
+# List test.
 ######################################
 
 
-add_executable(free_list_test free_list_test.c)
-add_dependencies(free_list_test lib_scheduler)
-target_link_libraries(free_list_test PRIVATE Threads::Threads lib_scheduler)
-add_test(NAME Free_List_Tests COMMAND free_list_test)
+add_executable(list_test.test list_test.c)
+add_dependencies(list_test.test lib_scheduler)
+target_link_libraries(list_test.test PRIVATE Threads::Threads lib_scheduler)
+add_test(NAME List_Tests COMMAND list_test.test)
 
-set_tests_properties(Free_List_Tests PROPERTIES TIMEOUT ${TIMEOUT})
-
-
+set_tests_properties(List_Tests PROPERTIES TIMEOUT ${TIMEOUT})
 
 
 ######################################
@@ -54,11 +51,22 @@ set_tests_properties(Free_List_Tests PROPERTIES TIMEOUT ${TIMEOUT})
 ######################################
 
 
-add_executable(scheduler_test scheduler_test.c)
-add_dependencies(scheduler_test lib_scheduler)
-target_link_libraries(scheduler_test PRIVATE Threads::Threads lib_scheduler)
-add_test(NAME Scheduler_Tests COMMAND scheduler_test)
+add_executable(scheduler_test.test scheduler_test.c)
+add_dependencies(scheduler_test.test lib_scheduler)
+target_link_libraries(scheduler_test.test PRIVATE Threads::Threads lib_scheduler)
+add_test(NAME Scheduler_Tests COMMAND scheduler_test.test)
 
 set_tests_properties(Scheduler_Tests PROPERTIES TIMEOUT ${TIMEOUT})
 
 
+######################################
+# Sleeping tests.
+######################################
+
+
+add_executable(sleep_test.test sleep_test.c)
+add_dependencies(sleep_test.test lib_scheduler)
+target_link_libraries(sleep_test.test PRIVATE Threads::Threads lib_scheduler)
+add_test(NAME Sleep_Tests COMMAND sleep_test.test)
+
+set_tests_properties(Sleep_Tests PROPERTIES TIMEOUT ${TIMEOUT})

@@ -2,33 +2,34 @@
 
 #include <structures/lf_stack.h>
 
-stack_node *create_node(stack_node *next_node)
+lf_stack_node *create_lf_stack_node(lf_stack_node *next_node)
 {
-    stack_node *created_node = (stack_node *)malloc(sizeof(stack_node));
+    lf_stack_node *created_node = (lf_stack_node *)malloc(sizeof(lf_stack_node));
     created_node->next = next_node;
     created_node->list_mutex = 0;
     return created_node;
 }
 
-head *create_head(stack_node *next_node)
+lf_stack_head *create_lf_stack_head(lf_stack_node *next_node)
 {
-    head *created_head = (head *)malloc(sizeof(head));
+    lf_stack_head *created_head = (lf_stack_head *)malloc(sizeof(lf_stack_head));
     created_head->next = next_node;
     created_head->list_mutex = 0;
     return created_head;
 }
 
-lf_stack *create_stack()
+lf_stack *create_lf_stack()
 {
     lf_stack *lockFreeStack = (lf_stack *)malloc(sizeof(lf_stack));
-    lockFreeStack->head = create_head(0);
+    lockFreeStack->head = create_lf_stack_head(0);
     lockFreeStack->head->next = 0;
+    lockFreeStack->size = 0;
     return lockFreeStack;
 }
 
-void push(lf_stack *stack, stack_node *node)
+void push_lf_stack(lf_stack *stack, lf_stack_node *node)
 {
-    stack_node *tb, *oldhead;
+    lf_stack_node *tb, *oldhead;
     tb = node;
 
     oldhead = stack->head->next;
@@ -44,10 +45,10 @@ void push(lf_stack *stack, stack_node *node)
     __atomic_fetch_add(&stack->size, 1, __ATOMIC_SEQ_CST);
 }
 
-void free_nodes(lf_stack *stack)
+void free_lf_stack_nodes(lf_stack *stack)
 {
-    stack_node *top = stack->head->next;
-    stack_node *curr_top = top;
+    lf_stack_node *top = stack->head->next;
+    lf_stack_node *curr_top = top;
     while (top != 0)
     {
         curr_top = top;
@@ -56,9 +57,9 @@ void free_nodes(lf_stack *stack)
     }
 }
 
-stack_node* pop(lf_stack *stack)
+lf_stack_node* pop_lf_stack(lf_stack *stack)
 {
-    stack_node *current;
+    lf_stack_node *current;
 
     while (!__sync_bool_compare_and_swap(&(stack->head->list_mutex), 0, 1))
     {
@@ -86,9 +87,9 @@ stack_node* pop(lf_stack *stack)
     return current;
 }
 
-void free_stack(lf_stack *stack)
+void free_lf_stack(lf_stack *stack)
 {
-    free_nodes(stack);
+    free_lf_stack_nodes(stack);
     free(stack->head);
     free(stack);
 }
