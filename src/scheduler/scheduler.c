@@ -116,7 +116,7 @@ void thread_cycle(void *arg)
                         break;
                     }
                 }
-                
+
                 if (stolen)
                 {
                     fiber *fib = stolen->fib;
@@ -131,6 +131,14 @@ void thread_cycle(void *arg)
                 }
             }
         }
+    }
+}
+
+void join(fiber *fib)
+{
+    while (fib->state != terminated)
+    {
+        yield();
     }
 }
 

@@ -32,6 +32,7 @@ void run_scheduler();
 
 fiber* submit(fiber_routine routine);
 fiber* spawn(fiber_routine routine);
+void join(fiber* fib);
 void yield();
 void terminate_scheduler();
 void shutdown();
