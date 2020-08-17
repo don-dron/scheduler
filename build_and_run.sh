@@ -7,7 +7,8 @@ echo "Without valgrind"
 for var in $(ls bin)
 do
 echo "Run test $var" 
-echo "Test Passed" $(./bin/$var)
+echo $(./bin/$var)
+echo "Test Passed"
 done
 
 echo "Done"

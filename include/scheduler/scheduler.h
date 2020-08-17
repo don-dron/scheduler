@@ -30,8 +30,8 @@ static thread_local size_t number;
 void new_scheduler();
 void run_scheduler();
 
-void submit(fiber_routine routine);
-void spawn(fiber_routine routine);
+fiber* submit(fiber_routine routine);
+fiber* spawn(fiber_routine routine);
 void yield();
 void terminate_scheduler();
 void shutdown();

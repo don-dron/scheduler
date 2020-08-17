@@ -27,6 +27,7 @@ struct fiber
     fiber_routine routine;
     struct fiber* parent;
     unsigned long id;
+    unsigned long wakeup;
 };
 
 typedef struct fiber fiber;
