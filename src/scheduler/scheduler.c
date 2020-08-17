@@ -2,21 +2,17 @@
 
 #include <scheduler/scheduler.h>
 
-struct thread_node;
-typedef struct thread_node thread_node;
-struct thread_node
+typedef struct thread_node
 {
     list_node lst_node;
     pthread_t thr;
-};
+} thread_node;
 
-struct fiber_node;
-typedef struct fiber_node fiber_node;
-struct fiber_node
+typedef struct fiber_node
 {
     list_node lst_node;
     fiber *fib;
-};
+} fiber_node;
 
 void return_to_queue(fiber_node *node, int thread_index)
 {
@@ -58,17 +54,9 @@ void run_task(fiber *routine)
     }
 }
 
-void thread_cycle(void *arg)
+void schedule(int thread_number)
 {
-    int t = ((int *)arg)[0];
-    free(arg);
-    list *queue = current_scheduler->queues[t];
-
-    while (!current_scheduler->threads_run)
-    {
-        usleep(1);
-    }
-
+    list *queue = current_scheduler->queues[thread_number];
     while (1)
     {
         __atomic_fetch_add(&current_scheduler->task_now, 1, __ATOMIC_SEQ_CST);
@@ -103,7 +91,7 @@ void thread_cycle(void *arg)
             else
             {
                 int threads = current_scheduler->threads;
-                int current = t;
+                int current = thread_number;
 
                 fiber_node *stolen = 0;
                 while (1)
@@ -111,7 +99,7 @@ void thread_cycle(void *arg)
                     current += 1;
                     current %= threads;
                     stolen = (fiber_node *)list_pop_back(queue);
-                    if (stolen != 0 || current == t)
+                    if (stolen != 0 || current == thread_number)
                     {
                         break;
                     }
@@ -132,6 +120,19 @@ void thread_cycle(void *arg)
             }
         }
     }
+}
+
+void thread_cycle(void *arg)
+{
+    int thread_number = ((int *)arg)[0];
+    free(arg);
+
+    while (!current_scheduler->threads_run)
+    {
+        usleep(1);
+    }
+
+    schedule(thread_number);
 }
 
 void join(fiber *fib)

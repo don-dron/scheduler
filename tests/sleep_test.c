@@ -13,7 +13,7 @@
 void func()
 {
     printf("sleep run\n");
-    sleep_for(5);
+    sleep_for(1);
     printf("sleep end\n");
 }
 
@@ -21,7 +21,7 @@ int main()
 {
     new_scheduler();
 
-    for (int i = 0; i < 5; i++)
+    for (int i = 0; i < 1; i++)
     {
         spawn(func);
         spawn(func);
@@ -38,6 +38,8 @@ int main()
 
     run_scheduler();
     terminate_scheduler();
-
+    
+    print_statistic();
+    
     return EXIT_SUCCESS;
 }

@@ -50,8 +50,8 @@ void setup_trampoline(fiber *new_fiber)
                        /*flags=*/MAP_PRIVATE | 0x20,
                        /*fd=*/-1, /*offset=*/0);
 
-    int ret = mprotect(/*addr=*/(void *)(start + PagesToBytes(4)),
-                       /*len=*/PagesToBytes(4),
+    int ret = mprotect(/*addr=*/(void *)(start + pages_to_bytes(4)),
+                       /*len=*/pages_to_bytes(4),
                        /*prot=*/PROT_NONE);
 
     stack_builder stackBuilder;
@@ -79,9 +79,9 @@ void setup_trampoline(fiber *new_fiber)
     stackBuilder.word_size = sizeof(void *);
 
     // For rbp register(shift 16 bytes)
-    AlignNextPush(&stackBuilder, 16);
+    align_next_push(&stackBuilder, 16);
     // Allocate stack on allocated memory
-    Allocate(&stackBuilder, sizeof(stack_saved_context));
+    allocate(&stackBuilder, sizeof(stack_saved_context));
 
     stack_saved_context *saved_context = (stack_saved_context *)stackBuilder.top;
 

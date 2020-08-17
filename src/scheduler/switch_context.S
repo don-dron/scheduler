@@ -4,10 +4,10 @@
   #define FUNCTION_NAME(name) name
 #endif
 
-.global FUNCTION_NAME(switch_context)
+.global FUNCTION_NAME(switch_from_to)
 
 
-FUNCTION_NAME(switch_context):
+FUNCTION_NAME(switch_from_to):
     
     pushq %r15
     pushq %r14

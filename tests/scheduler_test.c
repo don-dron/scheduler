@@ -55,7 +55,10 @@ int main()
     run_scheduler();
     terminate_scheduler();
 
+    print_statistic();
     assert(atom == 120000);
+
+    printf("%ld %ld\n", atom, sum);
 
     return EXIT_SUCCESS;
 }

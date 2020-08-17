@@ -9,10 +9,7 @@
 #include <scheduler/fiber.h>
 #include <structures/list.h>
 
-struct scheduler;
-typedef struct scheduler scheduler;
-
-struct scheduler
+typedef struct scheduler
 {
     size_t threads;
     list **queues;
@@ -22,7 +19,7 @@ struct scheduler
     size_t count;
     size_t task_now;
     spinlock lock_spinlock;
-};
+} scheduler;
 
 static scheduler *current_scheduler;
 static thread_local size_t number;
@@ -37,4 +34,3 @@ void yield();
 void terminate_scheduler();
 void shutdown();
 void sleep_for(unsigned long duration);
-void notify_workers();

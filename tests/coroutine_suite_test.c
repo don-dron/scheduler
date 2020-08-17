@@ -126,5 +126,6 @@ int main()
     test1();
     test2();
     test3();
+    print_statistic();
     return EXIT_SUCCESS;
 }

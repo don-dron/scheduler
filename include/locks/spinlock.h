@@ -2,13 +2,10 @@
 
 #include <unistd.h>
 
-struct spinlock;
-typedef struct spinlock spinlock;
-
-struct spinlock
+typedef struct spinlock
 {
     int lock;
-};
+} spinlock;
 
 void lock_spinlock(spinlock *spin_lock);
 

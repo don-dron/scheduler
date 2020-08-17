@@ -19,7 +19,7 @@ SET (CMAKE_ARCHIVE_OUTPUT_DIRECTORY
         "Single Directory for all"
     )
 
-SET(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -O3 -Wextra -Wall -Wfloat-equal -Wundef -Wswitch-enum -Wconversion -Wunreachable-code -ggdb -Werror-implicit-function-declaration")
+SET(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -O3 -Wextra -Wall -g3 -Wfloat-equal -Wundef -Wswitch-enum -Wconversion -Wunreachable-code -ggdb -Werror-implicit-function-declaration")
 SET(CMAKE_LINKER_FLAGS "${CMAKE_LINKER_FLAGS} ")
 
 enable_testing()

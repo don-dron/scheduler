@@ -8,18 +8,18 @@
 #include <scheduler/context.h>
 
 struct coroutine;
-typedef struct coroutine coroutine;
-thread_local volatile static coroutine *current_coroutine = NULL;
 
-struct coroutine
+typedef struct coroutine
 {
     void (*routine)();
     execution_context routine_context;
     execution_context caller_context;
-    coroutine *external_routine;
+    struct coroutine *external_routine;
     volatile int complete;
     void *stack;
-};
+} coroutine;
+
+thread_local volatile static coroutine *current_coroutine = NULL;
 
 void suspend();
 void resume(coroutine *this);

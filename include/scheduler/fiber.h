@@ -17,7 +17,7 @@ enum fiber_state
 typedef enum fiber_state fiber_state;
 typedef void (*fiber_routine)();
 
-struct fiber
+typedef struct fiber
 {
     // Scheduler* scheduler;
     void *stack;
@@ -28,9 +28,8 @@ struct fiber
     struct fiber* parent;
     unsigned long id;
     unsigned long wakeup;
-};
+} fiber;
 
-typedef struct fiber fiber;
 extern thread_local fiber *current_fiber;
 
 fiber *create_fiber(fiber_routine routine);

@@ -7,24 +7,15 @@
 // Fiber , coroutine stack size = 64 Kbytes
 static const size_t STACK_SIZE = 64 * 1024;
 
-struct execution_context;
-typedef struct execution_context execution_context;
+extern unsigned long switch_count_atom;
+extern unsigned long switch_count;
 
-struct stack_saved_context;
-typedef struct stack_saved_context stack_saved_context;
-
-struct stack;
-typedef struct stack stack;
-
-struct stack_builder;
-typedef struct stack_builder stack_builder;
-
-struct execution_context
+typedef struct execution_context
 {
   void *rsp;
-};
+} execution_context;
 
-struct stack_saved_context
+typedef struct stack_saved_context
 {
   void *rbp;
   void *rbx;
@@ -35,24 +26,36 @@ struct stack_saved_context
   void *r15;
 
   void *rip;
-};
+} stack_saved_context;
 
-struct stack
+typedef struct stack
 {
   void *memory;
   size_t size;
-};
+} stack;
 
-struct stack_builder
+typedef struct stack_builder
 {
   int word_size;
   char *top;
-};
+} stack_builder;
 
-extern unsigned long switch_context(execution_context *from, execution_context *to);
+typedef struct statistic
+{
+  int switch_count_atom;
+  int switch_count;
+} statistic;
 
-void AlignNextPush(stack_builder *builder, size_t alignment);
+extern void switch_from_to(execution_context *from, execution_context *to);
 
-void Allocate(stack_builder *builder, size_t bytes);
+unsigned long switch_context(execution_context *from, execution_context *to);
 
-size_t PagesToBytes(size_t count);
+void align_next_push(stack_builder *builder, size_t alignment);
+
+void allocate(stack_builder *builder, size_t bytes);
+
+size_t pages_to_bytes(size_t count);
+
+statistic get_statistic();
+
+void print_statistic();
