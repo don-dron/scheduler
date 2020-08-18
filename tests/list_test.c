@@ -114,5 +114,6 @@ int main()
 {
     simple_test();
     concurrent_test();
+    printf("PASSED\n");
     return EXIT_SUCCESS;
 }

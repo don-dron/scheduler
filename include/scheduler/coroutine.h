@@ -24,11 +24,9 @@ static thread_local volatile coroutine *current_coroutine = NULL;
 void suspend();
 void resume(coroutine *this);
 
-coroutine *create_coroutine_on_heap(void (*routine)());
-coroutine create_coroutine_on_stack(void (*routine)());
+coroutine create_coroutine(void (*routine)());
 
 void switch_to_caller(coroutine *coroutine);
 void setup(coroutine *coroutine, void (*Trampoline)());
 
-void free_coroutine_on_stack(coroutine *coroutine);
-void free_coroutine_on_heap(coroutine *coroutine);
+void free_coroutine(coroutine *coroutine);

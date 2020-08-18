@@ -142,5 +142,6 @@ void run_test(void (*test)())
 int main()
 {
     run_test(test1);
+    printf("PASSED\n");
     return EXIT_SUCCESS;
 }

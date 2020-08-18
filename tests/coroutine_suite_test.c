@@ -32,8 +32,8 @@ void test1Bar()
 
 void test1()
 {
-    coroutine first = create_coroutine_on_stack(test1Foo);
-    coroutine second = create_coroutine_on_stack(test1Bar);
+    coroutine first = create_coroutine(test1Foo);
+    coroutine second = create_coroutine(test1Bar);
 
     resume(&first);
     resume(&second);
@@ -41,8 +41,8 @@ void test1()
     resume(&first);
     resume(&second);
 
-    free_coroutine_on_stack(&first);
-    free_coroutine_on_stack(&second);
+    free_coroutine(&first);
+    free_coroutine(&second);
 }
 
 void test2Foo()
@@ -63,8 +63,8 @@ void test2Bar()
 
 void test2()
 {
-    coroutine first = create_coroutine_on_stack(test2Foo);
-    coroutine second = create_coroutine_on_stack(test2Bar);
+    coroutine first = create_coroutine(test2Foo);
+    coroutine second = create_coroutine(test2Bar);
 
     while (!(first.complete && second.complete))
     {
@@ -72,8 +72,8 @@ void test2()
         resume(&second);
     }
 
-    free_coroutine_on_stack(&first);
-    free_coroutine_on_stack(&second);
+    free_coroutine(&first);
+    free_coroutine(&second);
 }
 
 const int kSteps = 123;
@@ -89,36 +89,36 @@ void test3Foo()
 {
     for (int i = 0; i < 123; ++i)
     {
-        coroutine first = create_coroutine_on_stack(nop);
+        coroutine first = create_coroutine(nop);
         resume(&first);
         ++inner_step_count;
         suspend();
 
-        free_coroutine_on_stack(&first);
+        free_coroutine(&first);
     }
 }
 
 void test3Bar()
 {
-    coroutine first = create_coroutine_on_stack(test3Foo);
+    coroutine first = create_coroutine(test3Foo);
     while (!first.complete)
     {
         resume(&first);
         suspend();
     }
-    free_coroutine_on_stack(&first);
+    free_coroutine(&first);
 }
 
 void test3()
 {
-    coroutine second = create_coroutine_on_stack(test3Bar);
+    coroutine second = create_coroutine(test3Bar);
     while (!second.complete)
     {
         resume(&second);
     }
 
     assert(inner_step_count == kSteps);
-    free_coroutine_on_stack(&second);
+    free_coroutine(&second);
 }
 
 int main()
@@ -127,5 +127,6 @@ int main()
     test2();
     test3();
     print_statistic();
+    printf("PASSED\n");
     return EXIT_SUCCESS;
 }

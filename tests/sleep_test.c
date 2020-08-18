@@ -12,9 +12,7 @@
 
 void func()
 {
-    printf("sleep run\n");
     sleep_for(1);
-    printf("sleep end\n");
 }
 
 int main()
@@ -41,5 +39,6 @@ int main()
 
     print_statistic();
 
+    printf("PASSED\n");
     return EXIT_SUCCESS;
 }

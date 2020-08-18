@@ -75,5 +75,6 @@ void stack_test()
 int main()
 {
     stack_test();
+    printf("PASSED\n");
     return EXIT_SUCCESS;
 }

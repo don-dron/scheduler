@@ -71,7 +71,7 @@ void setup(coroutine *coroutine_, void (*trampoline)())
     coroutine_->stack = start;
 }
 
-coroutine create_coroutine_on_stack(void (*routine)())
+coroutine create_coroutine(void (*routine)())
 {
     coroutine new_coroutine;
 
@@ -81,19 +81,6 @@ coroutine create_coroutine_on_stack(void (*routine)())
     setup(&new_coroutine, trampoline);
 
     new_coroutine.external_routine = current_coroutine;
-    return new_coroutine;
-}
-
-coroutine *create_coroutine_on_heap(void (*routine)())
-{
-    coroutine *new_coroutine = (coroutine *)malloc(sizeof(coroutine));
-
-    new_coroutine->routine = routine;
-    new_coroutine->complete = 0;
-
-    setup(new_coroutine, trampoline);
-
-    new_coroutine->external_routine = current_coroutine;
     return new_coroutine;
 }
 
@@ -114,13 +101,7 @@ void switch_to_caller(coroutine *coroutine_)
     switch_context(&coroutine_->routine_context, &coroutine_->caller_context);
 }
 
-void free_coroutine_on_stack(coroutine *coroutine_)
+void free_coroutine(coroutine *coroutine_)
 {
     munmap(coroutine_->stack, STACK_SIZE);
-}
-
-void free_coroutine_on_heap(coroutine *coroutine_)
-{
-    munmap(coroutine_->stack, STACK_SIZE);
-    free(coroutine_);
 }
