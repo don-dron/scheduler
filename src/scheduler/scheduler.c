@@ -50,7 +50,7 @@ void run_task(fiber *routine)
     else
     {
         free_fiber(current_fiber);
-        __atomic_fetch_sub(&current_scheduler->count, 1, __ATOMIC_SEQ_CST);
+        dec(&current_scheduler->count);
     }
 }
 
@@ -190,7 +190,7 @@ void run_scheduler(scheduler *sched)
 
 void insert_fiber(scheduler *sched, fiber *fib)
 {
-    __atomic_fetch_add(&sched->count, 1, __ATOMIC_SEQ_CST);
+    inc(&sched->count);
     insert_to_minimum_queue(sched, fib);
 }
 

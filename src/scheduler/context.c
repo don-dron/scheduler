@@ -5,12 +5,10 @@
 unsigned long switch_count_atom = 0;
 unsigned long switch_count = 0;
 
-unsigned long switch_context(execution_context *from, execution_context *to)
+extern inline void switch_context(execution_context *from, execution_context *to)
 {
   // Data Race (atomic operations is syncronization - lows performance)
   switch_count++;
-  // printf("%p  --->  %p \n", from->rsp, to->rsp);
-  // __atomic_fetch_add(&switch_count_atom, 1, __ATOMIC_SEQ_CST);
   switch_from_to(from, to);
 }
 

@@ -48,7 +48,7 @@ typedef struct statistic
 
 extern void switch_from_to(execution_context *from, execution_context *to);
 
-unsigned long switch_context(execution_context *from, execution_context *to);
+extern inline void switch_context(execution_context *from, execution_context *to);
 
 void align_next_push(stack_builder *builder, size_t alignment);
 

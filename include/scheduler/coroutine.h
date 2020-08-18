@@ -19,7 +19,7 @@ typedef struct coroutine
     void *stack;
 } coroutine;
 
-thread_local volatile static coroutine *current_coroutine = NULL;
+static thread_local volatile coroutine *current_coroutine = NULL;
 
 void suspend();
 void resume(coroutine *this);

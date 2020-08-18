@@ -2,7 +2,9 @@ project(locks)
 
 
 set(SOURCE_LIB 
+    atomics.c
     spinlock.c
+    wait_group.c
     )
 
 

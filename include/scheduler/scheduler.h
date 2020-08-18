@@ -8,6 +8,7 @@
 
 #include <scheduler/fiber.h>
 #include <structures/list.h>
+#include <locks/atomics.h>
 
 typedef struct scheduler
 {
@@ -21,7 +22,6 @@ typedef struct scheduler
 } scheduler;
 
 static thread_local scheduler *current_scheduler;
-static thread_local size_t number;
 
 scheduler *new_default_scheduler();
 scheduler *new_scheduler(unsigned int using_threads);

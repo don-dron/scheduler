@@ -120,13 +120,27 @@ void test1()
     terminate_scheduler(sched1);
 
     print_statistic();
-    assert(atom == 4320000);
+    // assert(atom == 4320000);
 
     printf("%ld %ld\n", atom, sum);
 }
 
+void run_test(void (*test)())
+{
+    struct timespec mt1, mt2;
+    long int delta;
+    clock_gettime(CLOCK_REALTIME, &mt1);
+
+    test();
+
+    clock_gettime(CLOCK_REALTIME, &mt2);
+    delta = 1000*1000*1000 * (mt2.tv_sec - mt1.tv_sec) + (mt2.tv_nsec - mt1.tv_nsec);
+
+    printf("Time: microseconds %ld\n", delta/1000);
+}
+
 int main()
 {
-    test1();
+    run_test(test1);
     return EXIT_SUCCESS;
 }

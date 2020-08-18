@@ -3,6 +3,7 @@
 #include <threads.h>
 
 #include <scheduler/context.h>
+#include <locks/atomics.h>
 
 enum fiber_state
 {
@@ -25,12 +26,13 @@ typedef struct fiber
     execution_context context;
     fiber_state state;
     fiber_routine routine;
-    struct fiber* parent;
+    struct fiber *parent;
     unsigned long id;
     unsigned long wakeup;
 } fiber;
 
 extern thread_local fiber *current_fiber;
+extern unsigned long id;
 
 fiber *create_fiber(fiber_routine routine);
 void free_fiber(fiber *fiber_);

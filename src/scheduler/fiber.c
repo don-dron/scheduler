@@ -4,16 +4,18 @@
 
 extern thread_local fiber *current_fiber = 0;
 
-unsigned long GenerateId()
+extern unsigned long id = 0;
+
+unsigned long generate_id()
 {
-    return 1;
+    return inc(&id);
 }
 
 fiber *create_fiber(fiber_routine routine)
 {
     fiber *new_fiber = (fiber *)malloc(sizeof(fiber));
 
-    new_fiber->id = GenerateId();
+    new_fiber->id = generate_id();
     new_fiber->routine = routine;
     new_fiber->state = starting;
     new_fiber->parent = current_fiber;
