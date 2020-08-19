@@ -52,7 +52,7 @@ void test1()
     terminate_scheduler(sched);
 
     print_statistic();
-    // assert(atom == 120000);
+    assert(atom == 120000);
 
     printf("%ld %ld\n", atom, sum);
 }

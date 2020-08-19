@@ -30,10 +30,7 @@ int main()
         spawn(sched, func);
         spawn(sched, func);
     }
-
-    struct timeval stop, start;
-    gettimeofday(&start, NULL);
-
+    
     run_scheduler(sched);
     terminate_scheduler(sched);
 

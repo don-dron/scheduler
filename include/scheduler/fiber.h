@@ -28,7 +28,7 @@ typedef struct fiber
     fiber_routine routine;
     struct fiber *parent;
     unsigned long id;
-    unsigned long wakeup;
+    struct timespec wakeup;
 } fiber;
 
 extern thread_local fiber *current_fiber;

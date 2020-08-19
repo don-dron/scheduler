@@ -83,3 +83,17 @@ target_link_libraries(multiply_scheduler.test PRIVATE Threads::Threads lib_sched
 add_test(NAME Multiply_Schedulers COMMAND multiply_scheduler.test)
 
 set_tests_properties(Multiply_Schedulers PROPERTIES TIMEOUT ${TIMEOUT})
+
+
+
+######################################
+# Tree benchmark
+######################################
+
+
+add_executable(tree_benchmark.test tree_benchmark.c)
+add_dependencies(tree_benchmark.test lib_scheduler)
+target_link_libraries(tree_benchmark.test PRIVATE Threads::Threads lib_scheduler)
+add_test(NAME Tree_Benchmark COMMAND tree_benchmark.test)
+
+set_tests_properties(Tree_Benchmark PROPERTIES TIMEOUT ${TIMEOUT})

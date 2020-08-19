@@ -120,7 +120,7 @@ void test1()
     terminate_scheduler(sched1);
 
     print_statistic();
-    // assert(atom == 4320000);
+    assert(atom == 4320000);
 
     printf("%ld %ld\n", atom, sum);
 }

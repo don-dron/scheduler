@@ -54,6 +54,12 @@ void run_task(fiber *routine)
     }
 }
 
+int more(struct timespec *t1, struct timespec *t2)
+{
+    long delta = 1000 * 1000 * 1000 * (t1->tv_sec - t2->tv_sec) + (t1->tv_nsec - t2->tv_nsec);
+    return delta > 0;
+}
+
 void schedule(unsigned long thread_number)
 {
     list *queue = current_scheduler->queues[thread_number];
@@ -74,7 +80,10 @@ void schedule(unsigned long thread_number)
         if (fib_node && fib_node->fib->state == sleeping)
         {
             fiber *fib = fib_node->fib;
-            if (fib->wakeup > time(0))
+            struct timespec timer;
+            clock_gettime(CLOCK_REALTIME, &timer);
+
+            if (more(&fib->wakeup, &timer))
             {
                 free(fib_node);
                 insert_to_minimum_queue(current_scheduler, fib);
@@ -217,7 +226,12 @@ void sleep_for(unsigned long duration)
 {
     fiber *fib = current_fiber;
     fib->state = sleeping;
-    fib->wakeup = time(0) + duration;
+
+    struct timespec timer;
+    clock_gettime(CLOCK_REALTIME, &timer);
+    timer.tv_nsec += duration * 1000;
+    fib->wakeup = timer;
+
     switch_context(&current_fiber->context, &current_fiber->external_context);
 }
 
