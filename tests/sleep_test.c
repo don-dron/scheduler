@@ -10,7 +10,7 @@
 
 #include <scheduler/scheduler.h>
 
-void func()
+static void func(void* args)
 {
     sleep_for(1);
 }
@@ -21,14 +21,14 @@ int main()
 
     for (int i = 0; i < 1; i++)
     {
-        spawn(sched, func);
-        spawn(sched, func);
-        spawn(sched, func);
-        spawn(sched, func);
-        spawn(sched, func);
-        spawn(sched, func);
-        spawn(sched, func);
-        spawn(sched, func);
+        spawn(sched, func, NULL);
+        spawn(sched, func, NULL);
+        spawn(sched, func, NULL);
+        spawn(sched, func, NULL);
+        spawn(sched, func, NULL);
+        spawn(sched, func, NULL);
+        spawn(sched, func, NULL);
+        spawn(sched, func, NULL);
     }
     
     run_scheduler(sched);

@@ -12,7 +12,7 @@
 
 int step = 0;
 
-void test1Foo()
+static void test1Foo(void *args)
 {
     assert(step == 0);
     step = 1;
@@ -21,7 +21,7 @@ void test1Foo()
     step = 3;
 }
 
-void test1Bar()
+static void test1Bar(void *args)
 {
     assert(step == 1);
     step = 2;
@@ -30,10 +30,10 @@ void test1Bar()
     step = 4;
 }
 
-void test1()
+static void test1()
 {
-    coroutine first = create_coroutine(test1Foo);
-    coroutine second = create_coroutine(test1Bar);
+    coroutine first = create_coroutine(test1Foo, NULL);
+    coroutine second = create_coroutine(test1Bar, NULL);
 
     resume(&first);
     resume(&second);
@@ -45,7 +45,7 @@ void test1()
     free_coroutine(&second);
 }
 
-void test2Foo()
+static void test2Foo(void *args)
 {
     for (int i = 0; i < 100; i++)
     {
@@ -53,7 +53,7 @@ void test2Foo()
     }
 }
 
-void test2Bar()
+static void test2Bar(void *args)
 {
     for (int i = 0; i < 100; i++)
     {
@@ -61,10 +61,10 @@ void test2Bar()
     }
 }
 
-void test2()
+static void test2()
 {
-    coroutine first = create_coroutine(test2Foo);
-    coroutine second = create_coroutine(test2Bar);
+    coroutine first = create_coroutine(test2Foo, NULL);
+    coroutine second = create_coroutine(test2Bar, NULL);
 
     while (!(first.complete && second.complete))
     {
@@ -80,16 +80,16 @@ const int kSteps = 123;
 
 int inner_step_count = 0;
 
-void nop()
+static void nop(void *args)
 {
     // nop
 }
 
-void test3Foo()
+static void test3Foo(void *args)
 {
     for (int i = 0; i < 123; ++i)
     {
-        coroutine first = create_coroutine(nop);
+        coroutine first = create_coroutine(nop, NULL);
         resume(&first);
         ++inner_step_count;
         suspend();
@@ -98,9 +98,9 @@ void test3Foo()
     }
 }
 
-void test3Bar()
+static void test3Bar(void *args)
 {
-    coroutine first = create_coroutine(test3Foo);
+    coroutine first = create_coroutine(test3Foo, NULL);
     while (!first.complete)
     {
         resume(&first);
@@ -109,9 +109,9 @@ void test3Bar()
     free_coroutine(&first);
 }
 
-void test3()
+static void test3()
 {
-    coroutine second = create_coroutine(test3Bar);
+    coroutine second = create_coroutine(test3Bar, NULL);
     while (!second.complete)
     {
         resume(&second);

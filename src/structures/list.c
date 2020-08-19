@@ -1,8 +1,6 @@
-#pragma once
-
 #include <structures/list.h>
 
-list *create_list()
+list *create_list(void)
 {
     list *lst = (list *)malloc(sizeof(list));
     lst->start = 0;
@@ -10,8 +8,8 @@ list *create_list()
     lst->size = 0;
 
     spinlock lock;
+    lock.lock = 0;
     lst->lock = lock;
-    lst->lock.lock = 0;
 
     return lst;
 }

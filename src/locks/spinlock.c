@@ -1,5 +1,3 @@
-#pragma once
-
 #include <locks/spinlock.h>
 
 void lock_spinlock(spinlock *spin_lock)

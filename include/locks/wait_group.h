@@ -5,10 +5,10 @@
 
 typedef struct wait_group
 {
-    unsigned int count;
+    unsigned long count;
 } wait_group;
 
-wait_group init();
+wait_group init(void);
 
 void add(wait_group* group);
 

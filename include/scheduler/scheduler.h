@@ -21,17 +21,17 @@ typedef struct scheduler
     spinlock lock_spinlock;
 } scheduler;
 
-static thread_local scheduler *current_scheduler;
+extern thread_local scheduler *current_scheduler;
 
-scheduler *new_default_scheduler();
+scheduler *new_default_scheduler(void);
 scheduler *new_scheduler(unsigned int using_threads);
 
-void run_scheduler();
+void run_scheduler(scheduler* sched);
 
-fiber *submit(fiber_routine routine);
-fiber *spawn(scheduler *sched, fiber_routine routine);
+fiber *submit(fiber_routine routine, void *args);
+fiber *spawn(scheduler *sched, fiber_routine routine, void *args);
 void join(fiber *fib);
-void yield();
-void terminate_scheduler();
-void shutdown();
+void yield(void);
+void terminate_scheduler(scheduler* sched);
+void shutdown(scheduler* sched);
 void sleep_for(unsigned long duration);

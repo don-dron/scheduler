@@ -11,7 +11,8 @@ struct coroutine;
 
 typedef struct coroutine
 {
-    void (*routine)();
+    void *args;
+    void (*routine)(void *);
     execution_context routine_context;
     execution_context caller_context;
     struct coroutine *external_routine;
@@ -19,12 +20,12 @@ typedef struct coroutine
     void *stack;
 } coroutine;
 
-static thread_local volatile coroutine *current_coroutine = NULL;
+extern thread_local coroutine *current_coroutine;
 
-void suspend();
+void suspend(void);
 void resume(coroutine *this);
 
-coroutine create_coroutine(void (*routine)());
+coroutine create_coroutine(void (*routine)(void *), void *args);
 
 void switch_to_caller(coroutine *coroutine);
 void setup(coroutine *coroutine, void (*Trampoline)());

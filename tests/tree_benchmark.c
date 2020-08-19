@@ -15,10 +15,10 @@
 #define ROOT_ROUTINES 4
 #define ROOTINES_STEP 4
 
-int sum = 0;
-int atom = 0;
+static int sum = 0;
+static int atom = 0;
 
-void internal_routine()
+static void internal_routine()
 {
     __atomic_fetch_add(&atom, 1, __ATOMIC_SEQ_CST);
     sum++;
@@ -54,13 +54,13 @@ void internal_routine()
     sum++;
 }
 
-void root_routine()
+static void root_routine()
 {
     fiber **steps = (fiber **)malloc(ROOTINES_STEP * sizeof(fiber *));
 
     for (int i = 0; i < ROOTINES_STEP; i++)
     {
-        steps[i] = submit(internal_routine);
+        steps[i] = submit(internal_routine, NULL);
     }
 
     for (int i = 0; i < ROOTINES_STEP; i++)
@@ -69,7 +69,7 @@ void root_routine()
     }
 }
 
-void tree()
+static void tree()
 {
     scheduler **scheds = (scheduler **)malloc(SCHEDS_COUNT * sizeof(scheduler *));
 
@@ -82,7 +82,7 @@ void tree()
     {
         for (int j = 0; j < ROOT_ROUTINES; j++)
         {
-            spawn(scheds[i], root_routine);
+            spawn(scheds[i], root_routine, NULL);
         }
     }
 
@@ -97,7 +97,7 @@ void tree()
     {
         for (int j = 0; j < ROOT_ROUTINES; j++)
         {
-            spawn(scheds[i], root_routine);
+            spawn(scheds[i], root_routine, NULL);
         }
     }
 
@@ -112,7 +112,7 @@ void tree()
     }
 }
 
-void run_test(void (*test)())
+static void run_test(void (*test)())
 {
     struct timespec mt1, mt2;
     long int delta;
@@ -127,7 +127,7 @@ void run_test(void (*test)())
     printf("Time: microseconds %ld\n", delta / 1000);
     printf("Time: milliseconds %ld\n", delta / 1000 / 1000);
     printf("Time: seconds %ld\n", delta / 1000 / 1000 / 1000);
-    printf("%ld %ld\n", atom, sum);
+    printf("%d %d\n", atom, sum);
 }
 
 int main()

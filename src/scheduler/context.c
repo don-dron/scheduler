@@ -1,11 +1,9 @@
-#pragma once
-
 #include <scheduler/context.h>
 
 unsigned long switch_count_atom = 0;
 unsigned long switch_count = 0;
 
-extern inline void switch_context(execution_context *from, execution_context *to)
+inline void switch_context(execution_context *from, execution_context *to)
 {
   // Data Race (atomic operations is syncronization - lows performance)
   switch_count++;
@@ -41,6 +39,6 @@ statistic get_statistic()
 void print_statistic()
 {
   statistic stat = get_statistic();
-  printf("Atomic switch counter   %d \n", stat.switch_count_atom);
-  printf("Switch counter   %d \n", stat.switch_count);
+  printf("Atomic switch counter   %ld \n", stat.switch_count_atom);
+  printf("Switch counter   %ld \n", stat.switch_count);
 }

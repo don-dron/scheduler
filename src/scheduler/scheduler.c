@@ -1,5 +1,3 @@
-#pragma once
-
 #include <scheduler/scheduler.h>
 
 typedef struct thread_node
@@ -14,17 +12,14 @@ typedef struct fiber_node
     fiber *fib;
 } fiber_node;
 
-void return_to_queue(fiber_node *node, int thread_index)
-{
-    list_push_back(current_scheduler->queues[(thread_index + current_scheduler->threads - 1) % current_scheduler->threads], (list_node *)node);
-}
+thread_local scheduler* current_scheduler = NULL;
 
-void insert_to_minimum_queue(scheduler *sched, fiber *fib)
+static void insert_to_minimum_queue(scheduler *sched, fiber *fib)
 {
-    int index = 0;
-    int threads = sched->threads;
+    size_t index = 0;
+    size_t threads = sched->threads;
 
-    for (int i = 0; i < threads; ++i)
+    for (size_t i = 0; i < threads; ++i)
     {
         if (sched->queues[i]->size < sched->queues[index]->size)
         {
@@ -37,7 +32,7 @@ void insert_to_minimum_queue(scheduler *sched, fiber *fib)
     list_push_back(sched->queues[index], (list_node *)fib_node);
 }
 
-void run_task(fiber *routine)
+static void run_task(fiber *routine)
 {
     current_fiber = routine;
     current_fiber->state = running;
@@ -50,17 +45,17 @@ void run_task(fiber *routine)
     else
     {
         free_fiber(current_fiber);
-        dec(&current_scheduler->count);
+        dec((unsigned long*)&current_scheduler->count);
     }
 }
 
-int more(struct timespec *t1, struct timespec *t2)
+static int more(struct timespec *t1, struct timespec *t2)
 {
     long delta = 1000 * 1000 * 1000 * (t1->tv_sec - t2->tv_sec) + (t1->tv_nsec - t2->tv_nsec);
     return delta > 0;
 }
 
-void schedule(unsigned long thread_number)
+static void schedule(unsigned long thread_number)
 {
     list *queue = current_scheduler->queues[thread_number];
     while (1)
@@ -105,8 +100,8 @@ void schedule(unsigned long thread_number)
             }
             else
             {
-                int threads = current_scheduler->threads;
-                int current = thread_number;
+                size_t threads = current_scheduler->threads;
+                unsigned long current = thread_number;
 
                 fiber_node *stolen = 0;
                 while (1)
@@ -135,7 +130,7 @@ void schedule(unsigned long thread_number)
     }
 }
 
-void thread_cycle(void *arg)
+static void* thread_cycle(void *arg)
 {
     unsigned long thread_number = ((unsigned long *)arg)[0];
     scheduler *sched = (scheduler *)((unsigned long *)arg)[1];
@@ -144,6 +139,13 @@ void thread_cycle(void *arg)
 
     free(arg);
     schedule(thread_number);
+    return NULL;
+}
+
+static void insert_fiber(scheduler *sched, fiber *fib)
+{
+    inc((unsigned long*)&sched->count);
+    insert_to_minimum_queue(sched, fib);
 }
 
 void join(fiber *fib)
@@ -156,7 +158,7 @@ void join(fiber *fib)
 
 scheduler *new_default_scheduler()
 {
-    return new_scheduler(sysconf(_SC_NPROCESSORS_ONLN) - 1);
+    return new_scheduler((unsigned int)sysconf(_SC_NPROCESSORS_ONLN) - 1);
 }
 
 scheduler *new_scheduler(unsigned int using_threads)
@@ -182,7 +184,7 @@ scheduler *new_scheduler(unsigned int using_threads)
 
         unsigned long *args = (unsigned long *)malloc(sizeof(unsigned long) * 1);
         args[0] = index;
-        args[1] = sched;
+        args[1] = (unsigned long)sched;
 
         pthread_create(&thr_node->thr, 0, thread_cycle, (void *)args);
 
@@ -197,29 +199,11 @@ void run_scheduler(scheduler *sched)
     sched->threads_running = 1;
 }
 
-void insert_fiber(scheduler *sched, fiber *fib)
+fiber *spawn(scheduler *sched, fiber_routine routine, void *args)
 {
-    inc(&sched->count);
-    insert_to_minimum_queue(sched, fib);
-}
-
-fiber *spawn(scheduler *sched, fiber_routine routine)
-{
-    fiber *fib = create_fiber(routine);
+    fiber *fib = create_fiber(routine, args);
     insert_fiber(sched, fib);
     return fib;
-}
-
-void switch_to_scheduler(fiber *fib)
-{
-    fiber *next = fib;
-
-    while (next->parent)
-    {
-        next = next->parent;
-    }
-
-    switch_context(&fib->context, &next->external_context);
 }
 
 void sleep_for(unsigned long duration)
@@ -229,15 +213,15 @@ void sleep_for(unsigned long duration)
 
     struct timespec timer;
     clock_gettime(CLOCK_REALTIME, &timer);
-    timer.tv_nsec += duration * 1000;
+    timer.tv_nsec += (long)(duration * 1000);
     fib->wakeup = timer;
 
     switch_context(&current_fiber->context, &current_fiber->external_context);
 }
 
-fiber *submit(fiber_routine routine)
+fiber *submit(fiber_routine routine, void *args)
 {
-    fiber *fib = create_fiber(routine);
+    fiber *fib = create_fiber(routine, args);
     fib->external_context = current_fiber->context;
     insert_fiber(current_scheduler, fib);
     return fib;
@@ -265,7 +249,7 @@ void terminate_scheduler(scheduler *sched)
 
     free(sched->threads_pool);
 
-    for (int i = 0; i < sched->threads; i++)
+    for (size_t i = 0; i < sched->threads; i++)
     {
         free(sched->queues[i]);
     }

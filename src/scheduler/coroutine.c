@@ -1,6 +1,6 @@
-#pragma once
-
 #include <scheduler/coroutine.h>
+
+thread_local coroutine *current_coroutine = NULL;
 
 void suspend()
 {
@@ -9,16 +9,16 @@ void suspend()
     switch_to_caller(next_coroutine);
 }
 
-void trampoline()
+static void trampoline()
 {
-    current_coroutine->routine();
+    current_coroutine->routine(current_coroutine->args);
 
     current_coroutine->complete = 1;
 
     suspend();
 }
 
-void setup(coroutine *coroutine_, void (*trampoline)())
+void setup(coroutine *coroutine_, void (*trampoline)(void *))
 {
     // Allocate memory for stack and context
     void *start = mmap(/*addr=*/0, /*length=*/STACK_SIZE,
@@ -26,14 +26,15 @@ void setup(coroutine *coroutine_, void (*trampoline)())
                        /*flags=*/MAP_PRIVATE | 0x20,
                        /*fd=*/-1, /*offset=*/0);
 
-    int ret = mprotect(/*addr=*/(void *)(start + pages_to_bytes(4)),
+    //int ret = 
+    mprotect(/*addr=*/(void *)((size_t)start + pages_to_bytes(4)),
                        /*len=*/pages_to_bytes(4),
                        /*prot=*/PROT_NONE);
 
     stack_builder stackBuilder;
-    // Set top stack address 
+    // Set top stack address
     //
-    // Programm heap 
+    // Programm heap
     //
     // 0xfffff
     //   ^
@@ -44,12 +45,12 @@ void setup(coroutine *coroutine_, void (*trampoline)())
     //   |                                                                  |
     //   |                   Coroutine stack memory.                        |
     //   |                                                                  |
-    //   |------------------ start                                          v    
+    //   |------------------ start                                          v
     //   ^
     //   |
     //   |
     //   0
-    stackBuilder.top = start + STACK_SIZE - 1;
+    stackBuilder.top = (char*)((size_t)start + STACK_SIZE - 1);
 
     // Machine word size, usually 8 bytes(x86)
     stackBuilder.word_size = sizeof(void *);
@@ -71,12 +72,13 @@ void setup(coroutine *coroutine_, void (*trampoline)())
     coroutine_->stack = start;
 }
 
-coroutine create_coroutine(void (*routine)())
+coroutine create_coroutine(void (*routine)(), void *args)
 {
     coroutine new_coroutine;
 
     new_coroutine.routine = routine;
     new_coroutine.complete = 0;
+    new_coroutine.args = args;
 
     setup(&new_coroutine, trampoline);
 

@@ -27,7 +27,7 @@ lf_stack_node *create_lf_stack_node(lf_stack_node *next_node);
 
 lf_stack_head *create_lf_stack_head(lf_stack_node *next_node);
 
-lf_stack *create_lf_stack();
+lf_stack *create_lf_stack(void);
 
 void push_lf_stack(lf_stack *stack, lf_stack_node *node);
 

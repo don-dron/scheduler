@@ -9,10 +9,10 @@
 
 #include <scheduler/scheduler.h>
 
-int sum = 0;
-int atom = 0;
+static int sum = 0;
+static int atom = 0;
 
-void c()
+static void c(void *args)
 {
     yield();
     __atomic_fetch_add(&atom, 1, __ATOMIC_SEQ_CST);
@@ -25,27 +25,27 @@ void c()
     yield();
 }
 
-void func()
+static void func(void* args)
 {
     for (int i = 0; i < 100; i++)
     {
-        submit(c);
+        submit(c, NULL);
         yield();
     }
 }
 
-void test1()
+static void test1()
 {
     scheduler *sched = new_default_scheduler();
 
     for (int i = 0; i < 100; i++)
     {
-        spawn(sched, func);
-        spawn(sched, func);
-        spawn(sched, func);
-        spawn(sched, func);
-        spawn(sched, func);
-        spawn(sched, func);
+        spawn(sched, func, NULL);
+        spawn(sched, func, NULL);
+        spawn(sched, func, NULL);
+        spawn(sched, func, NULL);
+        spawn(sched, func, NULL);
+        spawn(sched, func, NULL);
     }
 
     run_scheduler(sched);
@@ -54,10 +54,10 @@ void test1()
     print_statistic();
     assert(atom == 120000);
 
-    printf("%ld %ld\n", atom, sum);
+    printf("%d %d\n", atom, sum);
 }
 
-void run_test(void (*test)())
+static void run_test(void (*test)())
 {
     struct timespec mt1, mt2;
     long int delta;

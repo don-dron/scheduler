@@ -1,5 +1,3 @@
-#pragma once
-
 #include <structures/lf_stack.h>
 
 lf_stack_node *create_lf_stack_node(lf_stack_node *next_node)
@@ -18,7 +16,7 @@ lf_stack_head *create_lf_stack_head(lf_stack_node *next_node)
     return created_head;
 }
 
-lf_stack *create_lf_stack()
+lf_stack *create_lf_stack(void)
 {
     lf_stack *lockFreeStack = (lf_stack *)malloc(sizeof(lf_stack));
     lockFreeStack->head = create_lf_stack_head(0);
