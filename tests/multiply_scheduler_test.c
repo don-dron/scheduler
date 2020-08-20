@@ -13,7 +13,7 @@
 static int sum = 0;
 static int atom = 0;
 
-static void h(void* args)
+static void inner_to_inner(void *args)
 {
     // Every functions plus 2
     yield();
@@ -27,17 +27,17 @@ static void h(void* args)
     yield();
 }
 
-static void c(void* args)
+static void inner_func(void *args)
 {
     // Every functions plus 2 and submit 2 functions
     yield();
     __atomic_fetch_add(&atom, 1, __ATOMIC_SEQ_CST);
-    submit(h, NULL);
+    submit(inner_to_inner, NULL);
     sum++;
 
     yield();
 
-    submit(h, NULL);
+    submit(inner_to_inner, NULL);
 
     sum++;
     __atomic_fetch_add(&atom, 1, __ATOMIC_SEQ_CST);
@@ -51,11 +51,11 @@ static void func()
     // Every function submits 300 functions
     for (int i = 0; i < 100; i++)
     {
-        submit(c, NULL);
+        submit(inner_func, NULL);
         yield();
-        submit(c, NULL);
+        submit(inner_func, NULL);
         yield();
-        submit(c, NULL);
+        submit(inner_func, NULL);
     }
 
     // All sum this function is 300 * (2 + 2 * 2)
@@ -63,58 +63,60 @@ static void func()
 
 static void test1()
 {
-    scheduler *sched = new_default_scheduler();
-    scheduler *sched1 = new_default_scheduler();
+    scheduler sched, sched1;
+
+    new_default_scheduler(&sched);
+    new_default_scheduler(&sched1);
     for (int i = 0; i < 100; i++)
     {
         // 12 * functions
-        spawn(sched, func, NULL);
-        spawn(sched1, func, NULL);
-        spawn(sched, func, NULL);
-        spawn(sched1, func, NULL);
-        spawn(sched, func, NULL);
-        spawn(sched1, func, NULL);
-        spawn(sched, func, NULL);
-        spawn(sched1, func, NULL);
-        spawn(sched, func, NULL);
-        spawn(sched1, func, NULL);
-        spawn(sched, func, NULL);
-        spawn(sched1, func, NULL);
+        spawn(&sched, func, NULL);
+        spawn(&sched1, func, NULL);
+        spawn(&sched, func, NULL);
+        spawn(&sched1, func, NULL);
+        spawn(&sched, func, NULL);
+        spawn(&sched1, func, NULL);
+        spawn(&sched, func, NULL);
+        spawn(&sched1, func, NULL);
+        spawn(&sched, func, NULL);
+        spawn(&sched1, func, NULL);
+        spawn(&sched, func, NULL);
+        spawn(&sched1, func, NULL);
     }
 
     // All sum is 300 * 1200 * (2 + 2 * 2) = 360000 * 6 = 2 160 000 - right answer
 
-    run_scheduler(sched);
-    run_scheduler(sched1);
+    run_scheduler(&sched);
+    run_scheduler(&sched1);
 
-    shutdown(sched);
-    shutdown(sched1);
+    shutdown(&sched);
+    shutdown(&sched1);
 
     for (int i = 0; i < 100; i++)
     {
         // 12 * functions
-        spawn(sched, func, NULL);
-        spawn(sched1, func, NULL);
-        spawn(sched, func, NULL);
-        spawn(sched1, func, NULL);
-        spawn(sched, func, NULL);
-        spawn(sched1, func, NULL);
-        spawn(sched, func, NULL);
-        spawn(sched1, func, NULL);
-        spawn(sched, func, NULL);
-        spawn(sched1, func, NULL);
-        spawn(sched, func, NULL);
-        spawn(sched1, func, NULL);
+        spawn(&sched, func, NULL);
+        spawn(&sched1, func, NULL);
+        spawn(&sched, func, NULL);
+        spawn(&sched1, func, NULL);
+        spawn(&sched, func, NULL);
+        spawn(&sched1, func, NULL);
+        spawn(&sched, func, NULL);
+        spawn(&sched1, func, NULL);
+        spawn(&sched, func, NULL);
+        spawn(&sched1, func, NULL);
+        spawn(&sched, func, NULL);
+        spawn(&sched1, func, NULL);
     }
 
-    run_scheduler(sched);
-    run_scheduler(sched1);
+    run_scheduler(&sched);
+    run_scheduler(&sched1);
 
-    shutdown(sched);
-    shutdown(sched1);
+    shutdown(&sched);
+    shutdown(&sched1);
 
-    terminate_scheduler(sched);
-    terminate_scheduler(sched1);
+    terminate_scheduler(&sched);
+    terminate_scheduler(&sched1);
 
     print_statistic();
     assert(atom == 4320000);
@@ -131,9 +133,9 @@ static void run_test(void (*test)())
     test();
 
     clock_gettime(CLOCK_REALTIME, &mt2);
-    delta = 1000*1000*1000 * (mt2.tv_sec - mt1.tv_sec) + (mt2.tv_nsec - mt1.tv_nsec);
+    delta = 1000 * 1000 * 1000 * (mt2.tv_sec - mt1.tv_sec) + (mt2.tv_nsec - mt1.tv_nsec);
 
-    printf("Time: microseconds %ld\n", delta/1000);
+    printf("Time: microseconds %ld\n", delta / 1000);
 }
 
 int main()

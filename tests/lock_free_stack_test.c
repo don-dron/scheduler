@@ -39,7 +39,7 @@ static void *worker(void *arg)
         }
         for (int j = 0; j < 100; j++)
         {
-            lf_stack_node  *node = pop_lf_stack(results);
+            lf_stack_node *node = pop_lf_stack(results);
             if (node != 0)
             {
                 free(node);
@@ -54,7 +54,8 @@ static void *worker(void *arg)
 
 static void stack_test()
 {
-    results = create_lf_stack();
+    results = (lf_stack *)malloc(sizeof(lf_stack));
+    create_lf_stack(results);
     long nthreads = sysconf(_SC_NPROCESSORS_ONLN);
     int i;
 

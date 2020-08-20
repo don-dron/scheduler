@@ -12,7 +12,7 @@ typedef struct fiber_node
     fiber *fib;
 } fiber_node;
 
-thread_local scheduler* current_scheduler = NULL;
+thread_local scheduler *current_scheduler = NULL;
 
 static void insert_to_minimum_queue(scheduler *sched, fiber *fib)
 {
@@ -45,7 +45,7 @@ static void run_task(fiber *routine)
     else
     {
         free_fiber(current_fiber);
-        dec((unsigned long*)&current_scheduler->count);
+        inc((unsigned long *)&current_scheduler->end_count);
     }
 }
 
@@ -130,7 +130,7 @@ static void schedule(unsigned long thread_number)
     }
 }
 
-static void* thread_cycle(void *arg)
+static void *thread_cycle(void *arg)
 {
     unsigned long thread_number = ((unsigned long *)arg)[0];
     scheduler *sched = (scheduler *)((unsigned long *)arg)[1];
@@ -144,7 +144,7 @@ static void* thread_cycle(void *arg)
 
 static void insert_fiber(scheduler *sched, fiber *fib)
 {
-    inc((unsigned long*)&sched->count);
+    inc((unsigned long *)&sched->count);
     insert_to_minimum_queue(sched, fib);
 }
 
@@ -156,26 +156,29 @@ void join(fiber *fib)
     }
 }
 
-scheduler *new_default_scheduler()
+int new_default_scheduler(scheduler *sched)
 {
-    return new_scheduler((unsigned int)sysconf(_SC_NPROCESSORS_ONLN) - 1);
+    return new_scheduler(sched, (unsigned int)sysconf(_SC_NPROCESSORS_ONLN) - 1);
 }
 
-scheduler *new_scheduler(unsigned int using_threads)
+int new_scheduler(scheduler *sched, unsigned int using_threads)
 {
     size_t threads = using_threads;
 
-    scheduler *sched = (scheduler *)malloc(sizeof(scheduler));
+    sched->threads_pool = (list *)malloc(sizeof(list));
+    create_list(sched->threads_pool);
 
-    sched->threads_pool = create_list();
     sched->queues = (list **)calloc(sizeof(list *), threads);
+    sched->count = 0;
+    sched->end_count = 0;
     sched->terminate = 0;
     sched->threads_running = 0;
     sched->threads = threads;
 
     for (unsigned long index = 0; index < threads; index++)
     {
-        sched->queues[index] = create_list();
+        sched->queues[index] = (list *)malloc(sizeof(list));
+        create_list(sched->queues[index]);
     }
 
     for (unsigned long index = 0; index < threads; index++)
@@ -191,7 +194,7 @@ scheduler *new_scheduler(unsigned int using_threads)
         list_push_back(sched->threads_pool, (list_node *)thr_node);
     }
 
-    return sched;
+    return 0;
 }
 
 void run_scheduler(scheduler *sched)
@@ -221,13 +224,18 @@ void sleep_for(unsigned long duration)
 
 fiber *submit(fiber_routine routine, void *args)
 {
+    if (current_fiber == NULL)
+    {
+        return NULL;
+    }
+
     fiber *fib = create_fiber(routine, args);
     fib->external_context = current_fiber->context;
     insert_fiber(current_scheduler, fib);
     return fib;
 }
 
-void terminate_scheduler(scheduler *sched)
+int terminate_scheduler(scheduler *sched)
 {
     shutdown(sched);
     sched->terminate = 1;
@@ -256,12 +264,12 @@ void terminate_scheduler(scheduler *sched)
 
     free(sched->queues);
 
-    free(sched);
+    return 0;
 }
 
 void shutdown(scheduler *sched)
 {
-    while (sched->count)
+    while (sched->count != sched->end_count)
     {
         usleep(2);
     }

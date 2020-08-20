@@ -22,12 +22,8 @@ typedef struct coroutine
 
 extern thread_local coroutine *current_coroutine;
 
+int create_coroutine(coroutine *new_coroutine, void (*routine)(void *), void *args);
 void suspend(void);
 void resume(coroutine *this);
-
-coroutine create_coroutine(void (*routine)(void *), void *args);
-
 void switch_to_caller(coroutine *coroutine);
-void setup(coroutine *coroutine, void (*Trampoline)());
-
-void free_coroutine(coroutine *coroutine);
+int free_coroutine(coroutine *coroutine);

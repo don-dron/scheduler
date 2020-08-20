@@ -2,13 +2,6 @@
 
 thread_local coroutine *current_coroutine = NULL;
 
-void suspend()
-{
-    coroutine *next_coroutine = current_coroutine;
-    current_coroutine = next_coroutine->external_routine;
-    switch_to_caller(next_coroutine);
-}
-
 static void trampoline()
 {
     current_coroutine->routine(current_coroutine->args);
@@ -18,7 +11,7 @@ static void trampoline()
     suspend();
 }
 
-void setup(coroutine *coroutine_, void (*trampoline)(void *))
+static int setup(coroutine *coroutine_, void (*trampoline)(void *))
 {
     // Allocate memory for stack and context
     void *start = mmap(/*addr=*/0, /*length=*/STACK_SIZE,
@@ -26,10 +19,15 @@ void setup(coroutine *coroutine_, void (*trampoline)(void *))
                        /*flags=*/MAP_PRIVATE | 0x20,
                        /*fd=*/-1, /*offset=*/0);
 
-    //int ret = 
-    mprotect(/*addr=*/(void *)((size_t)start + pages_to_bytes(4)),
+    int ret = mprotect(/*addr=*/(void *)((size_t)start + pages_to_bytes(4)),
                        /*len=*/pages_to_bytes(4),
                        /*prot=*/PROT_NONE);
+
+    if (ret)
+    {
+        munmap(start, STACK_SIZE);
+        return ret;
+    }
 
     stack_builder stackBuilder;
     // Set top stack address
@@ -50,7 +48,7 @@ void setup(coroutine *coroutine_, void (*trampoline)(void *))
     //   |
     //   |
     //   0
-    stackBuilder.top = (char*)((size_t)start + STACK_SIZE - 1);
+    stackBuilder.top = (char *)((size_t)start + STACK_SIZE - 1);
 
     // Machine word size, usually 8 bytes(x86)
     stackBuilder.word_size = sizeof(void *);
@@ -70,20 +68,32 @@ void setup(coroutine *coroutine_, void (*trampoline)(void *))
 
     // Save allocated memory pointer
     coroutine_->stack = start;
+
+    return 0;
 }
 
-coroutine create_coroutine(void (*routine)(), void *args)
+int create_coroutine(coroutine *new_coroutine, void (*routine)(), void *args)
 {
-    coroutine new_coroutine;
+    new_coroutine->routine = routine;
+    new_coroutine->complete = 0;
+    new_coroutine->args = args;
 
-    new_coroutine.routine = routine;
-    new_coroutine.complete = 0;
-    new_coroutine.args = args;
+    int ret = setup(new_coroutine, trampoline);
 
-    setup(&new_coroutine, trampoline);
+    if (ret)
+    {
+        return ret;
+    }
 
-    new_coroutine.external_routine = current_coroutine;
-    return new_coroutine;
+    new_coroutine->external_routine = current_coroutine;
+    return 0;
+}
+
+void suspend()
+{
+    coroutine *next_coroutine = current_coroutine;
+    current_coroutine = next_coroutine->external_routine;
+    switch_to_caller(next_coroutine);
 }
 
 void resume(coroutine *coroutine_by_resume)
@@ -103,7 +113,8 @@ void switch_to_caller(coroutine *coroutine_)
     switch_context(&coroutine_->routine_context, &coroutine_->caller_context);
 }
 
-void free_coroutine(coroutine *coroutine_)
+int free_coroutine(coroutine *coroutine_)
 {
     munmap(coroutine_->stack, STACK_SIZE);
+    return 0;
 }

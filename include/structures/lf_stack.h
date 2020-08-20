@@ -23,15 +23,9 @@ typedef struct lf_stack
     size_t size;
 } lf_stack;
 
-lf_stack_node *create_lf_stack_node(lf_stack_node *next_node);
-
-lf_stack_head *create_lf_stack_head(lf_stack_node *next_node);
-
-lf_stack *create_lf_stack(void);
+int create_lf_stack(lf_stack* stack);
 
 void push_lf_stack(lf_stack *stack, lf_stack_node *node);
-
-void free_lf_stack_nodes(lf_stack *stack);
 
 lf_stack_node *pop_lf_stack(lf_stack *stack);
 

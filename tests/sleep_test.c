@@ -17,22 +17,23 @@ static void func(void* args)
 
 int main()
 {
-    scheduler *sched = new_default_scheduler();
+    scheduler sched;
+    new_default_scheduler(&sched);
 
     for (int i = 0; i < 1; i++)
     {
-        spawn(sched, func, NULL);
-        spawn(sched, func, NULL);
-        spawn(sched, func, NULL);
-        spawn(sched, func, NULL);
-        spawn(sched, func, NULL);
-        spawn(sched, func, NULL);
-        spawn(sched, func, NULL);
-        spawn(sched, func, NULL);
+        spawn(&sched, func, NULL);
+        spawn(&sched, func, NULL);
+        spawn(&sched, func, NULL);
+        spawn(&sched, func, NULL);
+        spawn(&sched, func, NULL);
+        spawn(&sched, func, NULL);
+        spawn(&sched, func, NULL);
+        spawn(&sched, func, NULL);
     }
     
-    run_scheduler(sched);
-    terminate_scheduler(sched);
+    run_scheduler(&sched);
+    terminate_scheduler(&sched);
 
     print_statistic();
 

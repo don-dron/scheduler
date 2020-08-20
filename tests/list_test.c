@@ -68,7 +68,9 @@ static void *list_worker(void *arg)
 
 static void concurrent_test()
 {
-    lst = create_list();
+    lst = (list *)malloc(sizeof(list));
+    create_list(lst);
+    
     long nthreads = sysconf(_SC_NPROCESSORS_ONLN);
     int i;
 
@@ -84,7 +86,8 @@ static void concurrent_test()
 
 static void simple_test()
 {
-    lst = create_list();
+    lst = (list *)malloc(sizeof(list));
+    create_list(lst);
 
     data_node *nd = (data_node *)malloc(sizeof(data_node));
     nd->data = 10;

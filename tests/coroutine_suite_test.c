@@ -32,8 +32,9 @@ static void test1Bar(void *args)
 
 static void test1()
 {
-    coroutine first = create_coroutine(test1Foo, NULL);
-    coroutine second = create_coroutine(test1Bar, NULL);
+    coroutine first, second;
+    create_coroutine(&first, test1Foo, NULL);
+    create_coroutine(&second, test1Bar, NULL);
 
     resume(&first);
     resume(&second);
@@ -63,8 +64,10 @@ static void test2Bar(void *args)
 
 static void test2()
 {
-    coroutine first = create_coroutine(test2Foo, NULL);
-    coroutine second = create_coroutine(test2Bar, NULL);
+    coroutine first, second;
+
+    assert(create_coroutine(&first, test2Foo, NULL) == 0);
+    assert(create_coroutine(&second, test2Bar, NULL) == 0);
 
     while (!(first.complete && second.complete))
     {
@@ -89,7 +92,8 @@ static void test3Foo(void *args)
 {
     for (int i = 0; i < 123; ++i)
     {
-        coroutine first = create_coroutine(nop, NULL);
+        coroutine first;
+        assert(create_coroutine(&first, nop, NULL) == 0);
         resume(&first);
         ++inner_step_count;
         suspend();
@@ -100,7 +104,8 @@ static void test3Foo(void *args)
 
 static void test3Bar(void *args)
 {
-    coroutine first = create_coroutine(test3Foo, NULL);
+    coroutine first;
+    assert(create_coroutine(&first, test3Foo, NULL) == 0);
     while (!first.complete)
     {
         resume(&first);
@@ -111,7 +116,8 @@ static void test3Bar(void *args)
 
 static void test3()
 {
-    coroutine second = create_coroutine(test3Bar, NULL);
+    coroutine second;
+    assert(create_coroutine(&second, test3Bar, NULL) == 0);
     while (!second.complete)
     {
         resume(&second);

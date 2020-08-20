@@ -75,7 +75,8 @@ static void tree()
 
     for (int i = 0; i < SCHEDS_COUNT; i++)
     {
-        scheds[i] = new_scheduler(SCHEDSS_THREADS);
+        scheds[i] = (scheduler *)malloc(sizeof(scheduler));
+        new_scheduler(scheds[i], SCHEDSS_THREADS);
     }
 
     for (int i = 0; i < SCHEDS_COUNT; i++)

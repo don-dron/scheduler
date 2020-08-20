@@ -1,14 +1,14 @@
 #include <structures/lf_stack.h>
 
-lf_stack_node *create_lf_stack_node(lf_stack_node *next_node)
-{
-    lf_stack_node *created_node = (lf_stack_node *)malloc(sizeof(lf_stack_node));
-    created_node->next = next_node;
-    created_node->list_mutex = 0;
-    return created_node;
-}
+// static lf_stack_node *create_lf_stack_node(lf_stack_node *next_node)
+// {
+//     lf_stack_node *created_node = (lf_stack_node *)malloc(sizeof(lf_stack_node));
+//     created_node->next = next_node;
+//     created_node->list_mutex = 0;
+//     return created_node;
+// }
 
-lf_stack_head *create_lf_stack_head(lf_stack_node *next_node)
+static lf_stack_head *create_lf_stack_head(lf_stack_node *next_node)
 {
     lf_stack_head *created_head = (lf_stack_head *)malloc(sizeof(lf_stack_head));
     created_head->next = next_node;
@@ -16,13 +16,24 @@ lf_stack_head *create_lf_stack_head(lf_stack_node *next_node)
     return created_head;
 }
 
-lf_stack *create_lf_stack(void)
+static void free_lf_stack_nodes(lf_stack *stack)
 {
-    lf_stack *lockFreeStack = (lf_stack *)malloc(sizeof(lf_stack));
-    lockFreeStack->head = create_lf_stack_head(0);
-    lockFreeStack->head->next = 0;
-    lockFreeStack->size = 0;
-    return lockFreeStack;
+    lf_stack_node *top = stack->head->next;
+    lf_stack_node *curr_top = top;
+    while (top != 0)
+    {
+        curr_top = top;
+        top = top->next;
+        free(curr_top);
+    }
+}
+
+int create_lf_stack(lf_stack* stack)
+{
+    stack->head = create_lf_stack_head(0);
+    stack->head->next = 0;
+    stack->size = 0;
+    return 0;
 }
 
 void push_lf_stack(lf_stack *stack, lf_stack_node *node)
@@ -41,18 +52,6 @@ void push_lf_stack(lf_stack *stack, lf_stack_node *node)
     }
 
     __atomic_fetch_add(&stack->size, 1, __ATOMIC_SEQ_CST);
-}
-
-void free_lf_stack_nodes(lf_stack *stack)
-{
-    lf_stack_node *top = stack->head->next;
-    lf_stack_node *curr_top = top;
-    while (top != 0)
-    {
-        curr_top = top;
-        top = top->next;
-        free(curr_top);
-    }
 }
 
 lf_stack_node* pop_lf_stack(lf_stack *stack)

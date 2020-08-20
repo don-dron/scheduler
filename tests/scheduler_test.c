@@ -12,7 +12,7 @@
 static int sum = 0;
 static int atom = 0;
 
-static void c(void *args)
+static void inner_func(void *args)
 {
     yield();
     __atomic_fetch_add(&atom, 1, __ATOMIC_SEQ_CST);
@@ -29,27 +29,28 @@ static void func(void* args)
 {
     for (int i = 0; i < 100; i++)
     {
-        submit(c, NULL);
+        submit(inner_func, NULL);
         yield();
     }
 }
 
 static void test1()
 {
-    scheduler *sched = new_default_scheduler();
+    scheduler sched;
+    new_default_scheduler(&sched);
 
     for (int i = 0; i < 100; i++)
     {
-        spawn(sched, func, NULL);
-        spawn(sched, func, NULL);
-        spawn(sched, func, NULL);
-        spawn(sched, func, NULL);
-        spawn(sched, func, NULL);
-        spawn(sched, func, NULL);
+        spawn(&sched, func, NULL);
+        spawn(&sched, func, NULL);
+        spawn(&sched, func, NULL);
+        spawn(&sched, func, NULL);
+        spawn(&sched, func, NULL);
+        spawn(&sched, func, NULL);
     }
 
-    run_scheduler(sched);
-    terminate_scheduler(sched);
+    run_scheduler(&sched);
+    terminate_scheduler(&sched);
 
     print_statistic();
     assert(atom == 120000);
