@@ -17,9 +17,10 @@ struct stack_data_node
     lf_stack_node lst_node;
     int data;
 };
+
 typedef struct stack_data_node stack_data_node;
 
-void *worker(void *arg)
+static void *worker(void *arg)
 {
     int i = 1000;
     long long *int_data;
@@ -28,18 +29,17 @@ void *worker(void *arg)
         int_data = (long long *)malloc(sizeof(long long));
         assert(int_data != NULL);
         *int_data = i;
-        int data;
         for (int j = 0; j < 100; j++)
         {
             stack_data_node *stackNode = (stack_data_node *)malloc(sizeof(stack_data_node));
             stackNode->data = j;
             stackNode->lst_node.list_mutex = 0;
 
-            push_lf_stack(results, stackNode);
+            push_lf_stack(results, (lf_stack_node *)stackNode);
         }
         for (int j = 0; j < 100; j++)
         {
-            stack_data_node *node = pop_lf_stack(results);
+            lf_stack_node *node = pop_lf_stack(results);
             if (node != 0)
             {
                 free(node);
@@ -52,21 +52,22 @@ void *worker(void *arg)
     return NULL;
 }
 
-void stack_test()
+static void stack_test()
 {
-    results = create_lf_stack();
-    int nthreads = sysconf(_SC_NPROCESSORS_ONLN);
+    results = (lf_stack *)malloc(sizeof(lf_stack));
+    create_lf_stack(results);
+    long nthreads = sysconf(_SC_NPROCESSORS_ONLN);
     int i;
 
     pthread_t threads[nthreads];
-    printf("Using %d thread%s.\n", nthreads, nthreads == 1 ? "" : "s");
+    printf("Using %ld thread%s.\n", nthreads, nthreads == 1 ? "" : "s");
     for (i = 0; i < nthreads; i++)
         pthread_create(threads + i, NULL, worker, NULL);
 
     for (i = 0; i < nthreads; i++)
         pthread_join(threads[i], NULL);
 
-    printf("Size = %d\n", results->size);
+    printf("Size = %ld\n", results->size);
     assert(results->size == 0);
 
     free_lf_stack(results);
@@ -75,5 +76,6 @@ void stack_test()
 int main()
 {
     stack_test();
+    printf("PASSED\n");
     return EXIT_SUCCESS;
 }

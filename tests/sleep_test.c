@@ -10,36 +10,33 @@
 
 #include <scheduler/scheduler.h>
 
-void func()
+static void func(void* args)
 {
-    printf("sleep run\n");
     sleep_for(1);
-    printf("sleep end\n");
 }
 
 int main()
 {
-    new_scheduler();
+    scheduler sched;
+    new_default_scheduler(&sched);
 
     for (int i = 0; i < 1; i++)
     {
-        spawn(func);
-        spawn(func);
-        spawn(func);
-        spawn(func);
-        spawn(func);
-        spawn(func);
-        spawn(func);
-        spawn(func);
+        spawn(&sched, func, NULL);
+        spawn(&sched, func, NULL);
+        spawn(&sched, func, NULL);
+        spawn(&sched, func, NULL);
+        spawn(&sched, func, NULL);
+        spawn(&sched, func, NULL);
+        spawn(&sched, func, NULL);
+        spawn(&sched, func, NULL);
     }
-
-    struct timeval stop, start;
-    gettimeofday(&start, NULL);
-
-    run_scheduler();
-    terminate_scheduler();
     
+    run_scheduler(&sched);
+    terminate_scheduler(&sched);
+
     print_statistic();
-    
+
+    printf("PASSED\n");
     return EXIT_SUCCESS;
 }

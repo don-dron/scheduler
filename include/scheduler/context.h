@@ -42,13 +42,13 @@ typedef struct stack_builder
 
 typedef struct statistic
 {
-  int switch_count_atom;
-  int switch_count;
+  unsigned long switch_count_atom;
+  unsigned long switch_count;
 } statistic;
 
 extern void switch_from_to(execution_context *from, execution_context *to);
 
-unsigned long switch_context(execution_context *from, execution_context *to);
+void switch_context(execution_context *from, execution_context *to);
 
 void align_next_push(stack_builder *builder, size_t alignment);
 
@@ -56,6 +56,6 @@ void allocate(stack_builder *builder, size_t bytes);
 
 size_t pages_to_bytes(size_t count);
 
-statistic get_statistic();
+statistic get_statistic(void);
 
-void print_statistic();
+void print_statistic(void);

@@ -1,5 +1,3 @@
-#pragma once
-
 #include <structures/thin_heap.h>
 
 int is_thin_node(thin_node *node)
@@ -111,10 +109,10 @@ thin_node *extract_min_thin_heap(thin_heap *heap)
     int max = -1;
     node = heap->first;
 
-    int n = 50;
+    size_t n = 50;
     thin_node **aux = (thin_node **)calloc(sizeof(thin_node *), n);
 
-    for (int i = 0; i < n; i++)
+    for (size_t i = 0; i < n; i++)
     {
         aux[n] = 0;
     }

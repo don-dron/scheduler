@@ -27,7 +27,7 @@ typedef struct thin_heap
 
 int is_thin_node(thin_node *node);
 
-thin_heap *create_thin_heap();
+thin_heap *create_thin_heap(THIN_HEAP_COMPARATOR comparator);
 
 void insert_to_thin_heap(thin_heap *heap, thin_node *node);
 

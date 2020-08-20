@@ -20,7 +20,7 @@ typedef struct list
     size_t size;
 } list;
 
-list *create_list();
+int create_list(list* lst);
 
 void list_push_back(list *lst, list_node *node);
 
@@ -30,4 +30,4 @@ list_node *list_pop_back(list *lst);
 
 list_node *list_pop_front(list *lst);
 
-void free_list(list *lst);
+int free_list(list *lst);

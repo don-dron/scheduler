@@ -1,11 +1,6 @@
-#if (APPLE)
-  #define FUNCTION_NAME(name) _##name
-#else
-  #define FUNCTION_NAME(name) name
-#endif
+#define FUNCTION_NAME(name) name
 
 .global FUNCTION_NAME(switch_from_to)
-
 
 FUNCTION_NAME(switch_from_to):
     

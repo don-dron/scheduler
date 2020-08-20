@@ -1,19 +1,16 @@
-#pragma once
-
 #include <structures/list.h>
 
-list *create_list()
+int create_list(list* lst)
 {
-    list *lst = (list *)malloc(sizeof(list));
     lst->start = 0;
     lst->end = 0;
     lst->size = 0;
 
     spinlock lock;
+    lock.lock = 0;
     lst->lock = lock;
-    lst->lock.lock = 0;
 
-    return lst;
+    return 0;
 }
 
 void list_push_back(list *lst, list_node *node)
@@ -124,7 +121,7 @@ list_node *list_pop_front(list *lst)
     }
 }
 
-void free_list(list *lst)
+int free_list(list *lst)
 {
     lock_spinlock(&lst->lock);
 
@@ -140,4 +137,6 @@ void free_list(list *lst)
     unlock_spinlock(&lst->lock);
 
     free(lst);
+
+    return 0;
 }

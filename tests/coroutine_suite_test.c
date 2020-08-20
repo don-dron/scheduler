@@ -12,7 +12,7 @@
 
 int step = 0;
 
-void test1Foo()
+static void test1Foo(void *args)
 {
     assert(step == 0);
     step = 1;
@@ -21,7 +21,7 @@ void test1Foo()
     step = 3;
 }
 
-void test1Bar()
+static void test1Bar(void *args)
 {
     assert(step == 1);
     step = 2;
@@ -30,10 +30,11 @@ void test1Bar()
     step = 4;
 }
 
-void test1()
+static void test1()
 {
-    coroutine first = create_coroutine_on_stack(test1Foo);
-    coroutine second = create_coroutine_on_stack(test1Bar);
+    coroutine first, second;
+    create_coroutine(&first, test1Foo, NULL);
+    create_coroutine(&second, test1Bar, NULL);
 
     resume(&first);
     resume(&second);
@@ -41,11 +42,11 @@ void test1()
     resume(&first);
     resume(&second);
 
-    free_coroutine_on_stack(&first);
-    free_coroutine_on_stack(&second);
+    free_coroutine(&first);
+    free_coroutine(&second);
 }
 
-void test2Foo()
+static void test2Foo(void *args)
 {
     for (int i = 0; i < 100; i++)
     {
@@ -53,7 +54,7 @@ void test2Foo()
     }
 }
 
-void test2Bar()
+static void test2Bar(void *args)
 {
     for (int i = 0; i < 100; i++)
     {
@@ -61,10 +62,12 @@ void test2Bar()
     }
 }
 
-void test2()
+static void test2()
 {
-    coroutine first = create_coroutine_on_stack(test2Foo);
-    coroutine second = create_coroutine_on_stack(test2Bar);
+    coroutine first, second;
+
+    assert(create_coroutine(&first, test2Foo, NULL) == 0);
+    assert(create_coroutine(&second, test2Bar, NULL) == 0);
 
     while (!(first.complete && second.complete))
     {
@@ -72,53 +75,56 @@ void test2()
         resume(&second);
     }
 
-    free_coroutine_on_stack(&first);
-    free_coroutine_on_stack(&second);
+    free_coroutine(&first);
+    free_coroutine(&second);
 }
 
 const int kSteps = 123;
 
 int inner_step_count = 0;
 
-void nop()
+static void nop(void *args)
 {
     // nop
 }
 
-void test3Foo()
+static void test3Foo(void *args)
 {
     for (int i = 0; i < 123; ++i)
     {
-        coroutine first = create_coroutine_on_stack(nop);
+        coroutine first;
+        assert(create_coroutine(&first, nop, NULL) == 0);
         resume(&first);
         ++inner_step_count;
         suspend();
 
-        free_coroutine_on_stack(&first);
+        free_coroutine(&first);
     }
 }
 
-void test3Bar()
+static void test3Bar(void *args)
 {
-    coroutine first = create_coroutine_on_stack(test3Foo);
+    coroutine first;
+    assert(create_coroutine(&first, test3Foo, NULL) == 0);
     while (!first.complete)
     {
         resume(&first);
         suspend();
     }
-    free_coroutine_on_stack(&first);
+    free_coroutine(&first);
 }
 
-void test3()
+static void test3()
 {
-    coroutine second = create_coroutine_on_stack(test3Bar);
+    coroutine second;
+    assert(create_coroutine(&second, test3Bar, NULL) == 0);
     while (!second.complete)
     {
         resume(&second);
     }
 
     assert(inner_step_count == kSteps);
-    free_coroutine_on_stack(&second);
+    free_coroutine(&second);
 }
 
 int main()
@@ -127,5 +133,6 @@ int main()
     test2();
     test3();
     print_statistic();
+    printf("PASSED\n");
     return EXIT_SUCCESS;
 }

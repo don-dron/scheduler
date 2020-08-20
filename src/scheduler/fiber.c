@@ -1,35 +1,36 @@
-#pragma once
-
 #include <scheduler/fiber.h>
 
-extern thread_local fiber *current_fiber = 0;
+thread_local fiber *current_fiber = NULL;
 
-unsigned long GenerateId()
+unsigned long id = 0;
+
+static unsigned long generate_id()
 {
-    return 1;
+    return inc(&id);
 }
 
-fiber *create_fiber(fiber_routine routine)
+fiber *create_fiber(fiber_routine routine,void* args)
 {
     fiber *new_fiber = (fiber *)malloc(sizeof(fiber));
 
-    new_fiber->id = GenerateId();
+    new_fiber->id = generate_id();
     new_fiber->routine = routine;
     new_fiber->state = starting;
     new_fiber->parent = current_fiber;
+    new_fiber->args = args;
 
     setup_trampoline(new_fiber);
 
     return new_fiber;
 }
 
-void fiber_trampoline()
+static void fiber_trampoline()
 {
     fiber *self = current_fiber;
 
     self->state = running;
 
-    self->routine();
+    self->routine(self->args);
 
     current_fiber->state = terminated;
 
@@ -50,7 +51,8 @@ void setup_trampoline(fiber *new_fiber)
                        /*flags=*/MAP_PRIVATE | 0x20,
                        /*fd=*/-1, /*offset=*/0);
 
-    int ret = mprotect(/*addr=*/(void *)(start + pages_to_bytes(4)),
+    //int ret =
+    mprotect(/*addr=*/(void *)((size_t)start + pages_to_bytes(4)),
                        /*len=*/pages_to_bytes(4),
                        /*prot=*/PROT_NONE);
 
@@ -73,7 +75,7 @@ void setup_trampoline(fiber *new_fiber)
     //   |
     //   |
     //   0
-    stackBuilder.top = start + STACK_SIZE - 1;
+    stackBuilder.top = (char*)((size_t)start + STACK_SIZE - 1);
 
     // Machine word size, usually 8 bytes
     stackBuilder.word_size = sizeof(void *);

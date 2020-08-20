@@ -1,5 +1,3 @@
-#pragma once
-
 #include <scheduler/scheduler.h>
 
 typedef struct thread_node
@@ -14,19 +12,16 @@ typedef struct fiber_node
     fiber *fib;
 } fiber_node;
 
-void return_to_queue(fiber_node *node, int thread_index)
-{
-    list_push_back(current_scheduler->queues[(thread_index + current_scheduler->threads - 1) % current_scheduler->threads], (list_node *)node);
-}
+thread_local scheduler *current_scheduler = NULL;
 
-void insert_to_minimum_queue(fiber *fib)
+static void insert_to_minimum_queue(scheduler *sched, fiber *fib)
 {
-    int index = 0;
-    int threads = current_scheduler->threads;
+    size_t index = 0;
+    size_t threads = sched->threads;
 
-    for (int i = 0; i < threads; ++i)
+    for (size_t i = 0; i < threads; ++i)
     {
-        if (current_scheduler->queues[i]->size < current_scheduler->queues[index]->size)
+        if (sched->queues[i]->size < sched->queues[index]->size)
         {
             index = i;
         }
@@ -34,10 +29,10 @@ void insert_to_minimum_queue(fiber *fib)
 
     fiber_node *fib_node = (fiber_node *)malloc(sizeof(fiber_node));
     fib_node->fib = fib;
-    list_push_back(current_scheduler->queues[index], (list_node *)fib_node);
+    list_push_back(sched->queues[index], (list_node *)fib_node);
 }
 
-void run_task(fiber *routine)
+static void run_task(fiber *routine)
 {
     current_fiber = routine;
     current_fiber->state = running;
@@ -45,31 +40,48 @@ void run_task(fiber *routine)
 
     if (current_fiber->state != terminated)
     {
-        insert_to_minimum_queue(current_fiber);
+        insert_to_minimum_queue(current_scheduler, current_fiber);
     }
     else
     {
         free_fiber(current_fiber);
-        __atomic_fetch_sub(&current_scheduler->count, 1, __ATOMIC_SEQ_CST);
+        inc((unsigned long *)&current_scheduler->end_count);
     }
 }
 
-void schedule(int thread_number)
+static int more(struct timespec *t1, struct timespec *t2)
+{
+    long delta = 1000 * 1000 * 1000 * (t1->tv_sec - t2->tv_sec) + (t1->tv_nsec - t2->tv_nsec);
+    return delta > 0;
+}
+
+static void schedule(unsigned long thread_number)
 {
     list *queue = current_scheduler->queues[thread_number];
     while (1)
     {
-        __atomic_fetch_add(&current_scheduler->task_now, 1, __ATOMIC_SEQ_CST);
+        while (!current_scheduler->threads_running)
+        {
+            if (current_scheduler->terminate)
+            {
+                return;
+            }
+
+            usleep(1);
+        }
+
         fiber_node *fib_node = (fiber_node *)list_pop_front(queue);
 
         if (fib_node && fib_node->fib->state == sleeping)
         {
             fiber *fib = fib_node->fib;
-            if (fib->wakeup > time(0))
+            struct timespec timer;
+            clock_gettime(CLOCK_REALTIME, &timer);
+
+            if (more(&fib->wakeup, &timer))
             {
                 free(fib_node);
-                insert_to_minimum_queue(fib);
-                __atomic_fetch_sub(&current_scheduler->task_now, 1, __ATOMIC_SEQ_CST);
+                insert_to_minimum_queue(current_scheduler, fib);
                 continue;
             }
         }
@@ -79,19 +91,17 @@ void schedule(int thread_number)
             fiber *fib = fib_node->fib;
             free(fib_node);
             run_task(fib);
-            __atomic_fetch_sub(&current_scheduler->task_now, 1, __ATOMIC_SEQ_CST);
         }
         else
         {
-            if (current_scheduler->end_threads)
+            if (current_scheduler->terminate)
             {
-                __atomic_fetch_sub(&current_scheduler->task_now, 1, __ATOMIC_SEQ_CST);
                 return;
             }
             else
             {
-                int threads = current_scheduler->threads;
-                int current = thread_number;
+                size_t threads = current_scheduler->threads;
+                unsigned long current = thread_number;
 
                 fiber_node *stolen = 0;
                 while (1)
@@ -110,11 +120,9 @@ void schedule(int thread_number)
                     fiber *fib = stolen->fib;
                     free(stolen);
                     run_task(fib);
-                    __atomic_fetch_sub(&current_scheduler->task_now, 1, __ATOMIC_SEQ_CST);
                 }
                 else
                 {
-                    __atomic_fetch_sub(&current_scheduler->task_now, 1, __ATOMIC_SEQ_CST);
                     usleep(2);
                 }
             }
@@ -122,17 +130,22 @@ void schedule(int thread_number)
     }
 }
 
-void thread_cycle(void *arg)
+static void *thread_cycle(void *arg)
 {
-    int thread_number = ((int *)arg)[0];
+    unsigned long thread_number = ((unsigned long *)arg)[0];
+    scheduler *sched = (scheduler *)((unsigned long *)arg)[1];
+
+    current_scheduler = sched;
+
     free(arg);
-
-    while (!current_scheduler->threads_run)
-    {
-        usleep(1);
-    }
-
     schedule(thread_number);
+    return NULL;
+}
+
+static void insert_fiber(scheduler *sched, fiber *fib)
+{
+    inc((unsigned long *)&sched->count);
+    insert_to_minimum_queue(sched, fib);
 }
 
 void join(fiber *fib)
@@ -143,95 +156,93 @@ void join(fiber *fib)
     }
 }
 
-void new_scheduler()
+int new_default_scheduler(scheduler *sched)
 {
-    size_t threads = sysconf(_SC_NPROCESSORS_ONLN) - 1;
+    return new_scheduler(sched, (unsigned int)sysconf(_SC_NPROCESSORS_ONLN) - 1);
+}
 
-    if (current_scheduler != 0)
+int new_scheduler(scheduler *sched, unsigned int using_threads)
+{
+    size_t threads = using_threads;
+
+    sched->threads_pool = (list *)malloc(sizeof(list));
+    create_list(sched->threads_pool);
+
+    sched->queues = (list **)calloc(sizeof(list *), threads);
+    sched->count = 0;
+    sched->end_count = 0;
+    sched->terminate = 0;
+    sched->threads_running = 0;
+    sched->threads = threads;
+
+    for (unsigned long index = 0; index < threads; index++)
     {
-        abort();
+        sched->queues[index] = (list *)malloc(sizeof(list));
+        create_list(sched->queues[index]);
     }
 
-    current_scheduler = (scheduler *)malloc(sizeof(scheduler));
-
-    current_scheduler->threads_pool = create_list();
-    current_scheduler->queues = (list **)calloc(sizeof(list *), threads);
-    current_scheduler->end_threads = 0;
-    current_scheduler->threads_run = 0;
-    current_scheduler->threads = threads;
-
-    for (int t = 0; t < threads; t++)
-    {
-        current_scheduler->queues[t] = create_list();
-    }
-
-    for (int t = 0; t < threads; t++)
+    for (unsigned long index = 0; index < threads; index++)
     {
         thread_node *thr_node = (thread_node *)malloc(sizeof(thread_node));
 
-        int *args = (int *)malloc(sizeof(int) * 1);
-        args[0] = t;
+        unsigned long *args = (unsigned long *)malloc(sizeof(unsigned long) * 1);
+        args[0] = index;
+        args[1] = (unsigned long)sched;
 
         pthread_create(&thr_node->thr, 0, thread_cycle, (void *)args);
 
-        list_push_back(current_scheduler->threads_pool, (list_node *)thr_node);
+        list_push_back(sched->threads_pool, (list_node *)thr_node);
     }
+
+    return 0;
 }
 
-void run_scheduler()
+void run_scheduler(scheduler *sched)
 {
-    current_scheduler->threads_run = 1;
+    sched->threads_running = 1;
 }
 
-void insert_fiber(fiber *fib)
+fiber *spawn(scheduler *sched, fiber_routine routine, void *args)
 {
-    __atomic_fetch_add(&current_scheduler->count, 1, __ATOMIC_SEQ_CST);
-    insert_to_minimum_queue(fib);
-}
-
-fiber *spawn(fiber_routine routine)
-{
-    fiber *fib = create_fiber(routine);
-    insert_fiber(fib);
+    fiber *fib = create_fiber(routine, args);
+    insert_fiber(sched, fib);
     return fib;
-}
-
-void switch_to_scheduler(fiber *fib)
-{
-    fiber *next = fib;
-
-    while (next->parent)
-    {
-        next = next->parent;
-    }
-
-    switch_context(&fib->context, &next->external_context);
 }
 
 void sleep_for(unsigned long duration)
 {
     fiber *fib = current_fiber;
     fib->state = sleeping;
-    fib->wakeup = time(0) + duration;
+
+    struct timespec timer;
+    clock_gettime(CLOCK_REALTIME, &timer);
+    timer.tv_nsec += (long)(duration * 1000);
+    fib->wakeup = timer;
+
     switch_context(&current_fiber->context, &current_fiber->external_context);
 }
 
-fiber *submit(fiber_routine routine)
+fiber *submit(fiber_routine routine, void *args)
 {
-    fiber *fib = create_fiber(routine);
+    if (current_fiber == NULL)
+    {
+        return NULL;
+    }
+
+    fiber *fib = create_fiber(routine, args);
     fib->external_context = current_fiber->context;
-    insert_fiber(fib);
+    insert_fiber(current_scheduler, fib);
     return fib;
 }
 
-void terminate_scheduler()
+int terminate_scheduler(scheduler *sched)
 {
-    shutdown();
-    current_scheduler->end_threads = 1;
+    shutdown(sched);
+    sched->terminate = 1;
 
     while (1)
     {
-        thread_node *thr_node = (thread_node *)list_pop_front(current_scheduler->threads_pool);
+        thread_node *thr_node = (thread_node *)list_pop_front(sched->threads_pool);
 
         if (thr_node == 0)
         {
@@ -244,25 +255,25 @@ void terminate_scheduler()
         }
     }
 
-    free(current_scheduler->threads_pool);
+    free(sched->threads_pool);
 
-    for (int i = 0; i < current_scheduler->threads; i++)
+    for (size_t i = 0; i < sched->threads; i++)
     {
-        free(current_scheduler->queues[i]);
+        free(sched->queues[i]);
     }
 
-    free(current_scheduler->queues);
+    free(sched->queues);
 
-    free(current_scheduler);
-    current_scheduler = 0;
+    return 0;
 }
 
-void shutdown()
+void shutdown(scheduler *sched)
 {
-    while (current_scheduler->count || current_scheduler->task_now)
+    while (sched->count != sched->end_count)
     {
         usleep(2);
     }
+    sched->threads_running = 0;
 }
 
 void yield()

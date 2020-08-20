@@ -20,7 +20,7 @@ struct data_node
 
 typedef struct data_node data_node;
 
-void list_worker(void *arg)
+static void *list_worker(void *arg)
 {
     int i = 10000;
     long long *int_data;
@@ -29,16 +29,15 @@ void list_worker(void *arg)
         int_data = (long long *)malloc(sizeof(long long));
         assert(int_data != NULL);
         *int_data = i;
-        int data;
         for (int j = 0; j < 100; j++)
         {
             data_node *nd = (data_node *)malloc(sizeof(data_node));
             nd->data = j;
-            list_push_front(lst, nd);
+            list_push_front(lst, (list_node *)nd);
         }
         for (int j = 0; j < 100; j++)
         {
-            void *item = list_pop_front(lst);
+            list_node *item = list_pop_front(lst);
 
             if (item != 0)
             {
@@ -50,11 +49,11 @@ void list_worker(void *arg)
             data_node *nd = (data_node *)malloc(sizeof(data_node));
             nd->data = j;
 
-            list_push_back(lst, nd);
+            list_push_back(lst, (list_node *)nd);
         }
         for (int j = 0; j < 100; j++)
         {
-            void *item = list_pop_back(lst);
+            list_node *item = list_pop_back(lst);
             if (item != 0)
             {
                 free(item);
@@ -63,12 +62,16 @@ void list_worker(void *arg)
 
         free(int_data);
     }
+
+    return NULL;
 }
 
-void concurrent_test()
+static void concurrent_test()
 {
-    lst = create_list();
-    int nthreads = sysconf(_SC_NPROCESSORS_ONLN);
+    lst = (list *)malloc(sizeof(list));
+    create_list(lst);
+    
+    long nthreads = sysconf(_SC_NPROCESSORS_ONLN);
     int i;
 
     pthread_t threads[nthreads];
@@ -81,13 +84,14 @@ void concurrent_test()
     free_list(lst);
 }
 
-void simple_test()
+static void simple_test()
 {
-    lst = create_list();
+    lst = (list *)malloc(sizeof(list));
+    create_list(lst);
 
     data_node *nd = (data_node *)malloc(sizeof(data_node));
     nd->data = 10;
-    list_push_front(lst, nd);
+    list_push_front(lst, (list_node *)nd);
 
     void *item = list_pop_front(lst);
 
@@ -98,7 +102,7 @@ void simple_test()
 
     nd = (data_node *)malloc(sizeof(data_node));
     nd->data = 10;
-    list_push_front(lst, nd);
+    list_push_front(lst, (list_node *)nd);
 
     item = list_pop_front(lst);
 
@@ -114,5 +118,6 @@ int main()
 {
     simple_test();
     concurrent_test();
+    printf("PASSED\n");
     return EXIT_SUCCESS;
 }
