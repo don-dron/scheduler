@@ -97,3 +97,16 @@ target_link_libraries(tree_benchmark.test PRIVATE Threads::Threads lib_scheduler
 add_test(NAME Tree_Benchmark COMMAND tree_benchmark.test)
 
 set_tests_properties(Tree_Benchmark PROPERTIES TIMEOUT ${TIMEOUT})
+
+
+######################################
+# Timeouts tests.
+######################################
+
+
+add_executable(timeout_scheduler.test timeout_scheduler.c)
+add_dependencies(timeout_scheduler.test lib_scheduler)
+target_link_libraries(timeout_scheduler.test PRIVATE Threads::Threads lib_scheduler)
+add_test(NAME Timeout_Tests COMMAND timeout_scheduler.test)
+
+set_tests_properties(Timeout_Tests PROPERTIES TIMEOUT ${TIMEOUT})

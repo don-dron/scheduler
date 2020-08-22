@@ -4,8 +4,10 @@
 
 typedef struct spinlock
 {
-    int lock;
+    volatile int lock;
 } spinlock;
+
+void init_spinlock(spinlock *spin_lock);
 
 void lock_spinlock(spinlock *spin_lock);
 

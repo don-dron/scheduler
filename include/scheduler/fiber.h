@@ -4,6 +4,7 @@
 
 #include <scheduler/context.h>
 #include <locks/atomics.h>
+#include <locks/spinlock.h>
 
 enum fiber_state
 {
@@ -28,7 +29,9 @@ typedef struct fiber
     fiber_routine routine;
     struct fiber *parent;
     unsigned long id;
+    struct timespec start;
     struct timespec wakeup;
+    struct spinlock lock;
 } fiber;
 
 extern thread_local fiber *current_fiber;
