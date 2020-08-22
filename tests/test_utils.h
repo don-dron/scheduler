@@ -13,38 +13,38 @@
 #error "Scheduler not defined"
 #endif
 
-#ifndef SCHEDSS_THREADS
-#define SCHEDSS_THREADS 4
-#endif
-
-#define SCHEDS_COUNT 1
-#define ROOT_ROUTINES 1
-#define ROOTINES_STEP 16
-
 int sum = 0;
 int atom = 0;
+unsigned long scheds_threads = 1;
 unsigned long interrupted = 0;
 
 void run_test(void (*test)());
 
 void run_test(void (*test)())
 {
-    printf("Run test ... ");
-    struct timespec mt1, mt2;
-    long int delta;
-    clock_gettime(CLOCK_REALTIME, &mt1);
+    while (scheds_threads <= 64UL)
+    {
+        printf("Run test with <%ld> threads ...", scheds_threads);
+        struct timespec mt1, mt2;
+        unsigned long int delta;
+        clock_gettime(CLOCK_REALTIME, &mt1);
 
-    test();
+        test();
 
-    clock_gettime(CLOCK_REALTIME, &mt2);
-    delta = 1000 * 1000 * 1000 * (mt2.tv_sec - mt1.tv_sec) + (mt2.tv_nsec - mt1.tv_nsec);
+        clock_gettime(CLOCK_REALTIME, &mt2);
+        delta = 1000UL * 1000UL * 1000UL * (unsigned long)(mt2.tv_sec - mt1.tv_sec) + (unsigned long)(mt2.tv_nsec - mt1.tv_nsec);
 
-    print_statistic();
-    // printf("Time: microseconds %ld\n", delta / 1000);
-    printf("Time: milliseconds %ld ", delta / 1000 / 1000);
-    // printf("Time: seconds %ld\n", delta / 1000 / 1000 / 1000);
-    // printf("%d %d\n", atom, sum);
-    // printf("Interrupted %ld\n", interrupted);
+        printf("Time: microseconds per thread %ld ", delta / 1000);
 
-    printf("PASSED\n");
+        printf("PASSED\n");
+
+        if (scheds_threads == 1)
+        {
+            scheds_threads++;
+        }
+        else
+        {
+            scheds_threads += 2;
+        }
+    }
 }

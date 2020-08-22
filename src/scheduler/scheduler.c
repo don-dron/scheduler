@@ -9,21 +9,21 @@ thread_local scheduler *current_scheduler = NULL;
 //    Handler threads - pthreads . Each pthread gets task - fiber from pull and run him.
 //    After yield,sleep,terminate - cooperative methods or interrupt - preemption methods
 //    handler returns for scheduling.
-//     
-//    Detail for one thread: 
+//
+//    Detail for one thread:
 //
 //              scheduling          scheduling .etc
 //         (gets fiber from pull                                              scheduler
 //              and run him)                                                   _______
-//              _______           __________ .....                            ^       | 
+//              _______           __________ .....                            ^       |
 //              ^      |          ^                                           |       |
-//              |      V          |                                           |       V                   
+//              |      V          |                                           |       V
 //  -after run----------*---------*--------------------*----------------------------------------------------->  work time
 //                      |         ^                    |  work in          ^          |                   |
 //                      V_________|  yield()           |  fiber is long    |          |                   ^
-//                       work in     sleep_for()       V--------           |          |                   |  
-//   useful work *-----*    fiber    `end of fiber`            |           |          |                   |  
-//                      |         |                                        |          |                   ^ returns to fiber context 
+//                       work in     sleep_for()       V--------           |          |                   |
+//   useful work *-----*    fiber    `end of fiber`            |           |          |                   |
+//                      |         |                                        |          |                   ^ returns to fiber context
 //                                                             |           |          |                   |         for handler context
 //                      |         |                                        |          V                   |
 //                                                             |   switch context    switch context       |
@@ -31,22 +31,22 @@ thread_local scheduler *current_scheduler = NULL;
 //                      *         *                            |           ^          |                   |
 //          switch to fiber      switch to scheduler                       |          |                   |
 //                                                             |           |          |                   |
-//                                                                    signal handler  |**************** > |                   
+//                                                                    signal handler  |**************** > |
 //            cooperative mechanizm                            |           |                         ^
-//                                                                         |                         | remove additional stack frame 
+//                                                                         |                         | remove additional stack frame
 //                                                             |           |                         |          for handler
 //                                              it's kernel                ^                        KERNEL
 //                                                work         |           |
 //                                      |******************* >             |
-//                                      |                      |         new stack frame(created by kernel)   
-//                                      |                      ******* > for handler(in userspace) - we have additional 
-//                                      |                                stack frame above fiber frame    
-//                                      |                                   
-//                                                                         
+//                                      |                      |         new stack frame(created by kernel)
+//                                      |                      ******* > for handler(in userspace) - we have additional
+//                                      |                                stack frame above fiber frame
+//                                      |
+//
 //                                   KERNEL **************** < *********   ^
 //                                                                         |
-//                                                                 send signal from additional thread         
-//                                                                  
+//                                                                 send signal from additional thread
+//
 
 static inline long clock_to_microseconds(long time)
 {
@@ -188,6 +188,8 @@ static void insert_fiber(scheduler *sched, fiber *fib)
     return_to_pull(sched, fib);
 }
 
+#if INTERRUPT_ENABLED
+
 static void *signal_thread_func(void *args)
 {
     current_scheduler = (scheduler *)args;
@@ -213,6 +215,8 @@ static void *signal_thread_func(void *args)
 
     return NULL;
 }
+
+#endif
 
 static void handler(int signo)
 {
@@ -323,10 +327,10 @@ int new_scheduler(scheduler *sched, unsigned int using_threads)
     sigaddset(&(sched->sigact.sa_mask), SIGALRM);
 
     // we need a signal handler.
-    // The default is to call abort() and 
+    // The default is to call abort() and
     // setting SIG_IGN might cause the signal
     // to not be delivered at all.
-    
+
     memset(&sched->sigact, 0, sizeof(sched->sigact));
     sched->sigact.sa_handler = handler;
     sigaction(SIGALRM, &sched->sigact, NULL);
@@ -334,6 +338,7 @@ int new_scheduler(scheduler *sched, unsigned int using_threads)
     // Create manager for scheduler
     create_scheduler_manager(sched);
 
+#if INTERRUPT_ENABLED
     // Create thread for sending signals to handlers-threads
     pthread_create(&sched->signal_thread, 0, signal_thread_func, sched);
     int policy = SCHED_OTHER;
@@ -342,6 +347,7 @@ int new_scheduler(scheduler *sched, unsigned int using_threads)
     pthread_getschedparam(sched->signal_thread, &policy, &param);
     param.sched_priority = 99;
     pthread_setschedparam(sched->signal_thread, policy, &param);
+#endif
 
     // Create handlers-threads
     for (unsigned long index = 0; index < threads; index++)
@@ -432,8 +438,10 @@ int terminate_scheduler(scheduler *sched)
 
     sched->terminate = 1;
 
+#if INTERRUPT_ENABLED
     // Join threads
     pthread_join(sched->signal_thread, NULL);
+#endif
 
     for (size_t i = 0; i < sched->threads; i++)
     {

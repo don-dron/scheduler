@@ -2,13 +2,13 @@
 
 static void func(void *args)
 {
-    sleep_for(1000000);
+    sleep_for(10000);
 }
 
 static void test()
 {
     scheduler sched;
-    new_default_scheduler(&sched);
+    new_scheduler(&sched, (unsigned int)scheds_threads);
 
     spawn(&sched, func, NULL);
 

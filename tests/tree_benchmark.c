@@ -1,5 +1,9 @@
 #include <test_utils.h>
 
+#define SCHEDS_COUNT 1
+#define ROOT_ROUTINES 1
+#define ROOTINES_STEP 1
+
 static void internal_routine()
 {
     __atomic_fetch_add(&atom, 1, __ATOMIC_SEQ_CST);
@@ -18,19 +22,18 @@ static void internal_routine()
 
     __atomic_fetch_add(&atom, 1, __ATOMIC_SEQ_CST);
     sum++;
-    usleep(250000);
+    usleep(50000);
 
-    for (int i = 0; i < 1 << 20; i++)
+    for (int i = 0; i < 1 << 10; i++)
     {
         sum += i;
         __atomic_fetch_add(&atom, i, __ATOMIC_SEQ_CST);
 
-    
-        sum -= i;
+            sum -= i;
         __atomic_fetch_sub(&atom, i, __ATOMIC_SEQ_CST);
     }
 
-    sleep(1);
+    usleep(50000);
 
     __atomic_fetch_add(&atom, 1, __ATOMIC_SEQ_CST);
     sum++;
@@ -41,7 +44,7 @@ static void internal_routine()
     sleep_for(2 * 1000);
 
     // Work emulation
-    sleep_for(2 * 1000 * 1000);
+    sleep_for(2 * 1000);
     __atomic_fetch_add(&atom, 1, __ATOMIC_SEQ_CST);
     sum++;
     __atomic_fetch_add(&atom, 1, __ATOMIC_SEQ_CST);
@@ -82,7 +85,7 @@ static void tree()
     for (int i = 0; i < SCHEDS_COUNT; i++)
     {
         scheds[i] = (scheduler *)malloc(sizeof(scheduler));
-        new_scheduler(scheds[i], SCHEDSS_THREADS);
+        new_scheduler(scheds[i], (unsigned int)scheds_threads);
     }
 
     for (int i = 0; i < SCHEDS_COUNT; i++)

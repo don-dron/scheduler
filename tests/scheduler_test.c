@@ -1,5 +1,7 @@
 #include <test_utils.h>
 
+#define ROOT_ROUTINES 1
+
 static void inner_func(void *args)
 {
     yield();
@@ -15,7 +17,7 @@ static void inner_func(void *args)
 
 static void func(void* args)
 {
-    for (int i = 0; i < 100; i++)
+    for (int i = 0; i < ROOT_ROUTINES; i++)
     {
         submit(inner_func, NULL);
         yield();
@@ -25,15 +27,10 @@ static void func(void* args)
 static void test()
 {
     scheduler sched;
-    new_default_scheduler(&sched);
+    new_scheduler(&sched,(unsigned int)scheds_threads);
 
-    for (int i = 0; i < 100; i++)
+    for (int i = 0; i < ROOT_ROUTINES; i++)
     {
-        spawn(&sched, func, NULL);
-        spawn(&sched, func, NULL);
-        spawn(&sched, func, NULL);
-        spawn(&sched, func, NULL);
-        spawn(&sched, func, NULL);
         spawn(&sched, func, NULL);
     }
 

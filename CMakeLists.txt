@@ -31,7 +31,7 @@ include_directories(
 )
 
 add_definitions(-DDEBUG=0)
-
+add_definitions(-DINTERRUPT_ENABLED=1)
 add_definitions(-DLOCAL_QUEUES_WITH_STEAL=1)
 
 add_subdirectory(src)

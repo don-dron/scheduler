@@ -3,7 +3,6 @@ cmake -U CMakeLists.txt
 make clean
 make
 
-echo "Without valgrind"
 while :
 do
 for var in $(ls bin)

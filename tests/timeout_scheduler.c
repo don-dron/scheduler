@@ -1,11 +1,13 @@
 #include <test_utils.h>
 
+#define ROOT_ROUTINES 1
+
 static void func(void *args)
 {
-    volatile int i = 10;
+    volatile int i = 5;
     while (i > 0)
     {
-        sleep(100);
+        usleep(100000);
         --i;
     }
 }
@@ -13,9 +15,9 @@ static void func(void *args)
 static void test()
 {
     scheduler sched;
-    new_scheduler(&sched, 8);
+    new_scheduler(&sched, (unsigned int)scheds_threads);
 
-    for (size_t i = 0; i < 8; i++)
+    for (size_t i = 0; i < ROOT_ROUTINES; i++)
     {
         spawn(&sched, func, (void *)i);
     }
