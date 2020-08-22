@@ -18,6 +18,7 @@
 typedef struct scheduler
 {
     struct sigaction sigact;
+    fiber*** current_fibers;
     size_t threads;
     list **queues;
     pthread_t* threads_pool;
@@ -25,6 +26,7 @@ typedef struct scheduler
     volatile int threads_running;
     volatile int terminate;
     volatile size_t count;
+    volatile size_t interrupt_count;
     volatile size_t end_count;
     spinlock lock_spinlock;
 } scheduler;

@@ -1,6 +1,6 @@
 #include <scheduler/scheduler.h>
 
-#define INTERVAL 1000
+#define INTERVAL 20
 
 thread_local unsigned long pid = 22;
 thread_local scheduler *current_scheduler = NULL;
@@ -65,7 +65,7 @@ static void run_task(fiber *routine, unsigned long thread_number)
 #if DEBUG
         printf("[IN_FIBER ] To fiber %ld %ld %d\n", thread_number, current_fiber->id, current_fiber->state);
 #endif
-        
+
         current_fiber->state = running;
         clock_gettime(CLOCK_REALTIME, &current_fiber->start);
         switch_context(&current_fiber->external_context, &current_fiber->context);
@@ -95,6 +95,19 @@ static void run_task(fiber *routine, unsigned long thread_number)
     }
 }
 
+static void scheduler_pause()
+{
+    while (!current_scheduler->threads_running)
+    {
+        if (current_scheduler->terminate)
+        {
+            return;
+        }
+
+        usleep(10);
+    }
+}
+
 static fiber_node *steal_task(list *queue, unsigned long thread_number)
 {
     fiber_node *stolen = NULL;
@@ -117,14 +130,11 @@ static void schedule(unsigned long thread_number)
     list *queue = current_scheduler->queues[thread_number];
     while (1)
     {
-        while (!current_scheduler->threads_running)
-        {
-            if (current_scheduler->terminate)
-            {
-                return;
-            }
+        scheduler_pause();
 
-            usleep(10);
+        if (current_scheduler->terminate)
+        {
+            return;
         }
 
         fiber_node *fib_node = (fiber_node *)list_pop_front(queue);
@@ -168,18 +178,17 @@ static void insert_fiber(scheduler *sched, fiber *fib)
 
 static void *main_thread_func(void *args)
 {
-    struct timespec last_time;
-    clock_gettime(CLOCK_REALTIME, &last_time);
-
     current_scheduler = (scheduler *)args;
     for (; !current_scheduler->terminate;)
     {
-        usleep(INTERVAL);
+        scheduler_pause();
 
         if (current_scheduler->terminate)
         {
             return NULL;
         }
+
+        // usleep(INTERVAL);
 
         for (size_t i = 0; i < current_scheduler->threads; i++)
         {
@@ -209,9 +218,10 @@ static void handler(int signo)
             {
                 if (temp->state == running)
                 {
-                    #if DEBUG
-                        printf("[INTERRUPT] Interrupt fiber in scheduler thread with tid = %ld  with id = %ld  with last slice %ld delta\n", pid, temp->id, delta);
-                    #endif
+#if DEBUG
+                    printf("[INTERRUPT] Interrupt fiber in scheduler thread with tid = %ld  with id = %ld  with last slice %ld delta\n", pid, temp->id, delta);
+#endif
+                    inc(&interrupt_count);
                     temp->state = runnable;
                     switch_context(&temp->context, &temp->external_context);
                     unlock_spinlock(&temp->lock);
@@ -238,6 +248,8 @@ static void *run_fibers_handler(void *arg)
 
     current_scheduler = sched;
 
+    current_scheduler->current_fibers[thread_number] = &current_fiber;
+
     free(arg);
     schedule(thread_number);
     return NULL;
@@ -259,6 +271,7 @@ int new_scheduler(scheduler *sched, unsigned int using_threads)
     sched->terminate = 0;
     sched->threads_running = 0;
     sched->threads = threads;
+    sched->current_fibers = (fiber ***)malloc(sizeof(fiber) * threads);
 
     memset(&sched->sigact, 0, sizeof(sched->sigact));
     sched->sigact.sa_handler = handler;

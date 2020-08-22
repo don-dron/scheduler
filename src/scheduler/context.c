@@ -2,6 +2,7 @@
 
 unsigned long switch_count_atom = 0;
 unsigned long switch_count = 0;
+unsigned long interrupt_count = 0;
 
 inline void switch_context(execution_context *from, execution_context *to)
 {
@@ -33,6 +34,7 @@ statistic get_statistic()
   statistic stat;
   stat.switch_count_atom = switch_count_atom;
   stat.switch_count = switch_count;
+  stat.interrupt_count = interrupt_count;
   return stat;
 }
 
@@ -41,4 +43,5 @@ void print_statistic()
   statistic stat = get_statistic();
   printf("Atomic switch counter   %ld \n", stat.switch_count_atom);
   printf("Switch counter   %ld \n", stat.switch_count);
+  printf("Interrupted routines %ld\n", stat.interrupt_count);
 }
