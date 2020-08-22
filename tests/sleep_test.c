@@ -8,7 +8,7 @@
 #include <time.h>
 #include <sys/time.h>
 
-#include <scheduler/scheduler.h>
+#include <scheduler/local_queues_with_steal_scheduler.h>
 
 static void func(void *args)
 {

@@ -33,11 +33,12 @@ typedef struct fiber
     clock_t start;
     clock_t wakeup;
     struct spinlock lock;
+    struct scheduler *sched;
 } fiber;
 
 extern thread_local fiber *current_fiber;
 extern unsigned long id;
 
-fiber *create_fiber(fiber_routine routine,void* args);
+fiber *create_fiber(fiber_routine routine, void *args);
 void free_fiber(fiber *fiber_);
 void setup_trampoline(fiber *fiber);

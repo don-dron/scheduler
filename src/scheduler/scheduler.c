@@ -2,32 +2,8 @@
 
 #define INTERVAL 1000
 
-thread_local unsigned long pid = 22;
+thread_local unsigned long thread_id = 22;
 thread_local scheduler *current_scheduler = NULL;
-
-typedef struct fiber_node
-{
-    list_node lst_node;
-    fiber *fib;
-} fiber_node;
-
-static void insert_to_minimum_queue(scheduler *sched, fiber *fib)
-{
-    size_t index = 0;
-    size_t threads = sched->threads;
-
-    for (size_t i = 0; i < threads; ++i)
-    {
-        if (sched->queues[i]->size < sched->queues[index]->size)
-        {
-            index = i;
-        }
-    }
-
-    fiber_node *fib_node = (fiber_node *)malloc(sizeof(fiber_node));
-    fib_node->fib = fib;
-    list_push_back(sched->queues[index], (list_node *)fib_node);
-}
 
 static inline long clock_to_microseconds(long time)
 {
@@ -40,7 +16,7 @@ static inline long sub_time(clock_t end, clock_t start)
     return delta;
 }
 
-static void run_task(fiber *routine, unsigned long thread_number)
+static void run_task(fiber *routine)
 {
     lock_spinlock(&routine->lock);
 
@@ -51,7 +27,7 @@ static void run_task(fiber *routine, unsigned long thread_number)
     {
         if (sub_time(current_fiber->wakeup, clock()) > 0)
         {
-            insert_to_minimum_queue(current_scheduler, current_fiber);
+            return_to_pull(current_scheduler, current_fiber);
             current_fiber = NULL;
             unlock_spinlock(&temp->lock);
             return;
@@ -70,6 +46,7 @@ static void run_task(fiber *routine, unsigned long thread_number)
 
         current_fiber->state = running;
         current_fiber->start = clock();
+
         switch_context(&current_fiber->external_context, &current_fiber->context);
 
 #if DEBUG
@@ -78,16 +55,16 @@ static void run_task(fiber *routine, unsigned long thread_number)
 
         if (current_fiber->state != terminated)
         {
-            insert_to_minimum_queue(current_scheduler, current_fiber);
+            return_to_pull(current_scheduler, current_fiber);
             current_fiber = NULL;
             unlock_spinlock(&temp->lock);
         }
         else
         {
             current_fiber = NULL;
+            inc((unsigned long *)&current_scheduler->end_count);
             unlock_spinlock(&temp->lock);
             free_fiber(temp);
-            inc((unsigned long *)&current_scheduler->end_count);
         }
     }
     else
@@ -110,26 +87,8 @@ static inline void scheduler_pause()
     }
 }
 
-static inline fiber_node *steal_task(list *queue, unsigned long thread_number)
+static void schedule()
 {
-    fiber_node *stolen = NULL;
-    size_t threads = current_scheduler->threads;
-    unsigned long current = thread_number;
-    while (1)
-    {
-        current += 1;
-        current %= threads;
-        stolen = (fiber_node *)list_pop_back(queue);
-        if (stolen != 0 || current == thread_number)
-        {
-            return stolen;
-        }
-    }
-}
-
-static void schedule(unsigned long thread_number)
-{
-    list *queue = current_scheduler->queues[thread_number];
     while (1)
     {
         scheduler_pause();
@@ -139,35 +98,19 @@ static void schedule(unsigned long thread_number)
             return;
         }
 
-        fiber_node *fib_node = (fiber_node *)list_pop_front(queue);
+        fiber *fib = get_from_pool();
 
-        if (fib_node)
+        if (fib)
         {
-            fiber *fib = fib_node->fib;
-            free(fib_node);
-            run_task(fib, thread_number);
+            run_task(fib);
+        }
+        else if (current_scheduler->terminate)
+        {
+            return;
         }
         else
         {
-            if (current_scheduler->terminate)
-            {
-                return;
-            }
-            else
-            {
-                fiber_node *stolen = steal_task(queue, thread_number);
-
-                if (stolen)
-                {
-                    fiber *fib = stolen->fib;
-                    free(stolen);
-                    run_task(fib, thread_number);
-                }
-                else
-                {
-                    usleep(2);
-                }
-            }
+            usleep(100);
         }
     }
 }
@@ -175,7 +118,7 @@ static void schedule(unsigned long thread_number)
 static void insert_fiber(scheduler *sched, fiber *fib)
 {
     inc((unsigned long *)&sched->count);
-    insert_to_minimum_queue(sched, fib);
+    return_to_pull(sched, fib);
 }
 
 static void *main_thread_func(void *args)
@@ -190,11 +133,11 @@ static void *main_thread_func(void *args)
             return NULL;
         }
 
-        // usleep(INTERVAL);
+        usleep(INTERVAL);
 
         for (size_t i = 0; i < current_scheduler->threads; i++)
         {
-            pthread_kill(current_scheduler->threads_pool[i], SIGVTALRM);
+            pthread_kill(current_scheduler->threads_pool[i], SIGALRM);
         }
     }
 
@@ -211,16 +154,17 @@ static void handler(int signo)
             if (current_fiber != temp)
             {
                 unlock_spinlock(&temp->lock);
+                inc(&interrupt_failed_count);
                 return;
             }
 
             long delta = sub_time(clock(), temp->start);
-            if (delta > 500)
+            if (delta > 100)
             {
                 if (temp->state == running)
                 {
 #if DEBUG
-                    printf("[INTERRUPT] Interrupt fiber in scheduler thread with tid = %ld  with id = %ld  with last slice %ld delta\n", pid, temp->id, delta);
+                    printf("[INTERRUPT] Interrupt fiber in scheduler thread with tid = %ld  with id = %ld  with last slice %ld delta\n", thread_id, temp->id, delta);
 #endif
                     inc(&interrupt_count);
                     temp->state = runnable;
@@ -229,29 +173,44 @@ static void handler(int signo)
                 }
                 else
                 {
-                    printf("[ERROR] Handler wrong state: in scheduler thread with tid = %ld  with id = %ld  with state = %d \n", pid, temp->id, temp->state);
+                    printf("[ERROR] Handler wrong state: in scheduler thread with tid = %ld  with id = %ld  with state = %d \n", thread_id, temp->id, temp->state);
                     exit(1);
                 }
             }
             else
             {
                 unlock_spinlock(&temp->lock);
+                inc(&interrupt_failed_count);
             }
         }
+        else
+        {
+#if DEBUG
+            printf("[WARNING] Fail spinlock lock\n");
+#endif
+            inc(&interrupt_failed_count);
+        }
+    }
+    else
+    {
+#if DEBUG
+        printf("[WARNING] Null fiber in %ld %ld\n", thread_id, pthread_self());
+#endif
+        inc(&interrupt_failed_count);
     }
 }
 
 static void *run_fibers_handler(void *arg)
 {
     unsigned long thread_number = ((unsigned long *)arg)[0];
-    pid = thread_number;
+    thread_id = thread_number;
     scheduler *sched = (scheduler *)((unsigned long *)arg)[1];
 
     current_scheduler = sched;
-
     current_scheduler->current_fibers[thread_number] = &current_fiber;
 
     free(arg);
+
     schedule(thread_number);
     return NULL;
 }
@@ -263,10 +222,10 @@ int new_default_scheduler(scheduler *sched)
 
 int new_scheduler(scheduler *sched, unsigned int using_threads)
 {
+    // Init block
     size_t threads = using_threads;
 
     sched->threads_pool = (pthread_t *)malloc(sizeof(pthread_t) * threads);
-    sched->queues = (list **)calloc(sizeof(list *), threads);
     sched->count = 0;
     sched->end_count = 0;
     sched->terminate = 0;
@@ -274,18 +233,32 @@ int new_scheduler(scheduler *sched, unsigned int using_threads)
     sched->threads = threads;
     sched->current_fibers = (fiber ***)malloc(sizeof(fiber) * threads);
 
+    // Sets signals parameters for interrupting fibers
+
+    /* mask SIGALRM in all threads by default */
+    sigemptyset(&(sched->sigact.sa_mask));
+    sigaddset(&(sched->sigact.sa_mask), SIGALRM);
+
+    /* we need a signal handler.
+     * The default is to call abort() and 
+     * setting SIG_IGN might cause the signal
+     * to not be delivered at all.
+     **/
     memset(&sched->sigact, 0, sizeof(sched->sigact));
     sched->sigact.sa_handler = handler;
-    sigaddset(&(sched->sigact.sa_mask), SIGVTALRM);
-    sigaction(SIGVTALRM, &sched->sigact, 0);
+    sigaction(SIGALRM, &sched->sigact, NULL);
+    
+    // Create manager for scheduler
+    create_scheduler_manager(sched);
 
-    for (unsigned long index = 0; index < threads; index++)
-    {
-        sched->queues[index] = (list *)malloc(sizeof(list));
-        create_list(sched->queues[index]);
-    }
-
+    // Create thread for sending signals to handlers-threads
     pthread_create(&sched->main_thread, 0, main_thread_func, sched);
+    int policy = SCHED_OTHER;
+    struct sched_param param;
+
+    pthread_getschedparam(sched->main_thread, &policy, &param);
+    param.sched_priority = 99;
+    pthread_setschedparam(sched->main_thread, policy, &param);
 
     for (unsigned long index = 0; index < threads; index++)
     {
@@ -309,6 +282,7 @@ void run_scheduler(scheduler *sched)
 fiber *spawn(scheduler *sched, fiber_routine routine, void *args)
 {
     fiber *fib = create_fiber(routine, args);
+    fib->sched = sched;
     insert_fiber(sched, fib);
     return fib;
 }
@@ -342,44 +316,27 @@ void sleep_for(unsigned long duration)
     }
 }
 
-void join(fiber *fib)
-{
-    while (1)
-    {
-        if (fib->state != terminated)
-        {
-            if (current_fiber)
-            {
-                yield();
-            }
-            else
-            {
-                usleep(2);
-            }
-        }
-        else
-        {
-            break;
-        }
-    }
-}
-
 fiber *submit(fiber_routine routine, void *args)
 {
     if (current_fiber == NULL)
     {
-        return NULL;
+        printf("[ERROR] Submit out of fiber\n");
+        exit(1);
     }
 
+    lock_spinlock(&current_fiber->lock);
     fiber *fib = create_fiber(routine, args);
     fib->external_context = current_fiber->context;
+    fib->sched = current_scheduler;
     insert_fiber(current_scheduler, fib);
+    unlock_spinlock(&current_fiber->lock);
     return fib;
 }
 
 int terminate_scheduler(scheduler *sched)
 {
     shutdown(sched);
+
     sched->terminate = 1;
 
     pthread_join(sched->main_thread, NULL);
@@ -391,21 +348,38 @@ int terminate_scheduler(scheduler *sched)
 
     free(sched->threads_pool);
 
-    for (size_t i = 0; i < sched->threads; i++)
-    {
-        free(sched->queues[i]);
-    }
-
-    free(sched->queues);
+    free_scheduler_manager(sched);
 
     return 0;
+}
+
+void join(fiber *fib)
+{
+    while (1)
+    {
+        if (fib->state != terminated)
+        {
+            if (current_fiber)
+            {
+                sleep_for(200);
+            }
+            else
+            {
+                usleep(200);
+            }
+        }
+        else
+        {
+            break;
+        }
+    }
 }
 
 void shutdown(scheduler *sched)
 {
     while (sched->count != sched->end_count)
     {
-        usleep(2);
+        usleep(200);
     }
     sched->threads_running = 0;
 }

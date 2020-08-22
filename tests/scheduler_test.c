@@ -7,7 +7,7 @@
 #include <pthread.h>
 #include <time.h>
 
-#include <scheduler/scheduler.h>
+#include <scheduler/local_queues_with_steal_scheduler.h>
 
 static int sum = 0;
 static int atom = 0;

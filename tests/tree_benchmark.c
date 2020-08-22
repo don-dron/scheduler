@@ -8,12 +8,12 @@
 #include <time.h>
 #include <sys/time.h>
 
-#include <scheduler/scheduler.h>
+#include <scheduler/local_queues_with_steal_scheduler.h>
 
-#define SCHEDS_COUNT 4
+#define SCHEDS_COUNT 1
 #define SCHEDSS_THREADS 4
-#define ROOT_ROUTINES 4
-#define ROOTINES_STEP 4
+#define ROOT_ROUTINES 1
+#define ROOTINES_STEP 16
 
 static int sum = 0;
 static int atom = 0;
@@ -35,16 +35,34 @@ static void internal_routine()
     yield();
     __atomic_fetch_add(&atom, 1, __ATOMIC_SEQ_CST);
 
-    sleep(1);
-    usleep(1000000);
-
+    __atomic_fetch_add(&atom, 1, __ATOMIC_SEQ_CST);
     sum++;
+    usleep(250000);
 
+    for (int i = 0; i < 1 << 20; i++)
+    {
+        sum += i;
+        __atomic_fetch_add(&atom, i, __ATOMIC_SEQ_CST);
+
+    
+        sum -= i;
+        __atomic_fetch_sub(&atom, i, __ATOMIC_SEQ_CST);
+    }
+
+    sleep(1);
+
+    __atomic_fetch_add(&atom, 1, __ATOMIC_SEQ_CST);
+    sum++;
+    sum++;
     __atomic_fetch_add(&interrupted, 2, __ATOMIC_SEQ_CST);
 
     // Work emulation
     sleep_for(2 * 1000);
 
+    // Work emulation
+    sleep_for(2 * 1000 * 1000);
+    __atomic_fetch_add(&atom, 1, __ATOMIC_SEQ_CST);
+    sum++;
     __atomic_fetch_add(&atom, 1, __ATOMIC_SEQ_CST);
     sum++;
     yield();
@@ -99,15 +117,13 @@ static void tree()
         run_scheduler(scheds[i]);
     }
 
-    usleep(1);
-
-    for (int i = 0; i < SCHEDS_COUNT; i++)
-    {
-        for (int j = 0; j < ROOT_ROUTINES; j++)
-        {
-            spawn(scheds[i], root_routine, NULL);
-        }
-    }
+    // for (int i = 0; i < SCHEDS_COUNT; i++)
+    // {
+    //     for (int j = 0; j < ROOT_ROUTINES; j++)
+    //     {
+    //         spawn(scheds[i], root_routine, NULL);
+    //     }
+    // }
 
     for (int i = 0; i < SCHEDS_COUNT; i++)
     {

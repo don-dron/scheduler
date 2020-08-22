@@ -7,25 +7,19 @@
 #include <pthread.h>
 #include <time.h>
 
-#include <scheduler/scheduler.h>
+#include <scheduler/local_queues_with_steal_scheduler.h>
 
 static int sum = 0;
 static int atom = 0;
 
 static void func(void *args)
 {
-    // printf("sleep run %ld\n", (size_t)args);
-
     volatile int i = 10;
     while (i > 0)
     {
         sleep(100);
-        // sleep_for(2000);
-        // puts("!!!!!!!!!!!!!!!!\n");
         --i;
     }
-
-    // printf("sleep end %ld\n", (size_t)args);
 }
 
 static void test1()
