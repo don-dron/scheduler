@@ -5,19 +5,67 @@
 thread_local unsigned long thread_id = 22;
 thread_local scheduler *current_scheduler = NULL;
 
+//
+//    Handler threads - pthreads . Each pthread gets task - fiber from pull and run him.
+//    After yield,sleep,terminate - cooperative methods or interrupt - preemption methods
+//    handler returns for scheduling.
+//     
+//    Detail for one thread: 
+//
+//              scheduling          scheduling .etc
+//         (gets fiber from pull                                              scheduler
+//              and run him)                                                   _______
+//              _______           __________ .....                            ^       | 
+//              ^      |          ^                                           |       |
+//              |      V          |                                           |       V                   
+//  -after run----------*---------*--------------------*----------------------------------------------------->  work time
+//                      |         ^                    |  work in          ^          |                   |
+//                      V_________|  yield()           |  fiber is long    |          |                   ^
+//                       work in     sleep_for()       V--------           |          |                   |  
+//   useful work *-----*    fiber    `end of fiber`            |           |          |                   |  
+//                      |         |                                        |          |                   ^ returns to fiber context 
+//                                                             |           |          |                   |         for handler context
+//                      |         |                                        |          V                   |
+//                                                             |   switch context    switch context       |
+//                      |         |                                 to scheduler      to signal handler   |
+//                      *         *                            |           ^          |                   |
+//          switch to fiber      switch to scheduler                       |          |                   |
+//                                                             |           |          |                   |
+//                                                                    signal handler  |**************** > |                   
+//            cooperative mechanizm                            |           |                         ^
+//                                                                         |                         | remove additional stack frame 
+//                                                             |           |                         |          for handler
+//                                              it's kernel                ^                        KERNEL
+//                                                work         |           |
+//                                      |******************* >             |
+//                                      |                      |         new stack frame(created by kernel)   
+//                                      |                      ******* > for handler(in userspace) - we have additional 
+//                                      |                                stack frame above fiber frame    
+//                                      |                                   
+//                                                                         
+//                                   KERNEL **************** < *********   ^
+//                                                                         |
+//                                                                 send signal from additional thread         
+//                                                                  
+
 static inline long clock_to_microseconds(long time)
 {
+    // Magic constant
     return time * 4;
 }
 
 static inline long sub_time(clock_t end, clock_t start)
 {
+    // Returns time delta
     long delta = clock_to_microseconds((long)(end - start));
     return delta;
 }
 
 static void run_task(fiber *routine)
 {
+    // If not locking, a context switch can be called during another
+    // context switch in the same thread - it's ub and crushed stack frame
+    // This lock will unlocked in fiber body.
     lock_spinlock(&routine->lock);
 
     current_fiber = routine;
@@ -25,8 +73,10 @@ static void run_task(fiber *routine)
 
     if (current_fiber->state == sleeping)
     {
+        // Checks time for wake up
         if (sub_time(current_fiber->wakeup, clock()) > 0)
         {
+            // Wake up failed, sleep yet
             return_to_pull(current_scheduler, current_fiber);
             current_fiber = NULL;
             unlock_spinlock(&temp->lock);
@@ -34,6 +84,7 @@ static void run_task(fiber *routine)
         }
         else
         {
+            // Wake up success, run
             current_fiber->state = runnable;
         }
     }
@@ -45,25 +96,40 @@ static void run_task(fiber *routine)
 #endif
 
         current_fiber->state = running;
+
+        // Save start fiber time
         current_fiber->start = clock();
 
+        // Returns to fiber
+        //
+        // * ~ Magic ~ *
+        //
         switch_context(&current_fiber->external_context, &current_fiber->context);
-
+        //
+        // Returns to scheduler
 #if DEBUG
         printf("[OUT_FIBER] Out fiber %ld %ld %d\n", thread_number, current_fiber->id, current_fiber->state);
 #endif
 
+        // If not terminated - returns to pull
         if (current_fiber->state != terminated)
         {
+            // Returns to pull
             return_to_pull(current_scheduler, current_fiber);
             current_fiber = NULL;
+
+            // This unlock is unlocked fiber body lock
             unlock_spinlock(&temp->lock);
         }
         else
         {
             current_fiber = NULL;
             inc((unsigned long *)&current_scheduler->end_count);
+
+            // This unlock is unlocked fiber body lock
             unlock_spinlock(&temp->lock);
+
+            // Fiber delete
             free_fiber(temp);
         }
     }
@@ -76,6 +142,7 @@ static void run_task(fiber *routine)
 
 static inline void scheduler_pause()
 {
+    // Loop if not running and go out if terminate
     while (!current_scheduler->threads_running)
     {
         if (current_scheduler->terminate)
@@ -91,6 +158,7 @@ static void schedule()
 {
     while (1)
     {
+        // If scheduler not run - block
         scheduler_pause();
 
         if (current_scheduler->terminate)
@@ -98,18 +166,17 @@ static void schedule()
             return;
         }
 
+        // Gets fiber from pull
         fiber *fib = get_from_pool();
 
         if (fib)
         {
+            // Run task
             run_task(fib);
-        }
-        else if (current_scheduler->terminate)
-        {
-            return;
         }
         else
         {
+            // Sleep if work queue is empty
             usleep(100);
         }
     }
@@ -121,11 +188,12 @@ static void insert_fiber(scheduler *sched, fiber *fib)
     return_to_pull(sched, fib);
 }
 
-static void *main_thread_func(void *args)
+static void *signal_thread_func(void *args)
 {
     current_scheduler = (scheduler *)args;
     for (; !current_scheduler->terminate;)
     {
+        // If scheduler not run - block
         scheduler_pause();
 
         if (current_scheduler->terminate)
@@ -133,10 +201,12 @@ static void *main_thread_func(void *args)
             return NULL;
         }
 
+        // Wake up after interval
         usleep(INTERVAL);
 
         for (size_t i = 0; i < current_scheduler->threads; i++)
         {
+            // Send signals to handlers
             pthread_kill(current_scheduler->threads_pool[i], SIGALRM);
         }
     }
@@ -146,11 +216,16 @@ static void *main_thread_func(void *args)
 
 static void handler(int signo)
 {
+    // Handler for SIGALARM signals
     fiber *temp = current_fiber;
+
     if (temp)
     {
+        // Try lock. If locked - switch context was be started - we can't handle signal.
+        // If fiber was been interrupted - lock will be unlocked in fiber body.
         if (try_lock_spinlock(&temp->lock))
         {
+            // Checks correctly fiber save
             if (current_fiber != temp)
             {
                 unlock_spinlock(&temp->lock);
@@ -158,6 +233,7 @@ static void handler(int signo)
                 return;
             }
 
+            // Checks fiber time slice, if time slice is long fiber was been interrupted
             long delta = sub_time(clock(), temp->start);
             if (delta > 100)
             {
@@ -168,7 +244,11 @@ static void handler(int signo)
 #endif
                     inc(&interrupt_count);
                     temp->state = runnable;
+
+                    // Interrupt
                     switch_context(&temp->context, &temp->external_context);
+
+                    // Unlock fiber body lock
                     unlock_spinlock(&temp->lock);
                 }
                 else
@@ -203,14 +283,17 @@ static void handler(int signo)
 static void *run_fibers_handler(void *arg)
 {
     unsigned long thread_number = ((unsigned long *)arg)[0];
-    thread_id = thread_number;
     scheduler *sched = (scheduler *)((unsigned long *)arg)[1];
 
+    // Setting params to TLS
+
+    thread_id = thread_number;
     current_scheduler = sched;
     current_scheduler->current_fibers[thread_number] = &current_fiber;
 
     free(arg);
 
+    // Run schedule
     schedule(thread_number);
     return NULL;
 }
@@ -235,31 +318,32 @@ int new_scheduler(scheduler *sched, unsigned int using_threads)
 
     // Sets signals parameters for interrupting fibers
 
-    /* mask SIGALRM in all threads by default */
+    // mask SIGALRM in all threads by default
     sigemptyset(&(sched->sigact.sa_mask));
     sigaddset(&(sched->sigact.sa_mask), SIGALRM);
 
-    /* we need a signal handler.
-     * The default is to call abort() and 
-     * setting SIG_IGN might cause the signal
-     * to not be delivered at all.
-     **/
+    // we need a signal handler.
+    // The default is to call abort() and 
+    // setting SIG_IGN might cause the signal
+    // to not be delivered at all.
+    
     memset(&sched->sigact, 0, sizeof(sched->sigact));
     sched->sigact.sa_handler = handler;
     sigaction(SIGALRM, &sched->sigact, NULL);
-    
+
     // Create manager for scheduler
     create_scheduler_manager(sched);
 
     // Create thread for sending signals to handlers-threads
-    pthread_create(&sched->main_thread, 0, main_thread_func, sched);
+    pthread_create(&sched->signal_thread, 0, signal_thread_func, sched);
     int policy = SCHED_OTHER;
     struct sched_param param;
 
-    pthread_getschedparam(sched->main_thread, &policy, &param);
+    pthread_getschedparam(sched->signal_thread, &policy, &param);
     param.sched_priority = 99;
-    pthread_setschedparam(sched->main_thread, policy, &param);
+    pthread_setschedparam(sched->signal_thread, policy, &param);
 
+    // Create handlers-threads
     for (unsigned long index = 0; index < threads; index++)
     {
         pthread_attr_t attr;
@@ -295,10 +379,13 @@ void sleep_for(unsigned long duration)
         exit(1);
     }
 
+    // This lock will be unlocked in run_task function after switch context
+
     lock_spinlock(&current_fiber->lock);
 
     fiber *temp = current_fiber;
 
+    // Sets time for wake up
     temp->wakeup = clock();
     temp->wakeup += clock_to_microseconds((long)duration);
 
@@ -306,7 +393,10 @@ void sleep_for(unsigned long duration)
     {
         temp->state = sleeping;
 
+        // Return to run_task function
         switch_context(&temp->context, &temp->external_context);
+
+        // This unlock unlocking lock locked in run_task function
         unlock_spinlock(&temp->lock);
     }
     else
@@ -324,22 +414,26 @@ fiber *submit(fiber_routine routine, void *args)
         exit(1);
     }
 
+    // Lock for create new fiber - block context switching
     lock_spinlock(&current_fiber->lock);
     fiber *fib = create_fiber(routine, args);
     fib->external_context = current_fiber->context;
     fib->sched = current_scheduler;
     insert_fiber(current_scheduler, fib);
     unlock_spinlock(&current_fiber->lock);
+
     return fib;
 }
 
 int terminate_scheduler(scheduler *sched)
 {
+    // Shutdown before terminate
     shutdown(sched);
 
     sched->terminate = 1;
 
-    pthread_join(sched->main_thread, NULL);
+    // Join threads
+    pthread_join(sched->signal_thread, NULL);
 
     for (size_t i = 0; i < sched->threads; i++)
     {
@@ -348,6 +442,7 @@ int terminate_scheduler(scheduler *sched)
 
     free(sched->threads_pool);
 
+    // Scheduler manager teminate
     free_scheduler_manager(sched);
 
     return 0;
@@ -361,10 +456,12 @@ void join(fiber *fib)
         {
             if (current_fiber)
             {
+                // If we in fiber
                 sleep_for(200);
             }
             else
             {
+                // If we not in fiber
                 usleep(200);
             }
         }
@@ -379,6 +476,7 @@ void shutdown(scheduler *sched)
 {
     while (sched->count != sched->end_count)
     {
+        // Sleep if failed
         usleep(200);
     }
     sched->threads_running = 0;
@@ -386,13 +484,18 @@ void shutdown(scheduler *sched)
 
 void yield()
 {
+    // This lock will be unlocked in run_task function after switch context
     lock_spinlock(&current_fiber->lock);
     fiber *temp = current_fiber;
 
     if (temp->state == running)
     {
         temp->state = runnable;
+
+        // Returns to run_task function
         switch_context(&temp->context, &temp->external_context);
+
+        // This unlock unlock lock locked in run_task function before switch context
         unlock_spinlock(&temp->lock);
     }
     else

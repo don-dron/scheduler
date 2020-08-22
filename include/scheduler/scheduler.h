@@ -1,7 +1,6 @@
 #pragma once
 
 #include <time.h>
-// #include <sys/time.h>
 #include <pthread.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -32,7 +31,7 @@ typedef struct scheduler
     size_t threads;
 
     /** Thread for sends signals **/
-    pthread_t main_thread;
+    pthread_t signal_thread;
     /** Threads for handles fibers **/
     pthread_t *threads_pool;
 
