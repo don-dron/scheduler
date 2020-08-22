@@ -1,6 +1,7 @@
 #pragma once
 
 #include <threads.h>
+#include <time.h>
 
 #include <scheduler/context.h>
 #include <locks/atomics.h>
@@ -29,8 +30,8 @@ typedef struct fiber
     fiber_routine routine;
     struct fiber *parent;
     unsigned long id;
-    struct timespec start;
-    struct timespec wakeup;
+    clock_t start;
+    clock_t wakeup;
     struct spinlock lock;
 } fiber;
 

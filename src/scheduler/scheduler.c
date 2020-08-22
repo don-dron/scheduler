@@ -1,6 +1,6 @@
 #include <scheduler/scheduler.h>
 
-#define INTERVAL 20
+#define INTERVAL 1000
 
 thread_local unsigned long pid = 22;
 thread_local scheduler *current_scheduler = NULL;
@@ -29,9 +29,14 @@ static void insert_to_minimum_queue(scheduler *sched, fiber *fib)
     list_push_back(sched->queues[index], (list_node *)fib_node);
 }
 
-static long sub_time(struct timespec *t1, struct timespec *t2)
+static inline long clock_to_microseconds(long time)
 {
-    long delta = 1000 * 1000 * (t1->tv_sec - t2->tv_sec) + (t1->tv_nsec - t2->tv_nsec) / 1000;
+    return time * 4;
+}
+
+static inline long sub_time(clock_t end, clock_t start)
+{
+    long delta = clock_to_microseconds((long)(end - start));
     return delta;
 }
 
@@ -44,10 +49,7 @@ static void run_task(fiber *routine, unsigned long thread_number)
 
     if (current_fiber->state == sleeping)
     {
-        struct timespec timer;
-        clock_gettime(CLOCK_REALTIME, &timer);
-
-        if (sub_time(&current_fiber->wakeup, &timer) > 0)
+        if (sub_time(current_fiber->wakeup, clock()) > 0)
         {
             insert_to_minimum_queue(current_scheduler, current_fiber);
             current_fiber = NULL;
@@ -67,7 +69,7 @@ static void run_task(fiber *routine, unsigned long thread_number)
 #endif
 
         current_fiber->state = running;
-        clock_gettime(CLOCK_REALTIME, &current_fiber->start);
+        current_fiber->start = clock();
         switch_context(&current_fiber->external_context, &current_fiber->context);
 
 #if DEBUG
@@ -95,7 +97,7 @@ static void run_task(fiber *routine, unsigned long thread_number)
     }
 }
 
-static void scheduler_pause()
+static inline void scheduler_pause()
 {
     while (!current_scheduler->threads_running)
     {
@@ -108,7 +110,7 @@ static void scheduler_pause()
     }
 }
 
-static fiber_node *steal_task(list *queue, unsigned long thread_number)
+static inline fiber_node *steal_task(list *queue, unsigned long thread_number)
 {
     fiber_node *stolen = NULL;
     size_t threads = current_scheduler->threads;
@@ -211,9 +213,8 @@ static void handler(int signo)
                 unlock_spinlock(&temp->lock);
                 return;
             }
-            struct timespec current_time;
-            clock_gettime(CLOCK_REALTIME, &current_time);
-            long delta = sub_time(&current_time, &temp->start);
+
+            long delta = sub_time(clock(), temp->start);
             if (delta > 500)
             {
                 if (temp->state == running)
@@ -324,8 +325,8 @@ void sleep_for(unsigned long duration)
 
     fiber *temp = current_fiber;
 
-    clock_gettime(CLOCK_REALTIME, &temp->wakeup);
-    temp->wakeup.tv_nsec += (long)(duration * 1000);
+    temp->wakeup = clock();
+    temp->wakeup += clock_to_microseconds((long)duration);
 
     if (temp->state == running)
     {

@@ -17,7 +17,7 @@
 
 static int sum = 0;
 static int atom = 0;
-static int interrupted = 0;
+static unsigned long interrupted = 0;
 
 static void internal_routine()
 {
@@ -34,10 +34,13 @@ static void internal_routine()
     sum++;
     yield();
     __atomic_fetch_add(&atom, 1, __ATOMIC_SEQ_CST);
-    sleep(4);
+
+    sleep(1);
+    usleep(1000000);
+
     sum++;
 
-    __atomic_fetch_add(&interrupted, 1, __ATOMIC_SEQ_CST);
+    __atomic_fetch_add(&interrupted, 2, __ATOMIC_SEQ_CST);
 
     // Work emulation
     sleep_for(2 * 1000);
@@ -133,12 +136,13 @@ static void run_test(void (*test)())
     printf("Time: milliseconds %ld\n", delta / 1000 / 1000);
     printf("Time: seconds %ld\n", delta / 1000 / 1000 / 1000);
     printf("%d %d\n", atom, sum);
-    printf("Interrupted %d\n", interrupted);
+    printf("Interrupted %ld\n", interrupted);
+
+    printf(interrupted <= interrupt_count ? "PASSED\n" : "FAILED\n");
 }
 
 int main()
 {
     run_test(tree);
-    printf("PASSED\n");
     return EXIT_SUCCESS;
 }

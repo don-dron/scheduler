@@ -10,33 +10,40 @@
 
 #include <scheduler/scheduler.h>
 
-static void func(void* args)
+static void func(void *args)
 {
-    sleep_for(1);
+    sleep_for(1000000);
 }
 
-int main()
+static void test()
 {
     scheduler sched;
     new_default_scheduler(&sched);
 
-    for (int i = 0; i < 1; i++)
-    {
-        spawn(&sched, func, NULL);
-        spawn(&sched, func, NULL);
-        spawn(&sched, func, NULL);
-        spawn(&sched, func, NULL);
-        spawn(&sched, func, NULL);
-        spawn(&sched, func, NULL);
-        spawn(&sched, func, NULL);
-        spawn(&sched, func, NULL);
-    }
-    
+    spawn(&sched, func, NULL);
+
     run_scheduler(&sched);
     terminate_scheduler(&sched);
+}
+
+static void run_test(void (*test)())
+{
+    struct timespec mt1, mt2;
+    long int delta;
+    clock_gettime(CLOCK_REALTIME, &mt1);
+
+    test();
+
+    clock_gettime(CLOCK_REALTIME, &mt2);
+    delta = 1000 * 1000 * 1000 * (mt2.tv_sec - mt1.tv_sec) + (mt2.tv_nsec - mt1.tv_nsec);
 
     print_statistic();
+    printf("Time: microseconds %ld\n", delta / 1000);
+    printf("Time: milliseconds %ld\n", delta / 1000 / 1000);
+    printf("Time: seconds %ld\n", delta / 1000 / 1000 / 1000);
+}
 
-    printf("PASSED\n");
-    return EXIT_SUCCESS;
+int main()
+{
+    run_test(test);
 }
