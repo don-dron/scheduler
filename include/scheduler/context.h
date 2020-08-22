@@ -9,6 +9,8 @@ static const size_t STACK_SIZE = 64 * 1024;
 
 extern unsigned long switch_count_atom;
 extern unsigned long switch_count;
+extern unsigned long interrupt_count;
+extern unsigned long interrupt_failed_count;
 
 typedef struct execution_context
 {
@@ -44,6 +46,8 @@ typedef struct statistic
 {
   unsigned long switch_count_atom;
   unsigned long switch_count;
+  unsigned long interrupt_count;
+  unsigned long interrupt_failed_count;
 } statistic;
 
 extern void switch_from_to(execution_context *from, execution_context *to);

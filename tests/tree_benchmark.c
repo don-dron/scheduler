@@ -1,22 +1,8 @@
+#include <test_utils.h>
 
-#define __USE_MISC 1
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <assert.h>
-#include <pthread.h>
-#include <time.h>
-#include <sys/time.h>
-
-#include <scheduler/scheduler.h>
-
-#define SCHEDS_COUNT 4
-#define SCHEDSS_THREADS 4
-#define ROOT_ROUTINES 4
-#define ROOTINES_STEP 4
-
-static int sum = 0;
-static int atom = 0;
+#define SCHEDS_COUNT 1
+#define ROOT_ROUTINES 1
+#define ROOTINES_STEP 1
 
 static void internal_routine()
 {
@@ -27,8 +13,40 @@ static void internal_routine()
     sum++;
 
     // Work emulation
-    sleep_for(2 * 1000 * 1000);
+    sleep_for(2 * 1000);
 
+    __atomic_fetch_add(&atom, 1, __ATOMIC_SEQ_CST);
+    sum++;
+    yield();
+    __atomic_fetch_add(&atom, 1, __ATOMIC_SEQ_CST);
+
+    __atomic_fetch_add(&atom, 1, __ATOMIC_SEQ_CST);
+    sum++;
+    usleep(50000);
+
+    for (int i = 0; i < 1 << 10; i++)
+    {
+        sum += i;
+        __atomic_fetch_add(&atom, i, __ATOMIC_SEQ_CST);
+
+            sum -= i;
+        __atomic_fetch_sub(&atom, i, __ATOMIC_SEQ_CST);
+    }
+
+    usleep(50000);
+
+    __atomic_fetch_add(&atom, 1, __ATOMIC_SEQ_CST);
+    sum++;
+    sum++;
+    __atomic_fetch_add(&interrupted, 2, __ATOMIC_SEQ_CST);
+
+    // Work emulation
+    sleep_for(2 * 1000);
+
+    // Work emulation
+    sleep_for(2 * 1000);
+    __atomic_fetch_add(&atom, 1, __ATOMIC_SEQ_CST);
+    sum++;
     __atomic_fetch_add(&atom, 1, __ATOMIC_SEQ_CST);
     sum++;
     yield();
@@ -36,16 +54,7 @@ static void internal_routine()
     sum++;
 
     // Work emulation
-    sleep_for(2 * 1000 * 1000);
-
-    __atomic_fetch_add(&atom, 1, __ATOMIC_SEQ_CST);
-    sum++;
-    yield();
-    __atomic_fetch_add(&atom, 1, __ATOMIC_SEQ_CST);
-    sum++;
-
-    // Work emulation
-    sleep_for(2 * 1000 * 1000);
+    sleep_for(2 * 1000);
 
     __atomic_fetch_add(&atom, 1, __ATOMIC_SEQ_CST);
     sum++;
@@ -76,7 +85,7 @@ static void tree()
     for (int i = 0; i < SCHEDS_COUNT; i++)
     {
         scheds[i] = (scheduler *)malloc(sizeof(scheduler));
-        new_scheduler(scheds[i], SCHEDSS_THREADS);
+        new_scheduler(scheds[i], (unsigned int)scheds_threads);
     }
 
     for (int i = 0; i < SCHEDS_COUNT; i++)
@@ -91,8 +100,6 @@ static void tree()
     {
         run_scheduler(scheds[i]);
     }
-
-    usleep(1);
 
     for (int i = 0; i < SCHEDS_COUNT; i++)
     {
@@ -113,27 +120,8 @@ static void tree()
     }
 }
 
-static void run_test(void (*test)())
-{
-    struct timespec mt1, mt2;
-    long int delta;
-    clock_gettime(CLOCK_REALTIME, &mt1);
-
-    test();
-
-    clock_gettime(CLOCK_REALTIME, &mt2);
-    delta = 1000 * 1000 * 1000 * (mt2.tv_sec - mt1.tv_sec) + (mt2.tv_nsec - mt1.tv_nsec);
-
-    print_statistic();
-    printf("Time: microseconds %ld\n", delta / 1000);
-    printf("Time: milliseconds %ld\n", delta / 1000 / 1000);
-    printf("Time: seconds %ld\n", delta / 1000 / 1000 / 1000);
-    printf("%d %d\n", atom, sum);
-}
-
 int main()
 {
     run_test(tree);
-    printf("PASSED\n");
     return EXIT_SUCCESS;
 }

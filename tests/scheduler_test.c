@@ -1,16 +1,6 @@
+#include <test_utils.h>
 
-#define __USE_MISC 1
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <assert.h>
-#include <pthread.h>
-#include <time.h>
-
-#include <scheduler/scheduler.h>
-
-static int sum = 0;
-static int atom = 0;
+#define ROOT_ROUTINES 1
 
 static void inner_func(void *args)
 {
@@ -27,55 +17,31 @@ static void inner_func(void *args)
 
 static void func(void* args)
 {
-    for (int i = 0; i < 100; i++)
+    for (int i = 0; i < ROOT_ROUTINES; i++)
     {
         submit(inner_func, NULL);
         yield();
     }
 }
 
-static void test1()
+static void test()
 {
     scheduler sched;
-    new_default_scheduler(&sched);
+    new_scheduler(&sched,(unsigned int)scheds_threads);
 
-    for (int i = 0; i < 100; i++)
+    for (int i = 0; i < ROOT_ROUTINES; i++)
     {
-        spawn(&sched, func, NULL);
-        spawn(&sched, func, NULL);
-        spawn(&sched, func, NULL);
-        spawn(&sched, func, NULL);
-        spawn(&sched, func, NULL);
         spawn(&sched, func, NULL);
     }
 
     run_scheduler(&sched);
     terminate_scheduler(&sched);
 
-    print_statistic();
-    assert(atom == 120000);
-
-    printf("%d %d\n", atom, sum);
-}
-
-static void run_test(void (*test)())
-{
-    struct timespec mt1, mt2;
-    long int delta;
-    clock_gettime(CLOCK_REALTIME, &mt1);
-
-    test();
-
-    clock_gettime(CLOCK_REALTIME, &mt2);
-    delta = 1000*1000*1000 * (mt2.tv_sec - mt1.tv_sec) + (mt2.tv_nsec - mt1.tv_nsec);
-
-    printf("Time: microseconds %ld\n", delta/1000);
+    // assert(atom == 120000);
 }
 
 int main()
 {
-    run_test(test1);
-
-    printf("PASSED\n");
+    run_test(test);
     return EXIT_SUCCESS;
 }

@@ -4,6 +4,10 @@
 
 FUNCTION_NAME(switch_from_to):
     
+    // For example: call from fiber code
+
+    // Save registers on stack
+
     pushq %r15
     pushq %r14
     pushq %r13
@@ -12,9 +16,13 @@ FUNCTION_NAME(switch_from_to):
     pushq %rbx
     pushq %rbp
     
+    // Change stack pointer swithc run -------------------------------->    For example: to scheduler code
     movq %rsp, (%rdi)
+                                                                                   
+    // Return after switch             <--------------------------------    For example: from scheduler code
     movq (%rsi), %rsp 
 
+    // Load registers from stack
     popq %rbp
     popq %rbx
 
@@ -24,3 +32,5 @@ FUNCTION_NAME(switch_from_to):
     popq %r15
 
     retq
+
+    // For example: return to fiber code

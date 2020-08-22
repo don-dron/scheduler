@@ -1,13 +1,15 @@
 #!/bin/bash
 cmake -U CMakeLists.txt
+make clean
 make
 
-echo "Without valgrind"
+mkdir -p log
 
-for var in $(ls bin)
+while :
 do
-echo "Run test $var" 
-echo $(./bin/$var)
+    for var in $(ls bin)
+    do
+        rm -f log/log_$var.txt
+        ./bin/$var >> log/log_$var.txt
+    done
 done
-
-echo "Done"

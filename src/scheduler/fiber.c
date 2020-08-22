@@ -9,7 +9,46 @@ static unsigned long generate_id()
     return inc(&id);
 }
 
-fiber *create_fiber(fiber_routine routine,void* args)
+static void fiber_trampoline()
+{
+    fiber *temp = current_fiber;
+
+    temp->state = running;
+
+    // Unlock after lock in run_task
+    unlock_spinlock(&temp->lock);
+
+    temp->routine(temp->args);
+
+    // Lock for swtich context, unlocked in run_task
+    lock_spinlock(&temp->lock);
+
+    if (temp != current_fiber)
+    {
+        printf("Wrong state\n");
+        exit(1);
+        return;
+    }
+
+    if (temp->state == running)
+    {
+        temp->state = terminated;
+
+        // To run task
+        switch_context(&temp->context, &temp->external_context);
+
+        // Unreachable
+        printf("Wrong state\n");
+        exit(1);
+    }
+    else
+    {
+        printf("Wrong state\n");
+        exit(1);
+    }
+}
+
+fiber *create_fiber(fiber_routine routine, void *args)
 {
     fiber *new_fiber = (fiber *)malloc(sizeof(fiber));
 
@@ -19,22 +58,11 @@ fiber *create_fiber(fiber_routine routine,void* args)
     new_fiber->parent = current_fiber;
     new_fiber->args = args;
 
+    init_spinlock(&new_fiber->lock);
+
     setup_trampoline(new_fiber);
 
     return new_fiber;
-}
-
-static void fiber_trampoline()
-{
-    fiber *self = current_fiber;
-
-    self->state = running;
-
-    self->routine(self->args);
-
-    current_fiber->state = terminated;
-
-    switch_context(&current_fiber->context, &current_fiber->external_context);
 }
 
 void free_fiber(fiber *fiber_)
@@ -53,8 +81,8 @@ void setup_trampoline(fiber *new_fiber)
 
     //int ret =
     mprotect(/*addr=*/(void *)((size_t)start + pages_to_bytes(4)),
-                       /*len=*/pages_to_bytes(4),
-                       /*prot=*/PROT_NONE);
+             /*len=*/pages_to_bytes(4),
+             /*prot=*/PROT_NONE);
 
     stack_builder stackBuilder;
     // Set top stack address
@@ -75,7 +103,7 @@ void setup_trampoline(fiber *new_fiber)
     //   |
     //   |
     //   0
-    stackBuilder.top = (char*)((size_t)start + STACK_SIZE - 1);
+    stackBuilder.top = (char *)((size_t)start + STACK_SIZE - 1);
 
     // Machine word size, usually 8 bytes
     stackBuilder.word_size = sizeof(void *);

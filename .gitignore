@@ -44,6 +44,7 @@ CPackSourceConfig.cmake
 /tests/bin
 /bin
 /lib
+/log
 
 ### JetBrains template
 # Covers JetBrains IDEs: IntelliJ, RubyMine, PhpStorm, AppCode, PyCharm, CLion, Android Studio and Webstorm

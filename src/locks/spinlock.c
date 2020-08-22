@@ -1,12 +1,17 @@
 #include <locks/spinlock.h>
 
+void init_spinlock(spinlock *spin_lock)
+{
+    spin_lock->lock = 0;
+}
+
 void lock_spinlock(spinlock *spin_lock)
 {
     while (__atomic_exchange_n(&spin_lock->lock, 1, __ATOMIC_SEQ_CST))
     {
         while (__atomic_load_n(&spin_lock->lock, __ATOMIC_SEQ_CST))
         {
-            usleep(1);
+            // usleep(1);
         }
     }
 }
