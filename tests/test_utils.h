@@ -22,9 +22,10 @@ void run_test(void (*test)());
 
 void run_test(void (*test)())
 {
+    printf("thread time\n");
     while (scheds_threads <= 64UL)
     {
-        printf("Run test with <%ld> threads ...", scheds_threads);
+        printf("%ld ", scheds_threads);
         struct timespec mt1, mt2;
         unsigned long int delta;
         clock_gettime(CLOCK_REALTIME, &mt1);
@@ -34,9 +35,7 @@ void run_test(void (*test)())
         clock_gettime(CLOCK_REALTIME, &mt2);
         delta = 1000UL * 1000UL * 1000UL * (unsigned long)(mt2.tv_sec - mt1.tv_sec) + (unsigned long)(mt2.tv_nsec - mt1.tv_nsec);
 
-        printf("Time: microseconds per thread %ld ", delta / 1000);
-
-        printf("PASSED\n");
+        printf("%ld\n", delta / 1000);
 
         if (scheds_threads == 1)
         {

@@ -1,5 +1,6 @@
 #!/bin/bash
-while :
+for var in $(ls bin)
 do
-   ./bin/tree_benchmark.test
+    rm -f log/log_$var.txt
+    ./bin/$var >> log/log_$var.txt
 done
