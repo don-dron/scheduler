@@ -15,10 +15,12 @@ static void fiber_trampoline()
 
     temp->state = running;
 
+    // Unlock after lock in run_task
     unlock_spinlock(&temp->lock);
 
     temp->routine(temp->args);
 
+    // Lock for swtich context, unlocked in run_task
     lock_spinlock(&temp->lock);
 
     if (temp != current_fiber)
@@ -31,7 +33,10 @@ static void fiber_trampoline()
     if (temp->state == running)
     {
         temp->state = terminated;
+
+        // To run task
         switch_context(&temp->context, &temp->external_context);
+
         // Unreachable
         printf("Wrong state\n");
         exit(1);
