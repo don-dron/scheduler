@@ -29,7 +29,8 @@ include_directories(
   ${PROJECT_SOURCE_DIR}/include
 )
 
-# Un comment if you want see debug information add_definitions(-DDEBUG)
+# Un comment if you want see debug information 
+add_definitions(-DDEBUG=1)
 
 add_subdirectory(src)
 add_subdirectory(tests)

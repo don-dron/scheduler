@@ -62,7 +62,7 @@ static void run_task(fiber *routine, unsigned long thread_number)
 
     if (current_fiber->state == starting || current_fiber->state == runnable)
     {
-#ifdef DEBUG
+#if DEBUG
         printf("[IN_FIBER ] To fiber %ld %ld %d\n", thread_number, current_fiber->id, current_fiber->state);
 #endif
         
@@ -70,7 +70,7 @@ static void run_task(fiber *routine, unsigned long thread_number)
         clock_gettime(CLOCK_REALTIME, &current_fiber->start);
         switch_context(&current_fiber->external_context, &current_fiber->context);
 
-#ifdef DEBUG
+#if DEBUG
         printf("[OUT_FIBER] Out fiber %ld %ld %d\n", thread_number, current_fiber->id, current_fiber->state);
 #endif
 
@@ -205,11 +205,11 @@ static void handler(int signo)
             struct timespec current_time;
             clock_gettime(CLOCK_REALTIME, &current_time);
             long delta = sub_time(&current_time, &temp->start);
-            if (delta > 1000)
+            if (delta > 500)
             {
                 if (temp->state == running)
                 {
-                    #ifdef DEBUG
+                    #if DEBUG
                         printf("[INTERRUPT] Interrupt fiber in scheduler thread with tid = %ld  with id = %ld  with last slice %ld delta\n", pid, temp->id, delta);
                     #endif
                     temp->state = runnable;

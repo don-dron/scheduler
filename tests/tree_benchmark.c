@@ -27,7 +27,18 @@ static void internal_routine()
     sum++;
 
     // Work emulation
-    sleep_for(2 * 1000 );
+    sleep_for(2 * 1000);
+
+    __atomic_fetch_add(&atom, 1, __ATOMIC_SEQ_CST);
+    sum++;
+    yield();
+    __atomic_fetch_add(&atom, 1, __ATOMIC_SEQ_CST);
+    sleep(4);
+    sum++;
+
+
+    // Work emulation
+    sleep_for(2 * 1000);
 
     __atomic_fetch_add(&atom, 1, __ATOMIC_SEQ_CST);
     sum++;
@@ -36,16 +47,7 @@ static void internal_routine()
     sum++;
 
     // Work emulation
-    sleep_for(2 * 1000 );
-
-    __atomic_fetch_add(&atom, 1, __ATOMIC_SEQ_CST);
-    sum++;
-    yield();
-    __atomic_fetch_add(&atom, 1, __ATOMIC_SEQ_CST);
-    sum++;
-
-    // Work emulation
-    sleep_for(2 * 1000 );
+    sleep_for(2 * 1000);
 
     __atomic_fetch_add(&atom, 1, __ATOMIC_SEQ_CST);
     sum++;
