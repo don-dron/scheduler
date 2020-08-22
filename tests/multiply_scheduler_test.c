@@ -1,17 +1,4 @@
-
-#define __USE_MISC 1
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <assert.h>
-#include <pthread.h>
-#include <time.h>
-#include <sys/time.h>
-
-#include <scheduler/local_queues_with_steal_scheduler.h>
-
-static int sum = 0;
-static int atom = 0;
+#include <test_utils.h>
 
 static void inner_to_inner(void *args)
 {
@@ -61,7 +48,7 @@ static void func()
     // All sum this function is 300 * (2 + 2 * 2)
 }
 
-static void test1()
+static void test()
 {
     scheduler sched, sched1;
 
@@ -118,29 +105,11 @@ static void test1()
     terminate_scheduler(&sched);
     terminate_scheduler(&sched1);
 
-    print_statistic();
     // assert(atom == 4320000);
-
-    printf("%d %d\n", atom, sum);
-}
-
-static void run_test(void (*test)())
-{
-    struct timespec mt1, mt2;
-    long int delta;
-    clock_gettime(CLOCK_REALTIME, &mt1);
-
-    test();
-
-    clock_gettime(CLOCK_REALTIME, &mt2);
-    delta = 1000 * 1000 * 1000 * (mt2.tv_sec - mt1.tv_sec) + (mt2.tv_nsec - mt1.tv_nsec);
-
-    printf("Time: microseconds %ld\n", delta / 1000);
 }
 
 int main()
 {
-    run_test(test1);
-    printf("PASSED\n");
+    run_test(test);
     return EXIT_SUCCESS;
 }

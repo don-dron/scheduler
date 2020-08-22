@@ -8,7 +8,6 @@ while :
 do
 for var in $(ls bin)
 do
-echo "Run test $var" 
 echo $(./bin/$var)
 done
 

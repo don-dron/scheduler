@@ -27,9 +27,12 @@ enable_testing()
 
 include_directories(
   ${PROJECT_SOURCE_DIR}/include
+  ${PROJECT_SOURCE_DIR}/tests
 )
 
 add_definitions(-DDEBUG=0)
+
+add_definitions(-DLOCAL_QUEUES_WITH_STEAL=1)
 
 add_subdirectory(src)
 add_subdirectory(tests)

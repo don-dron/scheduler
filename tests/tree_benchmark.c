@@ -1,23 +1,4 @@
-
-#define __USE_MISC 1
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <assert.h>
-#include <pthread.h>
-#include <time.h>
-#include <sys/time.h>
-
-#include <scheduler/local_queues_with_steal_scheduler.h>
-
-#define SCHEDS_COUNT 1
-#define SCHEDSS_THREADS 4
-#define ROOT_ROUTINES 1
-#define ROOTINES_STEP 16
-
-static int sum = 0;
-static int atom = 0;
-static unsigned long interrupted = 0;
+#include <test_utils.h>
 
 static void internal_routine()
 {
@@ -117,13 +98,13 @@ static void tree()
         run_scheduler(scheds[i]);
     }
 
-    // for (int i = 0; i < SCHEDS_COUNT; i++)
-    // {
-    //     for (int j = 0; j < ROOT_ROUTINES; j++)
-    //     {
-    //         spawn(scheds[i], root_routine, NULL);
-    //     }
-    // }
+    for (int i = 0; i < SCHEDS_COUNT; i++)
+    {
+        for (int j = 0; j < ROOT_ROUTINES; j++)
+        {
+            spawn(scheds[i], root_routine, NULL);
+        }
+    }
 
     for (int i = 0; i < SCHEDS_COUNT; i++)
     {
@@ -134,27 +115,6 @@ static void tree()
     {
         terminate_scheduler(scheds[i]);
     }
-}
-
-static void run_test(void (*test)())
-{
-    struct timespec mt1, mt2;
-    long int delta;
-    clock_gettime(CLOCK_REALTIME, &mt1);
-
-    test();
-
-    clock_gettime(CLOCK_REALTIME, &mt2);
-    delta = 1000 * 1000 * 1000 * (mt2.tv_sec - mt1.tv_sec) + (mt2.tv_nsec - mt1.tv_nsec);
-
-    print_statistic();
-    printf("Time: microseconds %ld\n", delta / 1000);
-    printf("Time: milliseconds %ld\n", delta / 1000 / 1000);
-    printf("Time: seconds %ld\n", delta / 1000 / 1000 / 1000);
-    printf("%d %d\n", atom, sum);
-    printf("Interrupted %ld\n", interrupted);
-
-    printf(interrupted <= interrupt_count ? "PASSED\n" : "FAILED\n");
 }
 
 int main()

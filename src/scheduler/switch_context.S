@@ -16,10 +16,10 @@ FUNCTION_NAME(switch_from_to):
     pushq %rbx
     pushq %rbp
     
-    // Change stack pointer swithc run -------------------------------->   
+    // Change stack pointer swithc run -------------------------------->    For example: to scheduler code
     movq %rsp, (%rdi)
-                                                                                    // For example: scheduler code
-    // Return after switch             <--------------------------------
+                                                                                   
+    // Return after switch             <--------------------------------    For example: from scheduler code
     movq (%rsi), %rsp 
 
     // Load registers from stack
