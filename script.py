@@ -13,11 +13,11 @@ def run(command):
     output, error = process.communicate()
 
 
-params1 = {  # 'HIS_FB': '-DFIBER_STAT=ON -DTHREAD_STAT=OFF',
-            'HIS_TH': '-DTHREAD_STAT=ON -DFIBER_STAT=OFF'}  # ,
-           # 'TIME': '-DFIBER_STAT=OFF -DTHREAD_STAT=OFF'}
+params1 = {   'HIS_FB': '-DFIBER_STAT=ON -DTHREAD_STAT=OFF',
+            'HIS_TH': '-DTHREAD_STAT=ON -DFIBER_STAT=OFF' ,
+            'TIME': '-DFIBER_STAT=OFF -DTHREAD_STAT=OFF'}
 
-params = {#'INT': '-DINTERRUPT_ENABLED=ON',
+params = {'INT': '-DINTERRUPT_ENABLED=ON',
           'NO_INT': '-DINTERRUPT_ENABLED=OFF'}
 
 
