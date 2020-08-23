@@ -14,15 +14,39 @@
 #include <scheduler/fiber.h>
 #include <locks/atomics.h>
 
+typedef struct history_node history_node;
+typedef struct fiber fiber;
+typedef void (*fiber_routine)(void *);
 typedef struct scheduler_manager scheduler_manager;
+typedef struct scheduler scheduler;
+
+void create_history(void);
+
+#if FIBER_STAT
+void update_fiber_history(fiber *fiber);
+void save_fiber_history(fiber *fiber);
+#endif
+
+#if THREAD_STAT
+void update_thread_history(thread_state state);
+void save_thread_history(scheduler* sched);
+#endif
+
+void print_history(void);
+void free_history(void);
 
 /** 
  *  Scheduler structure.
  */
-typedef struct scheduler
+struct scheduler
 {
+#if INTERRUPT_ENABLED
     /** Signals preferences **/
     struct sigaction sigact;
+
+    /** Thread for sends signals **/
+    pthread_t signal_thread;
+#endif
 
     /** Map - thread number to pointer to thread - array **/
     fiber ***current_fibers;
@@ -30,10 +54,12 @@ typedef struct scheduler
     /** Count of handlers-threads **/
     size_t threads;
 
-    /** Thread for sends signals **/
-    pthread_t signal_thread;
     /** Threads for handles fibers **/
     pthread_t *threads_pool;
+
+#if THREAD_STAT
+    history_node **threads_histories;
+#endif
 
     /** Flag sets 0 , after call run_scheduler sets to 1, after call shutdown sets to 0 **/
     volatile int threads_running;
@@ -45,8 +71,8 @@ typedef struct scheduler
     /** Count fibers which terminated **/
     volatile size_t end_count;
 
-    scheduler_manager* manager;
-} scheduler;
+    scheduler_manager *manager;
+};
 
 /** Handler thread id **/
 extern thread_local unsigned long thread_id;

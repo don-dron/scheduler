@@ -6,18 +6,67 @@
 #include <scheduler/context.h>
 #include <locks/atomics.h>
 #include <locks/spinlock.h>
+#include <structures/list.h>
 
 enum fiber_state
 {
-    starting,
-    runnable,
-    running,
-    sleeping,
-    suspended,
-    terminated
+    STARTING,
+    RUNNABLE,
+    RUNNING,
+    SLEEPING,
+    TERMINATED
 };
 
+enum thread_state
+{
+    SCHEDULE,
+    WORK,
+    SLEEP_THREAD
+};
+
+typedef struct scheduler scheduler;
+typedef enum thread_state thread_state;
 typedef enum fiber_state fiber_state;
+typedef struct fiber fiber;
+
+typedef struct history_node
+{
+    struct history_node *prev;
+    struct history_node *next;
+#if FIBER_STAT
+    fiber_state fiber_state;
+#endif
+
+#if THREAD_STAT
+    thread_state thread_state;
+#endif
+    clock_t start;
+} history_node;
+
+typedef struct history_save
+{
+    list_node node;
+    history_node *tail;
+} history_save;
+
+list history;
+
+void create_history(void);
+
+#if FIBER_STAT
+void update_fiber_history(fiber *fiber);
+void save_fiber_history(fiber *fiber);
+#endif
+
+#if THREAD_STAT
+void update_thread_history(thread_state state);
+void save_thread_history(scheduler* sched);
+#endif
+
+void print_history(void);
+void free_history(void);
+
+typedef struct history_node history_node;
 typedef void (*fiber_routine)(void *);
 
 typedef struct fiber
@@ -34,11 +83,16 @@ typedef struct fiber
     clock_t wakeup;
     struct spinlock lock;
     struct scheduler *sched;
+
+#if FIBER_STAT
+    history_node *last;
+#endif
+
 } fiber;
 
 extern thread_local fiber *current_fiber;
 extern unsigned long id;
 
 fiber *create_fiber(fiber_routine routine, void *args);
-void free_fiber(fiber *fiber_);
+void free_fiber(fiber *fiber);
 void setup_trampoline(fiber *fiber);

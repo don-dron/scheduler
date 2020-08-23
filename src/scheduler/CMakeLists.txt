@@ -14,4 +14,4 @@ set(SOURCE_LIB
 
 
 add_library(scheduler STATIC ${SOURCE_LIB})
-target_link_libraries (scheduler LINK_PUBLIC rt)
+target_link_libraries (scheduler LINK_PUBLIC rt pthread)

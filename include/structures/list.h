@@ -30,4 +30,4 @@ list_node *list_pop_back(list *lst);
 
 list_node *list_pop_front(list *lst);
 
-int free_list(list *lst);
+int free_list(list *lst, void (*free_callback)(list_node *));

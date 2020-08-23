@@ -6,11 +6,17 @@
 #include <pthread.h>
 #include <time.h>
 #include <sys/time.h>
+#include <scheduler/context.h>
+#include <structures/list.h>
+
+#ifndef TEST_LEVEL
+#define TEST_LEVEL 2
+#endif
 
 #if LOCAL_QUEUES_WITH_STEAL
 #include <scheduler/local_queues_with_steal_scheduler.h>
 #else
-#error "Scheduler not defined"
+// #error "Scheduler not defined"
 #endif
 
 int sum = 0;
@@ -22,9 +28,28 @@ void run_test(void (*test)());
 
 void run_test(void (*test)())
 {
+#if FIBER_STAT
+    scheds_threads = 16;
+    create_history();
+
+    test();
+
+    print_history();
+
+    free_history();
+#elif THREAD_STAT
+    scheds_threads = 4;
+    create_history();
+
+    test();
+
+    print_history();
+
+    free_history();
+#else
+    printf("thread time interrupt interrupt_fail switch \n");
     while (scheds_threads <= 64UL)
     {
-        printf("Run test with <%ld> threads ...", scheds_threads);
         struct timespec mt1, mt2;
         unsigned long int delta;
         clock_gettime(CLOCK_REALTIME, &mt1);
@@ -34,17 +59,11 @@ void run_test(void (*test)())
         clock_gettime(CLOCK_REALTIME, &mt2);
         delta = 1000UL * 1000UL * 1000UL * (unsigned long)(mt2.tv_sec - mt1.tv_sec) + (unsigned long)(mt2.tv_nsec - mt1.tv_nsec);
 
-        printf("Time: microseconds per thread %ld ", delta / 1000);
+        statistic stat = get_statistic();
 
-        printf("PASSED\n");
+        printf("%ld %ld %ld %ld %ld \n", scheds_threads, delta / 1000, stat.interrupt_count, stat.interrupt_failed_count, stat.switch_count);
 
-        if (scheds_threads == 1)
-        {
-            scheds_threads++;
-        }
-        else
-        {
-            scheds_threads += 2;
-        }
+        scheds_threads++;
     }
+#endif
 }

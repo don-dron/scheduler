@@ -1,7 +1,7 @@
 #include <test_utils.h>
 
-#define ROOT_ROUTINES 1
-#define ROOTINES_STEP 1
+#define ROOT_ROUTINES TEST_LEVEL
+#define ROOTINES_STEP TEST_LEVEL
 
 static void inner_to_inner(void *args)
 {
@@ -20,15 +20,17 @@ static void inner_func(void *args)
 {
     yield();
     __atomic_fetch_add(&atom, 1, __ATOMIC_SEQ_CST);
-    submit(inner_to_inner, NULL);
+    fiber* one = submit(inner_to_inner, NULL);
     sum++;
 
     yield();
+    
+    fiber* two = submit(inner_to_inner, NULL);
 
-    submit(inner_to_inner, NULL);
-
+    join(two);
     sum++;
     __atomic_fetch_add(&atom, 1, __ATOMIC_SEQ_CST);
+    join(one);
     yield();
 }
 
@@ -50,7 +52,7 @@ static void test()
 
     new_scheduler(&sched,(unsigned int)scheds_threads);
     new_scheduler(&sched1,(unsigned int)scheds_threads);
-    for (int i = 0; i < ROOT_ROUTINES; i++)
+    for (int i = 0; i < ROOT_ROUTINES/2; i++)
     {
         spawn(&sched, func, NULL);
         spawn(&sched1, func, NULL);
@@ -59,10 +61,7 @@ static void test()
     run_scheduler(&sched);
     run_scheduler(&sched1);
 
-    shutdown(&sched);
-    shutdown(&sched1);
-
-    for (int i = 0; i < ROOT_ROUTINES; i++)
+    for (int i = 0; i < ROOT_ROUTINES/2; i++)
     {
         spawn(&sched, func, NULL);
         spawn(&sched1, func, NULL);
@@ -76,8 +75,6 @@ static void test()
 
     terminate_scheduler(&sched);
     terminate_scheduler(&sched1);
-
-    // assert(atom == 4320000);
 }
 
 int main()

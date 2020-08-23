@@ -1,6 +1,6 @@
 #include <test_utils.h>
 
-#define ROOT_ROUTINES 1
+#define ROOT_ROUTINES TEST_LEVEL
 
 static void inner_func(void *args)
 {
@@ -36,8 +36,6 @@ static void test()
 
     run_scheduler(&sched);
     terminate_scheduler(&sched);
-
-    // assert(atom == 120000);
 }
 
 int main()
