@@ -1,6 +1,11 @@
 #include <scheduler/scheduler.h>
 
-#define INTERVAL 1000
+#if INTERRUPT_ENABLED
+
+#define INTERVAL 400
+#define MAX_TIME 1000
+
+#endif
 
 thread_local unsigned long thread_id = 22;
 thread_local scheduler *current_scheduler = NULL;
@@ -71,7 +76,7 @@ static void run_task(fiber *routine)
     current_fiber = routine;
     fiber *temp = current_fiber;
 
-    if (current_fiber->state == sleeping)
+    if (current_fiber->state == SLEEPING)
     {
         // Checks time for wake up
         if (sub_time(current_fiber->wakeup, clock()) > 0)
@@ -85,17 +90,17 @@ static void run_task(fiber *routine)
         else
         {
             // Wake up success, run
-            current_fiber->state = runnable;
+            current_fiber->state = RUNNABLE;
         }
     }
 
-    if (current_fiber->state == starting || current_fiber->state == runnable)
+    if (current_fiber->state == STARTING || current_fiber->state == RUNNABLE)
     {
 #if DEBUG
-        printf("[IN_FIBER ] To fiber %ld %ld %d\n", thread_number, current_fiber->id, current_fiber->state);
+        printf("[IN_FIBER ] To fiber %ld %ld %d\n", thread_id, current_fiber->id, current_fiber->state);
 #endif
 
-        current_fiber->state = running;
+        current_fiber->state = RUNNING;
 
         // Save start fiber time
         current_fiber->start = clock();
@@ -104,15 +109,18 @@ static void run_task(fiber *routine)
         //
         // * ~ Magic ~ *
         //
+#if FIBER_STAT
+        update_fiber_history(current_fiber);
+#endif
         switch_context(&current_fiber->external_context, &current_fiber->context);
         //
         // Returns to scheduler
 #if DEBUG
-        printf("[OUT_FIBER] Out fiber %ld %ld %d\n", thread_number, current_fiber->id, current_fiber->state);
+        printf("[OUT_FIBER] Out fiber %ld %ld %d\n", thread_id, current_fiber->id, current_fiber->state);
 #endif
 
         // If not terminated - returns to pull
-        if (current_fiber->state != terminated)
+        if (current_fiber->state != TERMINATED)
         {
             // Returns to pull
             return_to_pull(current_scheduler, current_fiber);
@@ -125,9 +133,6 @@ static void run_task(fiber *routine)
         {
             current_fiber = NULL;
             inc((unsigned long *)&current_scheduler->end_count);
-
-            // This unlock is unlocked fiber body lock
-            unlock_spinlock(&temp->lock);
 
             // Fiber delete
             free_fiber(temp);
@@ -172,12 +177,23 @@ static void schedule()
         if (fib)
         {
             // Run task
+
+#if THREAD_STAT
+            update_thread_history(WORK);
+#endif
             run_task(fib);
+
+#if THREAD_STAT
+            update_thread_history(SCHEDULE);
+#endif
         }
         else
         {
+#if THREAD_STAT
+            update_thread_history(SLEEP_THREAD);
+#endif
             // Sleep if work queue is empty
-            usleep(100);
+            usleep(1000);
         }
     }
 }
@@ -193,6 +209,7 @@ static void insert_fiber(scheduler *sched, fiber *fib)
 static void *signal_thread_func(void *args)
 {
     current_scheduler = (scheduler *)args;
+    fiber ***fibers = current_scheduler->current_fibers;
     for (; !current_scheduler->terminate;)
     {
         // If scheduler not run - block
@@ -203,86 +220,79 @@ static void *signal_thread_func(void *args)
             return NULL;
         }
 
-        // Wake up after interval
         usleep(INTERVAL);
+
+        // Wake up after interval
 
         for (size_t i = 0; i < current_scheduler->threads; i++)
         {
             // Send signals to handlers
-            pthread_kill(current_scheduler->threads_pool[i], SIGALRM);
+
+            fiber **ptr_to_ptr = fibers[i];
+
+            if (!ptr_to_ptr)
+            {
+                continue;
+            }
+
+            fiber *temp = *ptr_to_ptr;
+
+            if (!temp || temp != *(current_scheduler->current_fibers[i]) || temp->state != RUNNING)
+            {
+                continue;
+            }
+
+            long delta = sub_time(clock(), temp->start);
+            if (delta > MAX_TIME)
+            {
+                pthread_kill(current_scheduler->threads_pool[i], SIGALRM);
+            }
+            else
+            {
+                inc(&interrupt_failed_count);
+            }
         }
     }
 
     return NULL;
 }
 
-#endif
-
 static void handler(int signo)
 {
     // Handler for SIGALARM signals
     fiber *temp = current_fiber;
-
-    if (temp)
+    if (temp && try_lock_spinlock(&temp->lock))
     {
-        // Try lock. If locked - switch context was be started - we can't handle signal.
-        // If fiber was been interrupted - lock will be unlocked in fiber body.
-        if (try_lock_spinlock(&temp->lock))
+        if (temp == current_fiber && temp->state == RUNNING)
         {
-            // Checks correctly fiber save
-            if (current_fiber != temp)
-            {
-                unlock_spinlock(&temp->lock);
-                inc(&interrupt_failed_count);
-                return;
-            }
-
-            // Checks fiber time slice, if time slice is long fiber was been interrupted
-            long delta = sub_time(clock(), temp->start);
-            if (delta > 100)
-            {
-                if (temp->state == running)
-                {
 #if DEBUG
-                    printf("[INTERRUPT] Interrupt fiber in scheduler thread with tid = %ld  with id = %ld  with last slice %ld delta\n", thread_id, temp->id, delta);
+            printf("[INTERRUPT] Interrupt fiber in scheduler thread with tid = %ld  with id = %ld  with last slice %ld delta\n", thread_id, temp->id, delta);
 #endif
-                    inc(&interrupt_count);
-                    temp->state = runnable;
+            inc(&interrupt_count);
+            temp->state = RUNNABLE;
 
-                    // Interrupt
-                    switch_context(&temp->context, &temp->external_context);
+            // Interrupt
+#if FIBER_STAT
+            update_fiber_history(temp);
+#endif
+            switch_context(&temp->context, &temp->external_context);
 
-                    // Unlock fiber body lock
-                    unlock_spinlock(&temp->lock);
-                }
-                else
-                {
-                    printf("[ERROR] Handler wrong state: in scheduler thread with tid = %ld  with id = %ld  with state = %d \n", thread_id, temp->id, temp->state);
-                    exit(1);
-                }
-            }
-            else
-            {
-                unlock_spinlock(&temp->lock);
-                inc(&interrupt_failed_count);
-            }
+            // Unlock fiber body lock
+            unlock_spinlock(&temp->lock);
         }
         else
         {
-#if DEBUG
-            printf("[WARNING] Fail spinlock lock\n");
-#endif
             inc(&interrupt_failed_count);
+            unlock_spinlock(&temp->lock);
         }
     }
     else
     {
-#if DEBUG
-        printf("[WARNING] Null fiber in %ld %ld\n", thread_id, pthread_self());
-#endif
         inc(&interrupt_failed_count);
     }
 }
+
+#endif
 
 static void *run_fibers_handler(void *arg)
 {
@@ -295,10 +305,18 @@ static void *run_fibers_handler(void *arg)
     current_scheduler = sched;
     current_scheduler->current_fibers[thread_number] = &current_fiber;
 
+#if THREAD_STAT
+    current_scheduler->threads_histories[thread_number] = (history_node *)malloc(sizeof(history_node));
+    current_scheduler->threads_histories[thread_number]->start = clock();
+    current_scheduler->threads_histories[thread_number]->thread_state = SLEEP_THREAD;
+    current_scheduler->threads_histories[thread_number]->prev = NULL;
+    current_scheduler->threads_histories[thread_number]->next = NULL;
+#endif
+
     free(arg);
 
     // Run schedule
-    schedule(thread_number);
+    schedule();
     return NULL;
 }
 
@@ -318,8 +336,10 @@ int new_scheduler(scheduler *sched, unsigned int using_threads)
     sched->terminate = 0;
     sched->threads_running = 0;
     sched->threads = threads;
-    sched->current_fibers = (fiber ***)malloc(sizeof(fiber) * threads);
+    sched->current_fibers = (fiber ***)malloc(sizeof(fiber **) * threads);
+    memset(sched->current_fibers, 0, sizeof(fiber **) * threads);
 
+#if INTERRUPT_ENABLED
     // Sets signals parameters for interrupting fibers
 
     // mask SIGALRM in all threads by default
@@ -335,10 +355,6 @@ int new_scheduler(scheduler *sched, unsigned int using_threads)
     sched->sigact.sa_handler = handler;
     sigaction(SIGALRM, &sched->sigact, NULL);
 
-    // Create manager for scheduler
-    create_scheduler_manager(sched);
-
-#if INTERRUPT_ENABLED
     // Create thread for sending signals to handlers-threads
     pthread_create(&sched->signal_thread, 0, signal_thread_func, sched);
     int policy = SCHED_OTHER;
@@ -348,6 +364,13 @@ int new_scheduler(scheduler *sched, unsigned int using_threads)
     param.sched_priority = 99;
     pthread_setschedparam(sched->signal_thread, policy, &param);
 #endif
+
+#if THREAD_STAT
+    sched->threads_histories = (history_node **)malloc(threads * sizeof(history_node *));
+#endif
+
+    // Create manager for scheduler
+    create_scheduler_manager(sched);
 
     // Create handlers-threads
     for (unsigned long index = 0; index < threads; index++)
@@ -395,11 +418,15 @@ void sleep_for(unsigned long duration)
     temp->wakeup = clock();
     temp->wakeup += clock_to_microseconds((long)duration);
 
-    if (temp->state == running)
+    if (temp->state == RUNNING)
     {
-        temp->state = sleeping;
+        temp->state = SLEEPING;
 
         // Return to run_task function
+
+#if FIBER_STAT
+        update_fiber_history(temp);
+#endif
         switch_context(&temp->context, &temp->external_context);
 
         // This unlock unlocking lock locked in run_task function
@@ -450,6 +477,10 @@ int terminate_scheduler(scheduler *sched)
 
     free(sched->threads_pool);
 
+#if THREAD_STAT
+    save_thread_history(sched);
+#endif
+
     // Scheduler manager teminate
     free_scheduler_manager(sched);
 
@@ -460,7 +491,7 @@ void join(fiber *fib)
 {
     while (1)
     {
-        if (fib->state != terminated)
+        if (fib->state != TERMINATED)
         {
             if (current_fiber)
             {
@@ -496,11 +527,14 @@ void yield()
     lock_spinlock(&current_fiber->lock);
     fiber *temp = current_fiber;
 
-    if (temp->state == running)
+    if (temp->state == RUNNING)
     {
-        temp->state = runnable;
+        temp->state = RUNNABLE;
 
         // Returns to run_task function
+#if FIBER_STAT
+        update_fiber_history(temp);
+#endif
         switch_context(&temp->context, &temp->external_context);
 
         // This unlock unlock lock locked in run_task function before switch context
@@ -511,4 +545,113 @@ void yield()
         printf("[ERROR] Yield wrong state %d\n", temp->state);
         exit(1);
     }
+}
+
+void create_history()
+{
+    create_list(&history);
+}
+
+#if FIBER_STAT
+void update_fiber_history(fiber *fiber)
+{
+    fiber->last->next = (history_node *)malloc(sizeof(history_node));
+    fiber->last->next->fiber_state = fiber->state;
+    fiber->last->next->start = clock();
+    fiber->last->next->next = NULL;
+    fiber->last->next->prev = fiber->last;
+    fiber->last = fiber->last->next;
+}
+
+void save_fiber_history(fiber *fiber)
+{
+    history_save *save = (history_save *)malloc(sizeof(history_save));
+    save->tail = fiber->last;
+    list_push_back(&history, &save->node);
+}
+#endif
+
+#if THREAD_STAT
+void update_thread_history(thread_state state)
+{
+    history_node *last = current_scheduler->threads_histories[thread_id];
+
+    last->next = (history_node *)malloc(sizeof(history_node));
+    last->next->thread_state = state;
+    last->next->start = clock();
+    last->next->next = NULL;
+    last->next->prev = last;
+    current_scheduler->threads_histories[thread_id] = last->next;
+}
+
+void save_thread_history(scheduler* sched)
+{
+    for (unsigned long i = 0; i < sched->threads; i++)
+    {
+        history_save *save = (history_save *)malloc(sizeof(history_save));
+        save->tail = sched->threads_histories[i];
+        list_push_back(&history, &save->node);
+    }
+}
+#endif
+
+static void print_item_history(int num, history_node *node)
+{
+    history_node *tail = node;
+    history_node *head;
+
+    while (tail->prev)
+    {
+        tail = tail->prev;
+    }
+
+    head = tail;
+
+    while (head)
+    {
+#if FIBER_STAT
+        printf("%d %d %ld\n", num, head->fiber_state, head->start);
+#endif
+
+#if THREAD_STAT
+        printf("%d %d %ld\n", num, head->thread_state, head->start);
+#endif
+        head = head->next;
+    }
+}
+
+void print_history()
+{
+    printf("Number State Start\n");
+    history_save *head = (history_save *)history.start;
+
+    int count = 0;
+    while (head)
+    {
+        print_item_history(count, head->tail);
+        head = (history_save *)(head->node.next);
+        count++;
+    }
+}
+
+static void free_callback(list_node *node)
+{
+    if (node)
+    {
+        history_save *save = (history_save *)node;
+        history_node *tail = save->tail;
+        history_node *curr = tail;
+
+        while (curr)
+        {
+            history_node *tmp = curr->prev;
+            free(curr);
+            curr = tmp;
+        }
+    }
+}
+
+void free_history()
+{
+    free_list(&history, free_callback);
 }

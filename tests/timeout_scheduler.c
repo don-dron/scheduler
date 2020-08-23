@@ -1,13 +1,13 @@
 #include <test_utils.h>
 
-#define ROOT_ROUTINES 1
+#define ROOT_ROUTINES TEST_LEVEL
 
 static void func(void *args)
 {
     volatile int i = 5;
     while (i > 0)
     {
-        usleep(100000);
+        usleep(10000);
         --i;
     }
 }
@@ -23,6 +23,7 @@ static void test()
     }
 
     run_scheduler(&sched);
+    shutdown(&sched);
     terminate_scheduler(&sched);
 }
 

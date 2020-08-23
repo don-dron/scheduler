@@ -13,7 +13,7 @@ static void fiber_trampoline()
 {
     fiber *temp = current_fiber;
 
-    temp->state = running;
+    temp->state = RUNNING;
 
     // Unlock after lock in run_task
     unlock_spinlock(&temp->lock);
@@ -30,11 +30,14 @@ static void fiber_trampoline()
         return;
     }
 
-    if (temp->state == running)
+    if (temp->state == RUNNING)
     {
-        temp->state = terminated;
+        temp->state = TERMINATED;
 
         // To run task
+#if FIBER_STAT
+        update_fiber_history(temp);
+#endif
         switch_context(&temp->context, &temp->external_context);
 
         // Unreachable
@@ -54,9 +57,17 @@ fiber *create_fiber(fiber_routine routine, void *args)
 
     new_fiber->id = generate_id();
     new_fiber->routine = routine;
-    new_fiber->state = starting;
+    new_fiber->state = STARTING;
     new_fiber->parent = current_fiber;
     new_fiber->args = args;
+
+#if FIBER_STAT
+    new_fiber->last = (history_node *)malloc(sizeof(history_node));
+    new_fiber->last->fiber_state = STARTING;
+    new_fiber->last->start = clock();
+    new_fiber->last->prev = NULL;
+    new_fiber->last->next = NULL;
+#endif
 
     init_spinlock(&new_fiber->lock);
 
@@ -65,10 +76,15 @@ fiber *create_fiber(fiber_routine routine, void *args)
     return new_fiber;
 }
 
-void free_fiber(fiber *fiber_)
+void free_fiber(fiber *fiber)
 {
-    munmap(fiber_->stack, STACK_SIZE);
-    free(fiber_);
+    munmap(fiber->stack, STACK_SIZE);
+
+#if FIBER_STAT
+    save_fiber_history(fiber);
+#endif
+
+    free(fiber);
 }
 
 void setup_trampoline(fiber *new_fiber)

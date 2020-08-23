@@ -1,8 +1,8 @@
 #include <test_utils.h>
 
-#define SCHEDS_COUNT 1
-#define ROOT_ROUTINES 1
-#define ROOTINES_STEP 1
+#define SCHEDS_COUNT TEST_LEVEL
+#define ROOT_ROUTINES TEST_LEVEL
+#define ROOTINES_STEP TEST_LEVEL
 
 static void internal_routine()
 {
@@ -13,7 +13,7 @@ static void internal_routine()
     sum++;
 
     // Work emulation
-    sleep_for(2 * 1000);
+    sleep_for(10000);
 
     __atomic_fetch_add(&atom, 1, __ATOMIC_SEQ_CST);
     sum++;
@@ -22,39 +22,24 @@ static void internal_routine()
 
     __atomic_fetch_add(&atom, 1, __ATOMIC_SEQ_CST);
     sum++;
-    usleep(50000);
-
-    for (int i = 0; i < 1 << 10; i++)
-    {
-        sum += i;
-        __atomic_fetch_add(&atom, i, __ATOMIC_SEQ_CST);
-
-            sum -= i;
-        __atomic_fetch_sub(&atom, i, __ATOMIC_SEQ_CST);
-    }
-
-    usleep(50000);
+    usleep(10000);
 
     __atomic_fetch_add(&atom, 1, __ATOMIC_SEQ_CST);
     sum++;
     sum++;
     __atomic_fetch_add(&interrupted, 2, __ATOMIC_SEQ_CST);
 
-    // Work emulation
-    sleep_for(2 * 1000);
-
-    // Work emulation
-    sleep_for(2 * 1000);
     __atomic_fetch_add(&atom, 1, __ATOMIC_SEQ_CST);
     sum++;
     __atomic_fetch_add(&atom, 1, __ATOMIC_SEQ_CST);
     sum++;
+    usleep(10000);
     yield();
     __atomic_fetch_add(&atom, 1, __ATOMIC_SEQ_CST);
     sum++;
 
     // Work emulation
-    sleep_for(2 * 1000);
+    sleep_for(10000);
 
     __atomic_fetch_add(&atom, 1, __ATOMIC_SEQ_CST);
     sum++;
