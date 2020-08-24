@@ -46,34 +46,23 @@ fiber *get_from_pool()
     }
     else
     {
-        fiber_node *stolen = steal_task(queue, thread_id);
+        // fiber_node *stolen = steal_task(queue, thread_id);
 
-        if (stolen)
-        {
-            fiber *fib = stolen->fib;
-            free(stolen);
-            return fib;
-        }
+        // if (stolen)
+        // {
+        //     fiber *fib = stolen->fib;
+        //     free(stolen);
+        //     return fib;
+        // }
         return NULL;
     }
 }
 
 void return_to_pull(scheduler *sched, fiber *fib)
 {
-    size_t index = 0;
-    size_t threads = sched->threads;
-
-    for (size_t i = 0; i < threads; ++i)
-    {
-        if (sched->manager->queues[i]->size < sched->manager->queues[index]->size)
-        {
-            index = i;
-        }
-    }
-
     fiber_node *fib_node = (fiber_node *)malloc(sizeof(fiber_node));
     fib_node->fib = fib;
-    list_push_back(sched->manager->queues[index], (list_node *)fib_node);
+    list_push_back(sched->manager->queues[(size_t)rand() % sched->threads], (list_node *)fib_node);
 }
 
 int free_scheduler_manager(scheduler *sched)

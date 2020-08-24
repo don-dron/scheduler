@@ -13,9 +13,9 @@ def run(command):
     output, error = process.communicate()
 
 
-params1 = {   'HIS_FB': '-DFIBER_STAT=ON -DTHREAD_STAT=OFF',
-            'HIS_TH': '-DTHREAD_STAT=ON -DFIBER_STAT=OFF' ,
-            'TIME': '-DFIBER_STAT=OFF -DTHREAD_STAT=OFF'}
+params1 = { 'HIS_FB': '-DFIBER_STAT=ON -DTHREAD_STAT=OFF',
+            'TIME': '-DFIBER_STAT=OFF -DTHREAD_STAT=OFF',
+            'HIS_TH': '-DTHREAD_STAT=ON -DFIBER_STAT=OFF'}
 
 params = {'INT': '-DINTERRUPT_ENABLED=ON',
           'NO_INT': '-DINTERRUPT_ENABLED=OFF'}
@@ -153,10 +153,11 @@ for param1 in params1:
                 ymax += ymax/20
 
                 ax1.set_facecolor('k')
-                for i in range(len(data['Number']-1)):
+                for i in range(len(data['Number'])):
                     state = data['State'][i]
                     c = get_color(state)
-                    if(i==0 or data['Number'][i-1] < data['Number'][i]):
+                    if((i==0 or data['Number'][i-1] < data['Number'][i]) and i < len(data['Number'])-1):
+                        # print(1)
                         rect = matplotlib.patches.Rectangle((data['Number'][i], ymin),
                                                             1, data['Start'][i], 0,
                                                             color=c)
@@ -167,7 +168,8 @@ for param1 in params1:
                                                             data['Start'][i], 0,
                                                             color=c)
                         ax1.add_patch(rect)
-                    elif(i == len(data['Number'])-1 or data['Number'][i] > data['Number'][i+1]):
+                    elif(i >= len(data['Number'])-1 or data['Number'][i] < data['Number'][i+1]):
+                        # print(2)
                         ax1.vlines(data['Number'][i],
                                    data['Start'][i], ymax, color=c)
                         rect=matplotlib.patches.Rectangle((data['Number'][i], data['Start'][i]),
@@ -176,6 +178,7 @@ for param1 in params1:
                                                             color=c)
                         ax1.add_patch(rect)
                     else:
+                        # print(3)
                         rect=matplotlib.patches.Rectangle((data['Number'][i], data['Start'][i]),
                                                             1, data['Start'][i+1] -
                                                             data['Start'][i], 0,

@@ -4,12 +4,8 @@
 
 static void func(void *args)
 {
-    volatile int i = 5;
-    while (i > 0)
-    {
-        usleep(5000);
-        --i;
-    }
+    usleep(5000);
+    sleep_for(5000);
 }
 
 static void test()
@@ -17,18 +13,16 @@ static void test()
     scheduler sched;
     new_scheduler(&sched, (unsigned int)scheds_threads);
 
-    for (size_t i = 0; i < ROOT_ROUTINES; i++)
+    for (int i = 0; i < ROOT_ROUTINES; i++)
     {
-        spawn(&sched, func, (void *)i);
+        spawn(&sched, func, NULL);
     }
 
     run_scheduler(&sched);
-    shutdown(&sched);
     terminate_scheduler(&sched);
 }
 
 int main()
 {
     run_test(test);
-    return EXIT_SUCCESS;
 }
