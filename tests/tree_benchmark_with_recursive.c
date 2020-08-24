@@ -4,24 +4,36 @@
 #define ROOT_ROUTINES TEST_LEVEL
 #define ROOTINES_STEP TEST_LEVEL
 
+static void joined_function()
+{
+    for (int i = 0; i < 1 << 15; i++)
+    {
+        __atomic_fetch_add(&atom, 1, __ATOMIC_SEQ_CST);
+        sum++;
+
+        __atomic_fetch_add(&atom, 1, __ATOMIC_SEQ_CST);
+        sum++;
+    }
+}
+
 static void internal_routine()
 {
     __atomic_fetch_add(&atom, 1, __ATOMIC_SEQ_CST);
     sum++;
-    yield();
-    __atomic_fetch_add(&atom, 1, __ATOMIC_SEQ_CST);
-    sum++;
-
-    // Work emulation
-    sleep_for(5000);
 
     __atomic_fetch_add(&atom, 1, __ATOMIC_SEQ_CST);
     sum++;
-    yield();
-    __atomic_fetch_add(&atom, 1, __ATOMIC_SEQ_CST);
 
     __atomic_fetch_add(&atom, 1, __ATOMIC_SEQ_CST);
     sum++;
+
+    __atomic_fetch_add(&atom, 1, __ATOMIC_SEQ_CST);
+    __atomic_fetch_add(&atom, 1, __ATOMIC_SEQ_CST);
+    sum++;
+
+    fiber *one = submit(joined_function, NULL);
+
+    // FOR TEST
     usleep(5000);
 
     __atomic_fetch_add(&atom, 1, __ATOMIC_SEQ_CST);
@@ -33,19 +45,23 @@ static void internal_routine()
     sum++;
     __atomic_fetch_add(&atom, 1, __ATOMIC_SEQ_CST);
     sum++;
+
+    fiber *two = submit(joined_function, NULL);
+
+    // FOR TEST
     usleep(5000);
-    yield();
-    __atomic_fetch_add(&atom, 1, __ATOMIC_SEQ_CST);
-    sum++;
-
-    // Work emulation
-    sleep_for(5000);
 
     __atomic_fetch_add(&atom, 1, __ATOMIC_SEQ_CST);
     sum++;
-    yield();
+
     __atomic_fetch_add(&atom, 1, __ATOMIC_SEQ_CST);
     sum++;
+    join(two);
+
+    __atomic_fetch_add(&atom, 1, __ATOMIC_SEQ_CST);
+    sum++;
+
+    join(one);
 }
 
 static void root_routine()

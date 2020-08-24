@@ -10,13 +10,13 @@
 #include <structures/list.h>
 
 #ifndef TEST_LEVEL
-#define TEST_LEVEL 2
+#define TEST_LEVEL 5
 #endif
 
 #if LOCAL_QUEUES_WITH_STEAL
 #include <scheduler/local_queues_with_steal_scheduler.h>
 #else
-// #error "Scheduler not defined"
+#error "Scheduler not defined"
 #endif
 
 int sum = 0;
@@ -38,7 +38,7 @@ void run_test(void (*test)())
 
     free_history();
 #elif THREAD_STAT
-    scheds_threads = 4;
+    scheds_threads = 7;
     create_history();
 
     test();

@@ -2,12 +2,12 @@
 
 #if INTERRUPT_ENABLED
 
-#define INTERVAL 400
+#define INTERVAL 2000
 #define MAX_TIME 1000
 
 #endif
 
-thread_local unsigned long thread_id = 22;
+thread_local unsigned long thread_id = 127;
 thread_local scheduler *current_scheduler = NULL;
 
 //
@@ -165,6 +165,10 @@ static void schedule()
     {
         // If scheduler not run - block
         scheduler_pause();
+
+        #if THREAD_STAT
+            update_thread_history(SCHEDULE);
+        #endif
 
         if (current_scheduler->terminate)
         {
@@ -329,6 +333,7 @@ int new_scheduler(scheduler *sched, unsigned int using_threads)
 {
     // Init block
     size_t threads = using_threads;
+    srand((unsigned int)time(NULL));
 
     sched->threads_pool = (pthread_t *)malloc(sizeof(pthread_t) * threads);
     sched->count = 0;
@@ -584,7 +589,7 @@ void update_thread_history(thread_state state)
     current_scheduler->threads_histories[thread_id] = last->next;
 }
 
-void save_thread_history(scheduler* sched)
+void save_thread_history(scheduler *sched)
 {
     for (unsigned long i = 0; i < sched->threads; i++)
     {
@@ -614,6 +619,19 @@ static void print_item_history(int num, history_node *node)
 #endif
 
 #if THREAD_STAT
+        if (head->prev != NULL && (head->prev->start + 100 > head->start || head->prev->thread_state == head->thread_state))
+        {
+            head->prev->next = head->next;
+
+            if (head->next != NULL)
+            {
+                head->next->prev = head->prev;
+            }
+
+            head = head->next;
+            continue;
+        }
+
         printf("%d %d %ld\n", num, head->thread_state, head->start);
 #endif
         head = head->next;

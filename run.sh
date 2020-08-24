@@ -6,7 +6,7 @@
 for var in $(ls bin)
 do  
     # ((count++))
-    rm -f log/log_$var.txt
-    ./bin/$var >> log/log_$var.txt
+    rm -f log/$var.txt
+    ./bin/$var >> log/$var.txt
     # echo $count/$all $var
 done
