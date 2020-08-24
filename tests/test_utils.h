@@ -10,7 +10,7 @@
 #include <structures/list.h>
 
 #ifndef TEST_LEVEL
-#define TEST_LEVEL 5
+#define TEST_LEVEL 1
 #endif
 
 #if LOCAL_QUEUES_WITH_STEAL
@@ -29,7 +29,7 @@ void run_test(void (*test)());
 void run_test(void (*test)())
 {
 #if FIBER_STAT
-    scheds_threads = 16;
+    scheds_threads = 1;
     create_history();
 
     test();
@@ -38,7 +38,7 @@ void run_test(void (*test)())
 
     free_history();
 #elif THREAD_STAT
-    scheds_threads = 7;
+    scheds_threads = 1;
     create_history();
 
     test();

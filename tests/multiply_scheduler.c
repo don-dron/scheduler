@@ -52,7 +52,7 @@ static void test()
 
     new_scheduler(&sched,(unsigned int)scheds_threads);
     new_scheduler(&sched1,(unsigned int)scheds_threads);
-    for (int i = 0; i < ROOT_ROUTINES/2; i++)
+    for (int i = 0; i < ROOT_ROUTINES; i++)
     {
         spawn(&sched, func, NULL);
         spawn(&sched1, func, NULL);
@@ -61,7 +61,7 @@ static void test()
     run_scheduler(&sched);
     run_scheduler(&sched1);
 
-    for (int i = 0; i < ROOT_ROUTINES/2; i++)
+    for (int i = 0; i < ROOT_ROUTINES; i++)
     {
         spawn(&sched, func, NULL);
         spawn(&sched1, func, NULL);
