@@ -33,7 +33,7 @@ fiber *get_from_pool()
     }
 }
 
-void return_to_pull(scheduler *sched, fiber *fib)
+void return_to_pool(scheduler *sched, fiber *fib)
 {
     fiber_node *fib_node = (fiber_node *)malloc(sizeof(fiber_node));
     fib_node->fib = fib;

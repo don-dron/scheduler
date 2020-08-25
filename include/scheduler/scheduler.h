@@ -92,7 +92,7 @@ fiber *get_from_pool(void);
 /** 
  *  Puts fiber to pool. Function for override.
  */
-void return_to_pull(scheduler *sched, fiber *fib);
+void return_to_pool(scheduler *sched, fiber *fib);
 
 /** 
  * Free scheduler manager 

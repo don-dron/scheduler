@@ -82,7 +82,7 @@ static void run_task(fiber *routine)
         if (sub_time(current_fiber->wakeup, clock()) > 0)
         {
             // Wake up failed, sleep yet
-            return_to_pull(current_scheduler, current_fiber);
+            return_to_pool(current_scheduler, current_fiber);
             current_fiber = NULL;
             unlock_spinlock(&temp->lock);
             return;
@@ -123,7 +123,7 @@ static void run_task(fiber *routine)
         if (current_fiber->state != TERMINATED)
         {
             // Returns to pull
-            return_to_pull(current_scheduler, current_fiber);
+            return_to_pool(current_scheduler, current_fiber);
             current_fiber = NULL;
 
             // This unlock is unlocked fiber body lock
@@ -205,7 +205,7 @@ static void schedule()
 static void insert_fiber(scheduler *sched, fiber *fib)
 {
     inc((unsigned long *)&sched->count);
-    return_to_pull(sched, fib);
+    return_to_pool(sched, fib);
 }
 
 #if INTERRUPT_ENABLED
