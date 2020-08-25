@@ -5,6 +5,7 @@ enable_language(ASM)
 set_property(SOURCE switch_context.S PROPERTY LANGUAGE C)
 
 set(SOURCE_LIB 
+    local_queues_scheduler.c
     local_queues_with_steal_scheduler.c
     context.c
     coroutine.c 

@@ -10,11 +10,13 @@
 #include <structures/list.h>
 
 #ifndef TEST_LEVEL
-#define TEST_LEVEL 5
+#define TEST_LEVEL 8
 #endif
 
 #if LOCAL_QUEUES_WITH_STEAL
 #include <scheduler/local_queues_with_steal_scheduler.h>
+#elif LOCAL_QUEUES
+#include <scheduler/local_queues_scheduler.h>
 #else
 #error "Scheduler not defined"
 #endif
@@ -29,7 +31,7 @@ void run_test(void (*test)());
 void run_test(void (*test)())
 {
 #if FIBER_STAT
-    scheds_threads = 16;
+    scheds_threads = 10;
     create_history();
 
     test();
@@ -38,7 +40,7 @@ void run_test(void (*test)())
 
     free_history();
 #elif THREAD_STAT
-    scheds_threads = 7;
+    scheds_threads = 8;
     create_history();
 
     test();
@@ -63,7 +65,7 @@ void run_test(void (*test)())
 
         printf("%ld %ld %ld %ld %ld \n", scheds_threads, delta / 1000, stat.interrupt_count, stat.interrupt_failed_count, stat.switch_count);
 
-        scheds_threads++;
+        scheds_threads+=3;
     }
 #endif
 }

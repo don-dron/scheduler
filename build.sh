@@ -2,7 +2,6 @@
 rm -f CMakeCache.txt
 
 cmake -U CMakeLists.txt
-make clean
-make
+cmake --build .
 
 mkdir -p log
