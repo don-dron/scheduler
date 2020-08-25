@@ -2,7 +2,7 @@
 
 #if INTERRUPT_ENABLED
 
-#define INTERVAL 2000
+#define INTERVAL 500
 #define MAX_TIME 1000
 
 #endif
@@ -166,9 +166,9 @@ static void schedule()
         // If scheduler not run - block
         scheduler_pause();
 
-        #if THREAD_STAT
-            update_thread_history(SCHEDULE);
-        #endif
+#if THREAD_STAT
+        update_thread_history(SCHEDULE);
+#endif
 
         if (current_scheduler->terminate)
         {
@@ -224,8 +224,6 @@ static void *signal_thread_func(void *args)
             return NULL;
         }
 
-        usleep(INTERVAL);
-
         // Wake up after interval
 
         for (size_t i = 0; i < current_scheduler->threads; i++)
@@ -256,6 +254,8 @@ static void *signal_thread_func(void *args)
                 inc(&interrupt_failed_count);
             }
         }
+
+        usleep(INTERVAL);
     }
 
     return NULL;
@@ -362,12 +362,11 @@ int new_scheduler(scheduler *sched, unsigned int using_threads)
 
     // Create thread for sending signals to handlers-threads
     pthread_create(&sched->signal_thread, 0, signal_thread_func, sched);
-    int policy = SCHED_OTHER;
-    struct sched_param param;
 
-    pthread_getschedparam(sched->signal_thread, &policy, &param);
-    param.sched_priority = 99;
-    pthread_setschedparam(sched->signal_thread, policy, &param);
+#if REALTIME
+    pthread_setschedprio(sched->signal_thread, 99);
+#endif
+
 #endif
 
 #if THREAD_STAT
@@ -385,8 +384,11 @@ int new_scheduler(scheduler *sched, unsigned int using_threads)
         unsigned long *args = (unsigned long *)malloc(sizeof(unsigned long) * 2);
         args[0] = index;
         args[1] = (unsigned long)sched;
-
         pthread_create(&sched->threads_pool[index], &attr, run_fibers_handler, (void *)args);
+
+#if REALTIME
+        pthread_setschedprio(sched->threads_pool[index], 99);
+#endif
     }
 
     return 0;

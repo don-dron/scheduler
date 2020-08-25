@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.5)
 project(Scheduler)
 
+set(CMAKE_C_COMPILER ${CC})
+
 SET (CMAKE_LIBRARY_OUTPUT_DIRECTORY
         ${PROJECT_BINARY_DIR}/bin
         CACHE PATH
@@ -32,10 +34,11 @@ include_directories(
 
 
 option(DEBUG "With debug mode" OFF)
-
+option(REALIME "With realtime priority" ON)
 option(FIBER_STAT "With fiber history" OFF)
 option(INTERRUPT_ENABLED "With interrupts" ON)
 option(THREAD_STAT "With thread history" OFF)
+
 option(LOCAL_QUEUES_WITH_STEAL "Local queues with steal fibers" ON)
 option(LOCAL_QUEUES "Local queues" OFF)
 
@@ -44,6 +47,12 @@ if(DEBUG)
 else(DEBUG)
     add_definitions(-DDEBUG=0)
 endif(DEBUG)
+
+if(REALIME)
+    add_definitions(-DREALTIME=1)
+else(REALIME)
+    add_definitions(-DREALTIME=0)
+endif(REALIME)
 
 if(FIBER_STAT)
     add_definitions(-DFIBER_STAT=1)

@@ -1,22 +1,5 @@
 #include <scheduler/local_queues_with_steal_scheduler.h>
 
-static inline fiber_node *steal_task(list *queue, unsigned long thread_number)
-{
-    fiber_node *stolen = NULL;
-    size_t threads = current_scheduler->threads;
-    unsigned long current = thread_number;
-    while (1)
-    {
-        current += 1;
-        current %= threads;
-        stolen = (fiber_node *)list_pop_back(queue);
-        if (stolen != 0 || current == thread_number)
-        {
-            return stolen;
-        }
-    }
-}
-
 int create_scheduler_manager(scheduler *sched)
 {
     sched->manager = (scheduler_manager *)malloc(sizeof(scheduler_manager));
@@ -46,14 +29,6 @@ fiber *get_from_pool()
     }
     else
     {
-        fiber_node *stolen = steal_task(queue, thread_id);
-
-        if (stolen)
-        {
-            fiber *fib = stolen->fib;
-            free(stolen);
-            return fib;
-        }
         return NULL;
     }
 }
