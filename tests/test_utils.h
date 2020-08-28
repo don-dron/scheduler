@@ -10,7 +10,7 @@
 #include <structures/list.h>
 
 #ifndef TEST_LEVEL
-#define TEST_LEVEL 8
+#define TEST_LEVEL 12
 #endif
 
 #if LOCAL_QUEUES_WITH_STEAL
