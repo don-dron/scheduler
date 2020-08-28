@@ -21,6 +21,12 @@
 #error "Scheduler not defined"
 #endif
 
+typedef struct free_node {
+    list_node node;
+    fiber *fib;
+}
+free_node;
+
 int sum = 0;
 int atom = 0;
 unsigned long scheds_threads = 1;
@@ -31,7 +37,7 @@ void run_test(void (*test)());
 void run_test(void (*test)())
 {
 #if FIBER_STAT
-    scheds_threads = 10;
+    scheds_threads = 16;
     create_history();
 
     test();
@@ -40,7 +46,7 @@ void run_test(void (*test)())
 
     free_history();
 #elif THREAD_STAT
-    scheds_threads = 8;
+    scheds_threads = 16;
     create_history();
 
     test();

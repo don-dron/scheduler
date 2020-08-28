@@ -17,7 +17,6 @@ typedef struct coroutine
     execution_context caller_context;
     struct coroutine *external_routine;
     volatile int complete;
-    void *stack;
 } coroutine;
 
 extern thread_local coroutine *current_coroutine;

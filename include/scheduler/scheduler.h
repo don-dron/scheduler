@@ -4,6 +4,7 @@
 #include <pthread.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <sys/time.h>
 #include <sys/types.h>
 #include <threads.h>
 #include <stdlib.h>
@@ -50,6 +51,8 @@ struct scheduler
 
     /** Map - thread number to pointer to thread - array **/
     fiber ***current_fibers;
+
+    list garbage;
 
     /** Count of handlers-threads **/
     size_t threads;
@@ -145,6 +148,11 @@ void shutdown(scheduler *sched);
  *  Block fiber while input fiber not terminated.
  */
 void join(fiber *fib);
+
+/**
+ *  Free terminated fibers.
+ */
+int free_fibers(scheduler *sched);
 
 /** 
  *  Terminate scheduler. Shutdown all fibers and after free memory.

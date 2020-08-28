@@ -70,10 +70,16 @@ int free_scheduler_manager(scheduler *sched)
     scheduler_manager *manager = sched->manager;
     for (size_t i = 0; i < sched->threads; i++)
     {
+        if (manager->queues[i]->size != 0)
+        {
+            printf("Panic\n");
+            abort();
+        }
         free(manager->queues[i]);
     }
 
     free(manager->queues);
 
+    free(sched->manager);
     return 0;
 }

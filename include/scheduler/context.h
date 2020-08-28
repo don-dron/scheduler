@@ -15,6 +15,7 @@ extern unsigned long interrupt_failed_count;
 typedef struct execution_context
 {
   void *rsp;
+  void *stack;
 } execution_context;
 
 typedef struct stack_saved_context

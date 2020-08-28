@@ -1,8 +1,8 @@
 #include <scheduler/fiber.h>
 
-thread_local fiber *current_fiber = NULL;
+thread_local fiber *volatile current_fiber = NULL;
 
-unsigned long id = 0;
+unsigned long volatile id = 0;
 
 static unsigned long generate_id()
 {
@@ -19,13 +19,13 @@ static void fiber_trampoline()
     unlock_spinlock(&temp->lock);
 
     temp->routine(temp->args);
-
+    temp = current_fiber;
     // Lock for swtich context, unlocked in run_task
     lock_spinlock(&temp->lock);
 
     if (temp != current_fiber)
     {
-        printf("Wrong state\n");
+        printf("Wrong state 1 \n");
         exit(1);
         return;
     }
@@ -41,12 +41,12 @@ static void fiber_trampoline()
         switch_context(&temp->context, &temp->external_context);
 
         // Unreachable
-        printf("Wrong state\n");
+        printf("Wrong state 2 \n");
         exit(1);
     }
     else
     {
-        printf("Wrong state\n");
+        printf("Wrong state 3 \n");
         exit(1);
     }
 }
@@ -78,13 +78,11 @@ fiber *create_fiber(fiber_routine routine, void *args)
 
 void free_fiber(fiber *fiber)
 {
-    munmap(fiber->stack, STACK_SIZE);
+    munmap(fiber->context.stack, STACK_SIZE);
 
 #if FIBER_STAT
     save_fiber_history(fiber);
 #endif
-
-    free(fiber);
 }
 
 void setup_trampoline(fiber *new_fiber)
@@ -138,5 +136,5 @@ void setup_trampoline(fiber *new_fiber)
     new_fiber->context.rsp = saved_context;
 
     // Save allocated memory pointer
-    new_fiber->stack = start;
+    new_fiber->context.stack = start;
 }
