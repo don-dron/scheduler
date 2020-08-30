@@ -67,7 +67,7 @@ static int setup(coroutine *coroutine_, void (*trampoline)(void *))
     coroutine_->routine_context.rsp = saved_context;
 
     // Save allocated memory pointer
-    coroutine_->stack = start;
+    coroutine_->routine_context.stack = start;
 
     return 0;
 }
@@ -115,6 +115,6 @@ void switch_to_caller(coroutine *coroutine_)
 
 int free_coroutine(coroutine *coroutine_)
 {
-    munmap(coroutine_->stack, STACK_SIZE);
+    munmap(coroutine_->routine_context.stack, STACK_SIZE);
     return 0;
 }

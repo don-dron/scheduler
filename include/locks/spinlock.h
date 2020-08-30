@@ -4,7 +4,7 @@
 
 typedef struct spinlock
 {
-    volatile int lock;
+    volatile unsigned long lock;
 } spinlock;
 
 void init_spinlock(spinlock *spin_lock);

@@ -5,11 +5,31 @@ unsigned long switch_count = 0;
 unsigned long interrupt_count = 0;
 unsigned long interrupt_failed_count = 0;
 
+static inline void asan_before(void *bottom)
+{
+#if defined(__has_feature)
+#if __has_feature(address_sanitizer)
+  __sanitizer_start_switch_fiber(NULL, bottom, STACK_SIZE);
+#endif
+#endif
+}
+
+static inline void asan_after()
+{
+#if defined(__has_feature)
+#if __has_feature(address_sanitizer)
+  __sanitizer_finish_switch_fiber(NULL, NULL, NULL);
+#endif
+#endif
+}
+
 inline void switch_context(execution_context *from, execution_context *to)
 {
   // Data Race (atomic operations is syncronization - lows performance)
   switch_count++;
+  asan_before((void *)((size_t)to->stack + STACK_SIZE - 1));
   switch_from_to(from, to);
+  asan_after();
 }
 
 void align_next_push(stack_builder *builder, size_t alignment)

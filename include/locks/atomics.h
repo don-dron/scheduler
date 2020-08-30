@@ -3,6 +3,6 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-unsigned long inc(unsigned long *variable);
+unsigned long inc(volatile unsigned long *variable);
 
-unsigned long dec(unsigned long *variable);
+unsigned long dec(volatile unsigned long *variable);

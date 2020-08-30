@@ -21,8 +21,8 @@ SET (CMAKE_ARCHIVE_OUTPUT_DIRECTORY
         "Single Directory for all"
     )
 
-SET(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -O3 -Werror -Wextra -Wall -g -g3 -Wfloat-equal -Wundef -Wswitch-enum -Wconversion -Wunreachable-code -ggdb -Werror-implicit-function-declaration -Wpointer-arith -Wunused -Wno-unused-parameter -Wmissing-declarations -Wmissing-prototypes")
-SET(CMAKE_LINKER_FLAGS "${CMAKE_LINKER_FLAGS} -W1,-01,-W1,--hash-style=gnu -W1m --as-needed -pie -W1, -z, relro,now -W1,-z, noexecstack ")
+SET(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -O3 -Werror -g -fno-omit-frame-pointer -Wextra -Wall -g3 -Wfloat-equal -Wundef -Wswitch-enum -Wconversion -Wunreachable-code -ggdb -Werror-implicit-function-declaration -Wpointer-arith -Wunused -Wno-unused-parameter -Wmissing-declarations -Wmissing-prototypes")
+SET(CMAKE_LINKER_FLAGS "${CMAKE_LINKER_FLAGS} -static-libasan -g -fno-omit-frame-pointer,-lasan, -W1,-01,-W1,--hash-style=gnu -W1m --as-needed -pie -W1, -z, relro,now -W1,-z, noexecstack ")
 
 enable_testing()
 

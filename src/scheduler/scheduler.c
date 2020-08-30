@@ -2,7 +2,7 @@
 
 #if INTERRUPT_ENABLED
 
-#define INTERVAL 500
+#define INTERVAL 50
 #define MAX_TIME 1000
 
 #endif
@@ -52,6 +52,19 @@ thread_local scheduler *current_scheduler = NULL;
 //                                                                         |
 //                                                                 send signal from additional thread
 //
+
+typedef struct free_node
+{
+    list_node node;
+    fiber *fib;
+} free_node;
+
+static void delete_fiber(list_node *node)
+{
+    free_node *fiber_node = (free_node *)node;
+    free_fiber(fiber_node->fib);
+    free(fiber_node->fib);
+}
 
 static inline long clock_to_microseconds(long time)
 {
@@ -134,8 +147,10 @@ static void run_task(fiber *routine)
             current_fiber = NULL;
             inc((unsigned long *)&current_scheduler->end_count);
 
-            // Fiber delete
-            free_fiber(temp);
+            free_node *node = (free_node *)malloc(sizeof(free_node));
+            node->fib = temp;
+            list_push_front(&current_scheduler->garbage, (list_node *)node);
+            unlock_spinlock(&temp->lock);
         }
     }
     else
@@ -263,7 +278,7 @@ static void *signal_thread_func(void *args)
 
 static void handler(int signo)
 {
-    // Handler for SIGALARM signals
+    // Handler for SIGALRM signals
     fiber *temp = current_fiber;
     if (temp && try_lock_spinlock(&temp->lock))
     {
@@ -307,7 +322,7 @@ static void *run_fibers_handler(void *arg)
 
     thread_id = thread_number;
     current_scheduler = sched;
-    current_scheduler->current_fibers[thread_number] = &current_fiber;
+    current_scheduler->current_fibers[thread_number] = (fiber **)&current_fiber;
 
 #if THREAD_STAT
     current_scheduler->threads_histories[thread_number] = (history_node *)malloc(sizeof(history_node));
@@ -343,6 +358,7 @@ int new_scheduler(scheduler *sched, unsigned int using_threads)
     sched->threads = threads;
     sched->current_fibers = (fiber ***)malloc(sizeof(fiber **) * threads);
     memset(sched->current_fibers, 0, sizeof(fiber **) * threads);
+    create_list(&sched->garbage);
 
 #if INTERRUPT_ENABLED
     // Sets signals parameters for interrupting fibers
@@ -448,59 +464,32 @@ void sleep_for(unsigned long duration)
 
 fiber *submit(fiber_routine routine, void *args)
 {
-    if (current_fiber == NULL)
+    fiber *temp = current_fiber;
+    if (temp == NULL)
     {
         printf("[ERROR] Submit out of fiber\n");
         exit(1);
     }
 
     // Lock for create new fiber - block context switching
-    lock_spinlock(&current_fiber->lock);
+    lock_spinlock(&temp->lock);
     fiber *fib = create_fiber(routine, args);
-    fib->external_context = current_fiber->context;
+    fib->external_context = temp->context;
     fib->sched = current_scheduler;
     insert_fiber(current_scheduler, fib);
-    unlock_spinlock(&current_fiber->lock);
+    unlock_spinlock(&temp->lock);
 
     return fib;
 }
 
-int terminate_scheduler(scheduler *sched)
-{
-    // Shutdown before terminate
-    shutdown(sched);
-
-    sched->terminate = 1;
-
-#if INTERRUPT_ENABLED
-    // Join threads
-    pthread_join(sched->signal_thread, NULL);
-#endif
-
-    for (size_t i = 0; i < sched->threads; i++)
-    {
-        pthread_join(sched->threads_pool[i], NULL);
-    }
-
-    free(sched->threads_pool);
-
-#if THREAD_STAT
-    save_thread_history(sched);
-#endif
-
-    // Scheduler manager teminate
-    free_scheduler_manager(sched);
-
-    return 0;
-}
-
 void join(fiber *fib)
 {
+    fiber *temp = current_fiber;
     while (1)
     {
         if (fib->state != TERMINATED)
         {
-            if (current_fiber)
+            if (temp)
             {
                 // If we in fiber
                 sleep_for(200);
@@ -552,6 +541,43 @@ void yield()
         printf("[ERROR] Yield wrong state %d\n", temp->state);
         exit(1);
     }
+}
+
+int free_fibers(scheduler *sched)
+{
+    return free_list(&sched->garbage, delete_fiber);
+}
+
+int terminate_scheduler(scheduler *sched)
+{
+    // Shutdown before terminate
+    shutdown(sched);
+
+    sched->terminate = 1;
+
+#if INTERRUPT_ENABLED
+    // Join threads
+    pthread_join(sched->signal_thread, NULL);
+#endif
+
+    for (size_t i = 0; i < sched->threads; i++)
+    {
+        pthread_join(sched->threads_pool[i], NULL);
+    }
+
+    free(sched->threads_pool);
+
+#if THREAD_STAT
+    save_thread_history(sched);
+#endif
+
+    // Scheduler manager teminate
+    free_scheduler_manager(sched);
+
+    free(sched->current_fibers);
+    free_fibers(sched);
+
+    return 0;
 }
 
 void create_history()

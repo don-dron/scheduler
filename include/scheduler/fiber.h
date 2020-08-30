@@ -72,7 +72,6 @@ typedef void (*fiber_routine)(void *);
 typedef struct fiber
 {
     void *args;
-    void *stack;
     execution_context external_context;
     execution_context context;
     fiber_state state;
@@ -90,8 +89,8 @@ typedef struct fiber
 
 } fiber;
 
-extern thread_local fiber *current_fiber;
-extern unsigned long id;
+extern thread_local fiber * volatile current_fiber;
+extern unsigned long volatile id;
 
 fiber *create_fiber(fiber_routine routine, void *args);
 void free_fiber(fiber *fiber);

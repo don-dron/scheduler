@@ -130,10 +130,14 @@ int free_list(list *lst, void (*free_callback)(list_node *))
     while (current != 0)
     {
         list_node *tmp = current->next;
-        free_callback(tmp);
+        free_callback(current);
         free(current);
         current = tmp;
     }
+
+    lst->start = 0;
+    lst->end = 0;
+    lst->size = 0;
 
     unlock_spinlock(&lst->lock);
 

@@ -34,7 +34,7 @@ static void internal_routine()
 
     // FOR TEST
     usleep(5000);
-    
+
     __atomic_fetch_add(&atom, 1, __ATOMIC_SEQ_CST);
     sum++;
     __atomic_fetch_add(&atom, 1, __ATOMIC_SEQ_CST);
@@ -56,6 +56,8 @@ static void root_routine()
     {
         join(steps[i]);
     }
+
+    free(steps);
 }
 
 static void tree()
@@ -97,7 +99,9 @@ static void tree()
     for (int i = 0; i < SCHEDS_COUNT; i++)
     {
         terminate_scheduler(scheds[i]);
+        free(scheds[i]);
     }
+    free(scheds);
 }
 
 int main()
