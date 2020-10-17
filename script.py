@@ -13,20 +13,28 @@ def run(command):
     output, error = process.communicate()
 
 
-names = ['LOCAL_QUEUE_WITH_STEAL',
-         'LOCAL_QUEUE']
+names = [#'LOCAL_QUEUE_WITH_STEAL',
+         #'LOCAL_QUEUE',
+         'RB_TREE']#,
+         #'ELASTIC_TREE',
+         #'SPLAY_TREE',
+         #'THIN_HEAP']
 
-kinds = {'LOCAL_QUEUE_WITH_STEAL': '-DLOCAL_QUEUES_WITH_STEAL=ON',
-         'LOCAL_QUEUE': '-DLOCAL_QUEUES_WITH_STEAL=ON'}
+kinds = {#'LOCAL_QUEUE_WITH_STEAL': '-DLOCAL_QUEUES_WITH_STEAL=ON',
+         #'LOCAL_QUEUE': '-DLOCAL_QUEUES_WITH_STEAL=ON',
+         'RB_TREE': '-DRB_TREE=ON'}#,
+         #'ELASTIC_TREE' : '-DELASTIC_TREE=ON',
+         #'SPLAY_TREE' : '-DSPLAY_TREE=ON',
+         #'THIN_HEAP' : '-DTHIN_HEAP=ON'}
 
-plot_types = {'HIS_FB': '-DFIBER_STAT=ON -DTHREAD_STAT=OFF',
-              'TIME': '-DFIBER_STAT=OFF -DTHREAD_STAT=OFF',
-              'HIS_TH': '-DTHREAD_STAT=ON -DFIBER_STAT=OFF'}
+plot_types = {#'HIS_FB': '-DFIBER_STAT=ON -DTHREAD_STAT=OFF',
+              #'HIS_TH': '-DTHREAD_STAT=ON -DFIBER_STAT=OFF',
+              'TIME': '-DFIBER_STAT=OFF -DTHREAD_STAT=OFF'}
 
-realtime_flags = {'REALTIME': '-DREALTIME=ON',
+realtime_flags = {#'REALTIME': '-DREALTIME=ON',
                   'NO_REALTIME': '-DREALTIME=OFF'}
 
-interrupt_flags = {'INT': '-DINTERRUPT_ENABLED=ON',
+interrupt_flags = {#'INT': '-DINTERRUPT_ENABLED=ON',
                    'NO_INT': '-DINTERRUPT_ENABLED=OFF'}
 
 
@@ -249,6 +257,6 @@ for interrupt_flag in interrupt_flags:
                     color=c, label=kind))
 
             plt.legend(handles=h,
-                       bbox_to_anchor=(-0.1, -0.1))
+                       bbox_to_anchor=(1, 0.6))
             plt.savefig(images + '/TIME/' + os.listdir(path)
                         [i]+"_" + interrupt_flag + '_' + realtime_flag+"_TIME" + '.png')

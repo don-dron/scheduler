@@ -5,8 +5,12 @@ enable_language(ASM)
 set_property(SOURCE switch_context.S PROPERTY LANGUAGE C)
 
 set(SOURCE_LIB 
+    rb_tree_scheduler.c
     local_queues_scheduler.c
     local_queues_with_steal_scheduler.c
+    thin_heap_scheduler.c
+    elastic_tree_scheduler.c
+    splay_tree_scheduler.c
     context.c
     coroutine.c 
     fiber.c

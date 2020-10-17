@@ -10,13 +10,21 @@
 #include <structures/list.h>
 
 #ifndef TEST_LEVEL
-#define TEST_LEVEL 12
+#define TEST_LEVEL 5
 #endif
 
-#if LOCAL_QUEUES_WITH_STEAL
-#include <scheduler/local_queues_with_steal_scheduler.h>
+#if RB_TREE
+#include <scheduler/rb_tree_scheduler.h>
 #elif LOCAL_QUEUES
 #include <scheduler/local_queues_scheduler.h>
+#elif THIN_HEAP
+#include <scheduler/thin_heap_scheduler.h>
+#elif ELASTIC_TREE
+#include <scheduler/elastic_tree_scheduler.h>
+#elif SPLAY_TREE
+#include <scheduler/splay_tree_scheduler.h>
+#elif LOCAL_QUEUES_WITH_STEAL
+#include <scheduler/local_queues_with_steal_scheduler.h>
 #else
 #error "Scheduler not defined"
 #endif

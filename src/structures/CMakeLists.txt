@@ -3,7 +3,8 @@ project(structures)
 set(SOURCE_LIB 
     lf_stack.c 
     list.c
-    thin_heap.c  )
+    thin_heap.c
+    rb_tree.c  )
 
 add_library(structures STATIC ${SOURCE_LIB})
 
