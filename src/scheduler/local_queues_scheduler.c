@@ -1,4 +1,4 @@
-#include <scheduler/local_queues_with_steal_scheduler.h>
+#include <scheduler/local_queues_scheduler.h>
 
 int create_scheduler_manager(scheduler *sched)
 {

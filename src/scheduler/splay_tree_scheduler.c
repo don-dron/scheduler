@@ -1,7 +1,8 @@
 #include <scheduler/splay_tree_scheduler.h>
 
 int create_scheduler_manager(scheduler *sched)
-{   
+{
+    printf("1asdsadas234\n");
     sched->manager = (scheduler_manager *)malloc(sizeof(scheduler_manager));
     scheduler_manager *manager = sched->manager;
 

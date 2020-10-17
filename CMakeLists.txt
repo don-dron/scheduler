@@ -28,17 +28,18 @@ include_directories(
 )
 
 
-option(DEBUG "With debug mode" ON)
+option(DEBUG "With debug mode" OFF)
 option(REALIME "With realtime priority" OFF)
 option(FIBER_STAT "With fiber history" OFF)
 option(INTERRUPT_ENABLED "With interrupts" OFF)
 option(THREAD_STAT "With thread history" OFF)
 
-option(RB_TREE "Rb tree" ON)
+option(RB_TREE "Rb tree" OFF)
 option(LOCAL_QUEUES_WITH_STEAL "Local queues with steal fibers" OFF)
 option(LOCAL_QUEUES "Local queues" OFF)
-option(THIN_HEAP "Thin heap" OFF)
+option(ELASTIC_TREE "Elastic tree" OFF)
 option(SPLAY_TREE "Splay tree" OFF)
+option(THIN_HEAP "Thin heap" OFF)
 
 if(DEBUG)
     add_compile_options(-DDEBUG=1)
@@ -71,12 +72,16 @@ else(INTERRUPT_ENABLED)
 endif(INTERRUPT_ENABLED)
 
 if(RB_TREE)
-    message(STATUS "Rb tree")
     add_compile_options(-DRB_TREE=1)
 else(RB_TREE)
-    message(STATUS "NO Rb tree")
     add_compile_options(-DRB_TREE=0)
 endif(RB_TREE)
+
+if(SPLAY_TREE)
+    add_compile_options(-DSPLAY_TREE=1)
+else(SPLAY_TREE)
+    add_compile_options(-DSPLAY_TREE=0)
+endif(SPLAY_TREE)
 
 if(LOCAL_QUEUES_WITH_STEAL)
     add_compile_options(-DLOCAL_QUEUES_WITH_STEAL=1)
@@ -101,12 +106,6 @@ if(ELASTIC_TREE)
 else(ELASTIC_TREE)
     add_compile_options(-DELASTIC_TREE=0)
 endif(ELASTIC_TREE)
-
-if(SPLAY_TREE)
-    add_compile_options(-DSPLAY_TREE=1)
-else(SPLAY_TREE)
-    add_compile_options(-DSPLAY_TREE=0)
-endif(SPLAY_TREE)
 
 SET(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -O3 -Werror -g -fno-omit-frame-pointer -Wextra -Wall -g3 -Wfloat-equal -Wundef -Wswitch-enum -Wconversion -Wunreachable-code -ggdb -Werror-implicit-function-declaration -Wpointer-arith -Wunused -Wno-unused-parameter -Wmissing-declarations -Wmissing-prototypes")
 SET(CMAKE_LINKER_FLAGS "${CMAKE_LINKER_FLAGS} -static-libasan -g -fno-omit-frame-pointer,-lasan, -W1,-01,-W1,--hash-style=gnu -W1m --as-needed -pie -W1, -z, relro,now -W1,-z, noexecstack ")
