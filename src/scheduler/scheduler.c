@@ -516,7 +516,6 @@ void shutdown(scheduler *sched)
 {
     while (sched->count != sched->end_count)
     {
-        printf("%ld %ld\n", sched->count, sched->end_count);
         // Sleep if failed
         usleep(200);
     }

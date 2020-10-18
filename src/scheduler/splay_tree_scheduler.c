@@ -56,13 +56,12 @@ fiber *get_from_pool()
     splay_tree *tree = current_scheduler->manager->tree;
 
     lock_spinlock(&current_scheduler->manager->lock);
-    fiber_node *node = (fiber_node *)splay_tree_first(tree);
+    splay_node *node = splay_tree_first(tree);
     if (node)
     {
-        splay_tree_delete(tree, node);
+        splay_tree_delete_hint(tree, node);
         unlock_spinlock(&current_scheduler->manager->lock);
-        fiber *res = node->fib;
-        free(node);
+        fiber *res = ((fiber_node *)node->value)->fib;
         return res;
     }
     else

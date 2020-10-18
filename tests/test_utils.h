@@ -10,7 +10,7 @@
 #include <structures/list.h>
 
 #ifndef TEST_LEVEL
-#define TEST_LEVEL 6
+#define TEST_LEVEL 4
 #endif
 
 #if RB_TREE
@@ -79,7 +79,7 @@ void run_test(void (*test)())
 
         printf("%ld %ld %ld %ld %ld \n", scheds_threads, delta / 1000, stat.interrupt_count, stat.interrupt_failed_count, stat.switch_count);
 
-        scheds_threads+=65;
+        scheds_threads+=3;
     }
 #endif
 }

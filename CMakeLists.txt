@@ -39,7 +39,7 @@ option(RB_TREE "Rb tree" OFF)
 option(LOCAL_QUEUES_WITH_STEAL "Local queues with steal fibers" OFF)
 option(LOCAL_QUEUES "Local queues" OFF)
 option(ELASTIC_TREE "Elastic tree" OFF)
-option(SPLAY_TREE "Splay tree" ON)
+option(SPLAY_TREE "Splay tree" OFF)
 
 if(DEBUG)
     add_compile_options(-DDEBUG=1)
