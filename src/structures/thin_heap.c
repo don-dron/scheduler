@@ -101,7 +101,6 @@ thin_node *extract_min_thin_heap(thin_heap *heap)
     heap->first = NULL;
     heap->last = NULL;
     heap->size = 0;
-    printf("%d \n", max);
     for (int i = 0; i <= max; i++)
     {
         if (comb[i])

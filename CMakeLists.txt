@@ -35,7 +35,7 @@ option(INTERRUPT_ENABLED "With interrupts" OFF)
 option(THREAD_STAT "With thread history" OFF)
 
 option(THIN_HEAP "Thin heap" OFF)
-option(RB_TREE "Rb tree" OFF)
+option(RB_TREE "Rb tree" ON)
 option(LOCAL_QUEUES_WITH_STEAL "Local queues with steal fibers" OFF)
 option(LOCAL_QUEUES "Local queues" OFF)
 option(ELASTIC_TREE "Elastic tree" OFF)

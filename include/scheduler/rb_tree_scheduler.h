@@ -3,12 +3,12 @@
 
 struct scheduler_manager
 {
-    struct rb_tree* tree;
+    struct rbtree* tree;
     spinlock lock;
 };
 
 typedef struct fiber_node
 {
-    struct rb_tree_node rb_node;
+    struct rbnode rb_node;
     fiber *fib;
 } fiber_node;

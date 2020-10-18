@@ -364,6 +364,8 @@ int new_scheduler(scheduler *sched, unsigned int using_threads)
     memset(sched->current_fibers, 0, sizeof(fiber **) * threads);
     create_list(&sched->garbage);
 
+    asm volatile("mfence" ::
+                     : "memory");
 #if INTERRUPT_ENABLED
     // Sets signals parameters for interrupting fibers
 
@@ -393,9 +395,13 @@ int new_scheduler(scheduler *sched, unsigned int using_threads)
     sched->threads_histories = (history_node **)malloc(threads * sizeof(history_node *));
 #endif
 
+    asm volatile("mfence" ::
+                     : "memory");
     // Create manager for scheduler
     create_scheduler_manager(sched);
 
+    asm volatile("mfence" ::
+                     : "memory");
     // Create handlers-threads
     for (unsigned long index = 0; index < threads; index++)
     {
@@ -421,9 +427,15 @@ void run_scheduler(scheduler *sched)
 
 fiber *spawn(scheduler *sched, fiber_routine routine, void *args)
 {
+    asm volatile("mfence" ::
+                     : "memory");
     fiber *fib = create_fiber(routine, args);
     fib->sched = sched;
+    asm volatile("mfence" ::
+                     : "memory");
     insert_fiber(sched, fib);
+    asm volatile("mfence" ::
+                     : "memory");
     return fib;
 }
 
@@ -468,6 +480,8 @@ void sleep_for(unsigned long duration)
 
 fiber *submit(fiber_routine routine, void *args)
 {
+    asm volatile("mfence" ::
+                     : "memory");
     fiber *temp = current_fiber;
     if (temp == NULL)
     {
@@ -481,17 +495,25 @@ fiber *submit(fiber_routine routine, void *args)
     fib->external_context = temp->context;
     fib->sched = current_scheduler;
     fib->level = current_fiber->level + 1;
+    asm volatile("mfence" ::
+                     : "memory");
     insert_fiber(current_scheduler, fib);
     unlock_spinlock(&temp->lock);
+    asm volatile("mfence" ::
+                     : "memory");
 
     return fib;
 }
 
 void join(fiber *fib)
 {
+    asm volatile("mfence" ::
+                     : "memory");
     fiber *temp = current_fiber;
     while (1)
     {
+        asm volatile("mfence" ::
+                         : "memory");
         if (fib->state != TERMINATED)
         {
             if (temp)
@@ -514,8 +536,13 @@ void join(fiber *fib)
 
 void shutdown(scheduler *sched)
 {
+    asm volatile("mfence" ::
+                     : "memory");
     while (sched->count != sched->end_count)
     {
+        // printf("%ld %ld\n", sched->count, sched->end_count);
+        asm volatile("mfence" ::
+                         : "memory");
         // Sleep if failed
         usleep(200);
     }
@@ -555,6 +582,8 @@ int free_fibers(scheduler *sched)
 
 int terminate_scheduler(scheduler *sched)
 {
+    asm volatile("mfence" ::
+                     : "memory");
     // Shutdown before terminate
     shutdown(sched);
 

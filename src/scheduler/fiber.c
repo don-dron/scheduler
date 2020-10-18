@@ -76,6 +76,7 @@ fiber *create_fiber(fiber_routine routine, void *args)
 
     setup_trampoline(new_fiber);
 
+    asm volatile("mfence":::"memory");
     return new_fiber;
 }
 

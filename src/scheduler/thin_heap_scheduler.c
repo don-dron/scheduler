@@ -52,16 +52,19 @@ int create_scheduler_manager(scheduler *sched)
     manager->heap->first = NULL;
     manager->heap->last = NULL;
     manager->heap->size = 0;
+    asm volatile("mfence":::"memory");
     return 0;
 }
 
 fiber *get_from_pool()
 {
+    asm volatile("mfence":::"memory");
     thin_heap *heap = current_scheduler->manager->heap;
 
     lock_spinlock(&current_scheduler->manager->lock);
     fiber_node *node = (fiber_node *)extract_min_thin_heap(heap);
     unlock_spinlock(&current_scheduler->manager->lock);
+    asm volatile("mfence":::"memory");
     
     if (node)
     {
@@ -77,16 +80,19 @@ fiber *get_from_pool()
 
 void return_to_pool(scheduler *sched, fiber *fib)
 {
+    asm volatile("mfence":::"memory");
     fiber_node *fib_node = (fiber_node *)malloc(sizeof(fiber_node));
     fib_node->fib = fib;
     fib_node->lst_node.rank = 0;
     fib_node->lst_node.child = NULL;
     fib_node->lst_node.right = NULL;
     fib_node->lst_node.left = NULL;
+    asm volatile("mfence":::"memory");
 
     lock_spinlock(&sched->manager->lock);
     insert_to_thin_heap(sched->manager->heap, (thin_node *)fib_node);
     unlock_spinlock(&sched->manager->lock);
+    asm volatile("mfence":::"memory");
 }
 
 int free_scheduler_manager(scheduler *sched)

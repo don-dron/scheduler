@@ -16,26 +16,26 @@ def run(command):
 names = ['LOCAL_QUEUE_WITH_STEAL',
          'LOCAL_QUEUE',
          'RB_TREE',
-         'ELASTIC_TREE',
-         'SPLAY_TREE',
-         'THIN_HEAP']
+         #'ELASTIC_TREE',
+         'SPLAY_TREE']#,
+         #'THIN_HEAP']
 
-kinds = {'LOCAL_QUEUE_WITH_STEAL': '-DLOCAL_QUEUES_WITH_STEAL=ON',
-         'LOCAL_QUEUE': '-DLOCAL_QUEUES_WITH_STEAL=ON',
-         'RB_TREE': '-DRB_TREE=ON',
-         'ELASTIC_TREE' : '-DELASTIC_TREE=ON',
-         'SPLAY_TREE' : '-DSPLAY_TREE=ON',
-         'THIN_HEAP' : '-DTHIN_HEAP=ON'}
+kinds = {'LOCAL_QUEUE_WITH_STEAL': '-DLOCAL_QUEUES_WITH_STEAL:BOOL=ON',
+         'LOCAL_QUEUE': '-DLOCAL_QUEUES_WITH_STEAL:BOOL=ON',
+         'RB_TREE': '-DRB_TREE:BOOL=ON',
+         #'ELASTIC_TREE' : '-DELASTIC_TREE:BOOL=ON',
+         'SPLAY_TREE' : '-DSPLAY_TREE:BOOL=ON'}#,
+         #'THIN_HEAP' : '-DTHIN_HEAP:BOOL=ON'}
 
-plot_types = {#'HIS_FB': '-DFIBER_STAT=ON -DTHREAD_STAT=OFF',
-              #'HIS_TH': '-DTHREAD_STAT=ON -DFIBER_STAT=OFF',
-              'TIME': '-DFIBER_STAT=OFF -DTHREAD_STAT=OFF'}
+plot_types = {#'HIS_FB': '-DFIBER_STAT:BOOL=ON -DTHREAD_STAT:BOOL=OFF',
+              #'HIS_TH': '-DTHREAD_STAT:BOOL=ON -DFIBER_STAT:BOOL=OFF',
+              'TIME': '-DFIBER_STAT:BOOL=OFF -DTHREAD_STAT:BOOL=OFF'}
 
-realtime_flags = {#'REALTIME': '-DREALTIME=ON',
-                  'NO_REALTIME': '-DREALTIME=OFF'}
+realtime_flags = {#'REALTIME': '-DREALTIME:BOOL=ON',
+                  'NO_REALTIME': '-DREALTIME:BOOL=OFF'}
 
-interrupt_flags = {#'INT': '-DINTERRUPT_ENABLED=ON',
-                   'NO_INT': '-DINTERRUPT_ENABLED=OFF'}
+interrupt_flags = {#'INT': '-DINTERRUPT_ENABLED:BOOL=ON',
+                   'NO_INT': '-DINTERRUPT_ENABLED:BOOL=OFF'}
 
 
 def get_color(state):
@@ -60,8 +60,11 @@ for kind in kinds:
         for realtime_flag in realtime_flags:
             for interrupt_flag in interrupt_flags:
                 if(plot_type == 'HIS_FB'):
+                    print(kind + '_' + interrupt_flag+'_' +
+                      realtime_flag + '_'+plot_type + '  ' + 'DONE')
                     run('rm -rf build')
-                    run('cmake -U -D ' + kinds[kind] + ' ' +
+                    run('rm -rf CMakeCache.txt')
+                    run('cmake ' + kinds[kind] + ' ' +
                     interrupt_flags[interrupt_flag] + ' ' + realtime_flags[realtime_flag] + ' ' + plot_types[plot_type])
                     run('cmake --build .')
                     run('mkdir -p ' + path)
@@ -69,8 +72,6 @@ for kind in kinds:
                     run('mkdir -p ' + images)
                     run('mkdir -p ' + images + "/" + plot_type)
 
-                    print(kind + '_' + interrupt_flag+'_' +
-                      realtime_flag + '_'+plot_type + '  ' + 'DONE')
                     count += 1
                     print(count)
 
@@ -135,8 +136,11 @@ for kind in kinds:
                         plt.savefig(images + '/'+plot_type +
                                     '/' + name + '.png')
                 elif(plot_type == 'HIS_TH'):
+                    print(kind + '_' + interrupt_flag+'_' +
+                      realtime_flag + '_'+plot_type + '  ' + 'DONE')
                     run('rm -rf build')
-                    run('cmake -U -D ' + kinds[kind] + ' ' +
+                    run('rm -rf CMakeCache.txt')
+                    run('cmake ' + kinds[kind] + ' ' +
                     interrupt_flags[interrupt_flag] + ' ' + realtime_flags[realtime_flag] + ' ' + plot_types[plot_type])
                     run('cmake --build .')
                     run('mkdir -p ' + path)
@@ -144,8 +148,6 @@ for kind in kinds:
                     run('mkdir -p ' + images)
                     run('mkdir -p ' + images + "/" + plot_type)
 
-                    print(kind + '_' + interrupt_flag+'_' +
-                      realtime_flag + '_'+plot_type + '  ' + 'DONE')
                     count += 1
                     print(count)
 
@@ -217,15 +219,18 @@ for interrupt_flag in interrupt_flags:
     for realtime_flag in realtime_flags:
         d[interrupt_flag][realtime_flag] = {}
         for kind in kinds:
+
+            print(kind + '_' + interrupt_flag+'_' +
+                realtime_flag + '_'+'TIME' + '  ' + 'DONE')
             run('rm -rf build')
-            run('cmake -U -D ' + kinds[kind] + ' ' +
+            run('rm -rf CMakeCache.txt')
+            run('cmake ' + kinds[kind] + ' ' +
                 interrupt_flags[interrupt_flag] + ' ' + realtime_flags[realtime_flag] + ' ' + plot_types['TIME'])
             run('make clean')
             run('make')
             run('mkdir -p ' + path)
             run('./run.sh')
             run('mkdir -p ' + images)
-
             lst = []
             count += 1
             print(count)

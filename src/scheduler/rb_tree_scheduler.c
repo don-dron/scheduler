@@ -2,24 +2,24 @@
 
 static int cmp(const void *lhs, const void *rhs)
 {
-    fiber_node *first = (fiber_node *)lhs;
-    fiber_node *second = (fiber_node *)rhs;
+    fiber *first = (fiber *)lhs;
+    fiber *second = (fiber *)rhs;
 
-    if (first->fib->level < second->fib->level)
+    if (first->level < second->level)
     {
         return 1;
     }
-    else if (first->fib->level > second->fib->level)
+    else if (first->level > second->level)
     {
         return -1;
     }
     else
     {
-        if (first->fib->vruntime < second->fib->vruntime)
+        if (first->vruntime < second->vruntime)
         {
             return 1;
         }
-        else if (first->fib->vruntime > second->fib->vruntime)
+        else if (first->vruntime > second->vruntime)
         {
             return -1;
         }
@@ -27,11 +27,11 @@ static int cmp(const void *lhs, const void *rhs)
         {
             if (((unsigned long)first) > ((unsigned long)second))
             {
-                return 1;
+                return -1;
             }
             else if (((unsigned long)first) < ((unsigned long)second))
             {
-                return -1;
+                return 1;
             }
             else
             {
@@ -46,23 +46,25 @@ int create_scheduler_manager(scheduler *sched)
     sched->manager = (scheduler_manager *)malloc(sizeof(scheduler_manager));
     scheduler_manager *manager = sched->manager;
     init_spinlock(&manager->lock);
+    lock_spinlock(&sched->manager->lock);
 
-    manager->tree = (struct rb_tree *)calloc(1, sizeof(struct rb_tree));
-    rb_tree_new(manager->tree, cmp);
+    manager->tree = (struct rbtree *)malloc(sizeof(struct rbtree));
+    struct rbnode *root = (struct rbnode *)malloc(sizeof(struct rbnode));
+    root->key = NULL;
+    rbtree_init(manager->tree, root, cmp);
+    asm volatile("mfence" ::
+                     : "memory");
+    unlock_spinlock(&sched->manager->lock);
     return 0;
 }
 
 fiber *get_from_pool()
 {
+    asm volatile("mfence" ::
+                     : "memory");
     lock_spinlock(&current_scheduler->manager->lock);
-    struct rb_tree *tree = current_scheduler->manager->tree;
-    fiber_node *fib_node = NULL;
-
-    if (RB_OK != rb_tree_get_rightmost(tree, (struct rb_tree_node **)&fib_node))
-    {
-        unlock_spinlock(&current_scheduler->manager->lock);
-        return NULL;
-    }
+    struct rbtree *tree = current_scheduler->manager->tree;
+    struct rbnode *fib_node = rbtree_min(tree);
 
     if (fib_node == NULL)
     {
@@ -70,29 +72,34 @@ fiber *get_from_pool()
         return NULL;
     }
 
-    rb_tree_remove(tree, tree->rightmost);
+    fiber *res = (fiber *)fib_node->key;
+    rbtree_delete(tree, fib_node);
 
     unlock_spinlock(&current_scheduler->manager->lock);
-    fiber *res = fib_node->fib;
-    // printf("%llu %d\n", fib_node->fib->vruntime, tree->size);
-    free(fib_node);
+    asm volatile("mfence" ::
+                     : "memory");
     return res;
 }
 
 void return_to_pool(scheduler *sched, fiber *fib)
 {
-    fiber_node *fib_node = (fiber_node *)malloc(sizeof(fiber_node));
-    fib_node->fib = fib;
+    asm volatile("mfence" ::
+                     : "memory");
+    struct rbnode *fib_node = (struct rbnode *)malloc(sizeof(struct rbnode));
+    fib_node->key = fib;
+
     lock_spinlock(&sched->manager->lock);
-    rb_tree_insert(sched->manager->tree, (struct rb_tree_node *)fib_node, (struct rb_tree_node *)fib_node);
+    rbtree_insert(sched->manager->tree, (struct rbnode *)fib_node);
     unlock_spinlock(&sched->manager->lock);
+    asm volatile("mfence" ::
+                     : "memory");
 }
 
 int free_scheduler_manager(scheduler *sched)
 {
     scheduler_manager *manager = sched->manager;
 
-    rb_tree_destroy(manager->tree);
+    // rbtree_destroy(manager->tree);
     free(manager->tree);
     free(sched->manager);
     return 0;
