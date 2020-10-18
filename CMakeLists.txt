@@ -34,12 +34,12 @@ option(FIBER_STAT "With fiber history" OFF)
 option(INTERRUPT_ENABLED "With interrupts" OFF)
 option(THREAD_STAT "With thread history" OFF)
 
+option(THIN_HEAP "Thin heap" OFF)
 option(RB_TREE "Rb tree" OFF)
 option(LOCAL_QUEUES_WITH_STEAL "Local queues with steal fibers" OFF)
 option(LOCAL_QUEUES "Local queues" OFF)
 option(ELASTIC_TREE "Elastic tree" OFF)
-option(SPLAY_TREE "Splay tree" OFF)
-option(THIN_HEAP "Thin heap" OFF)
+option(SPLAY_TREE "Splay tree" ON)
 
 if(DEBUG)
     add_compile_options(-DDEBUG=1)
@@ -107,7 +107,7 @@ else(ELASTIC_TREE)
     add_compile_options(-DELASTIC_TREE=0)
 endif(ELASTIC_TREE)
 
-SET(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -O3 -Werror -g -fno-omit-frame-pointer -Wextra -Wall -g3 -Wfloat-equal -Wundef -Wswitch-enum -Wconversion -Wunreachable-code -ggdb -Werror-implicit-function-declaration -Wpointer-arith -Wunused -Wno-unused-parameter -Wmissing-declarations -Wmissing-prototypes")
+SET(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -Werror -g -fno-omit-frame-pointer -Wextra -Wall -g3 -Wfloat-equal -Wundef -Wswitch-enum -Wconversion -Wunreachable-code -ggdb -Werror-implicit-function-declaration -Wpointer-arith -Wunused -Wno-unused-parameter -Wmissing-declarations -Wmissing-prototypes")
 SET(CMAKE_LINKER_FLAGS "${CMAKE_LINKER_FLAGS} -static-libasan -g -fno-omit-frame-pointer,-lasan, -W1,-01,-W1,--hash-style=gnu -W1m --as-needed -pie -W1, -z, relro,now -W1,-z, noexecstack ")
 
 enable_testing()

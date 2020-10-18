@@ -82,6 +82,8 @@ typedef struct fiber
     clock_t wakeup;
     struct spinlock lock;
     struct scheduler *sched;
+    unsigned long long vruntime;
+    int level;
 
 #if FIBER_STAT
     history_node *last;

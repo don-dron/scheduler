@@ -1,13 +1,14 @@
 #include <scheduler/scheduler.h>
-#include <structures/list.h>
+#include <structures/splay_tree.h>
 
 struct scheduler_manager
 {
-    list **queues;
+    splay_tree* tree;
+    spinlock lock;
 };
 
 typedef struct fiber_node
 {
-    list_node lst_node;
+    splay_node node;
     fiber *fib;
 } fiber_node;

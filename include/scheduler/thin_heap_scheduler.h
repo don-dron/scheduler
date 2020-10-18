@@ -1,13 +1,14 @@
 #include <scheduler/scheduler.h>
-#include <structures/list.h>
+#include <structures/thin_heap.h>
 
 struct scheduler_manager
 {
-    list **queues;
+    thin_heap* heap;
+    spinlock lock;
 };
 
 typedef struct fiber_node
 {
-    list_node lst_node;
+    thin_node lst_node;
     fiber *fib;
 } fiber_node;

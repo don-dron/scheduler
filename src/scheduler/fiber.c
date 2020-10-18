@@ -60,6 +60,7 @@ fiber *create_fiber(fiber_routine routine, void *args)
     new_fiber->state = STARTING;
     new_fiber->parent = current_fiber;
     new_fiber->args = args;
+    new_fiber->level = 0;
 
 #if FIBER_STAT
     new_fiber->last = (history_node *)malloc(sizeof(history_node));
@@ -68,6 +69,8 @@ fiber *create_fiber(fiber_routine routine, void *args)
     new_fiber->last->prev = NULL;
     new_fiber->last->next = NULL;
 #endif
+
+    new_fiber->vruntime = 0;
 
     init_spinlock(&new_fiber->lock);
 

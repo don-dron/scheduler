@@ -125,7 +125,11 @@ static void run_task(fiber *routine)
 #if FIBER_STAT
         update_fiber_history(current_fiber);
 #endif
+
         switch_context(&current_fiber->external_context, &current_fiber->context);
+
+        clock_t diff = clock() - current_fiber->start;
+        current_fiber->vruntime += (unsigned long long)diff;
         //
         // Returns to scheduler
 #if DEBUG
@@ -476,6 +480,7 @@ fiber *submit(fiber_routine routine, void *args)
     fiber *fib = create_fiber(routine, args);
     fib->external_context = temp->context;
     fib->sched = current_scheduler;
+    fib->level = current_fiber->level + 1;
     insert_fiber(current_scheduler, fib);
     unlock_spinlock(&temp->lock);
 
@@ -511,6 +516,7 @@ void shutdown(scheduler *sched)
 {
     while (sched->count != sched->end_count)
     {
+        printf("%ld %ld\n", sched->count, sched->end_count);
         // Sleep if failed
         usleep(200);
     }

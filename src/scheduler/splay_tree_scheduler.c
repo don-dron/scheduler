@@ -1,35 +1,73 @@
 #include <scheduler/splay_tree_scheduler.h>
 
+static int cmp(const void *lhs, const void *rhs)
+{
+    fiber_node *first = (fiber_node *)lhs;
+    fiber_node *second = (fiber_node *)rhs;
+
+    if (first->fib->level < second->fib->level)
+    {
+        return 1;
+    }
+    else if (first->fib->level > second->fib->level)
+    {
+        return -1;
+    }
+    else
+    {
+        if (first->fib->vruntime < second->fib->vruntime)
+        {
+            return 1;
+        }
+        else if (first->fib->vruntime > second->fib->vruntime)
+        {
+            return -1;
+        }
+        else
+        {
+            if (((unsigned long)first) > ((unsigned long)second))
+            {
+                return 1;
+            }
+            else if (((unsigned long)first) < ((unsigned long)second))
+            {
+                return -1;
+            }
+            else
+            {
+                return 0;
+            }
+        }
+    }
+}
+
 int create_scheduler_manager(scheduler *sched)
 {
-    printf("1asdsadas234\n");
     sched->manager = (scheduler_manager *)malloc(sizeof(scheduler_manager));
     scheduler_manager *manager = sched->manager;
 
-    manager->queues = (list **)calloc(sizeof(list *), sched->threads);
-
-    for (unsigned long index = 0; index < sched->threads; index++)
-    {
-        manager->queues[index] = (list *)malloc(sizeof(list));
-        create_list(manager->queues[index]);
-    }
+    manager->tree = splay_tree_new_tree((splay_tree_cmp)cmp);
 
     return 0;
 }
 
 fiber *get_from_pool()
 {
-    list *queue = current_scheduler->manager->queues[thread_id];
-    fiber_node *node = (fiber_node *)list_pop_front(queue);
+    splay_tree *tree = current_scheduler->manager->tree;
 
+    lock_spinlock(&current_scheduler->manager->lock);
+    fiber_node *node = (fiber_node *)splay_tree_first(tree);
     if (node)
     {
+        splay_tree_delete(tree, node);
+        unlock_spinlock(&current_scheduler->manager->lock);
         fiber *res = node->fib;
         free(node);
         return res;
     }
     else
     {
+        unlock_spinlock(&current_scheduler->manager->lock);
         return NULL;
     }
 }
@@ -38,24 +76,16 @@ void return_to_pool(scheduler *sched, fiber *fib)
 {
     fiber_node *fib_node = (fiber_node *)malloc(sizeof(fiber_node));
     fib_node->fib = fib;
-    list_push_back(sched->manager->queues[(size_t)rand() % sched->threads], (list_node *)fib_node);
+    lock_spinlock(&sched->manager->lock);
+    splay_tree_insert(sched->manager->tree, fib_node);
+    unlock_spinlock(&sched->manager->lock);
 }
 
 int free_scheduler_manager(scheduler *sched)
 {
-    scheduler_manager *manager = sched->manager;
-    for (size_t i = 0; i < sched->threads; i++)
-    {
-        if (manager->queues[i]->size != 0)
-        {
-            printf("Panic\n");
-            abort();
-        }
-        free(manager->queues[i]);
-    }
+    // scheduler_manager *manager = sched->manager;
 
-    free(manager->queues);
-
+    // Free TODO
     free(sched->manager);
     return 0;
 }

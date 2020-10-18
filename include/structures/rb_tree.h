@@ -32,7 +32,7 @@ struct rb_tree
 {
     struct rb_tree_node *root;
     rb_cmp_func_ex_t compare;
-
+    int size;
     struct rb_tree_node *rightmost;
     void *state;
 };
