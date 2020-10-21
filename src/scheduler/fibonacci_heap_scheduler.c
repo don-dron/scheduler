@@ -7,12 +7,12 @@ static int cmp(void *lhs, void *rhs)
 
     if (lhs == NULL)
     {
-        return -1;
+        return 1;
     }
 
     if (rhs == NULL)
     {
-        return 11;
+        return -1;
     }
 
     if (first->level < second->level)
