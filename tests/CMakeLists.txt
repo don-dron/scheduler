@@ -13,7 +13,6 @@ function(_ADD_TEST NAME)
 
 endfunction(_ADD_TEST NAME)
 
-
 _ADD_TEST(multiply_scheduler)
 _ADD_TEST(scheduler)
 _ADD_TEST(sleep)

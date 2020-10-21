@@ -3,12 +3,12 @@
 
 struct scheduler_manager
 {
-    thin_heap* heap;
+    struct thin_heap* heap;
     spinlock lock;
 };
 
 typedef struct fiber_node
 {
-    thin_node lst_node;
+    struct thin_heap_node lst_node;
     fiber *fib;
 } fiber_node;

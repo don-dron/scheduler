@@ -16,16 +16,14 @@ def run(command):
 names = ['LOCAL_QUEUE_WITH_STEAL',
          'LOCAL_QUEUE',
          'RB_TREE',
-         #'ELASTIC_TREE',
-         'SPLAY_TREE']#,
-         #'THIN_HEAP']
+         'SPLAY_TREE',
+         'THIN_HEAP']
 
 kinds = {'LOCAL_QUEUE_WITH_STEAL': '-DLOCAL_QUEUES_WITH_STEAL:BOOL=ON',
          'LOCAL_QUEUE': '-DLOCAL_QUEUES_WITH_STEAL:BOOL=ON',
          'RB_TREE': '-DRB_TREE:BOOL=ON',
-         #'ELASTIC_TREE' : '-DELASTIC_TREE:BOOL=ON',
-         'SPLAY_TREE' : '-DSPLAY_TREE:BOOL=ON'}#,
-         #'THIN_HEAP' : '-DTHIN_HEAP:BOOL=ON'}
+         'SPLAY_TREE' : '-DSPLAY_TREE:BOOL=ON',
+         'THIN_HEAP' : '-DTHIN_HEAP:BOOL=ON'}
 
 plot_types = {#'HIS_FB': '-DFIBER_STAT:BOOL=ON -DTHREAD_STAT:BOOL=OFF',
               #'HIS_TH': '-DTHREAD_STAT:BOOL=ON -DFIBER_STAT:BOOL=OFF',
