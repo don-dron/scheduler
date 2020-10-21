@@ -24,9 +24,9 @@ if(SPLAY_TREE)
     set(IMPL splay_tree_scheduler.c)
 endif(SPLAY_TREE)
 
-if(ELASTIC_TREE)
-    set(IMPL elastic_tree_scheduler.c)
-endif(ELASTIC_TREE)
+if(FIBONACCI_HEAP)
+    set(IMPL fibonacci_heap_scheduler.c)
+endif(FIBONACCI_HEAP)
 
 message(STATUS "${IMPL}")
 set(SOURCE_LIB 

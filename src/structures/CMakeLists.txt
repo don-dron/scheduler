@@ -5,7 +5,8 @@ set(SOURCE_LIB
     list.c
     thin_heap.c
     rb_tree.c
-    splay_tree.c  )
+    splay_tree.c
+    fibonacci_heap.c  )
 
 add_library(structures STATIC ${SOURCE_LIB})
 

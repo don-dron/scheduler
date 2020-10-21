@@ -1,6 +1,20 @@
 #include <structures/fibonacci_heap.h>
+#include <math.h>
 
-void fibonacci_heap_node_list_insert(struct fibonacci_heap_node *list_node, struct fibonacci_heap_node *node)
+struct fibonacci_heap_node *fibonacci_heap_node_alloc()
+{
+    struct fibonacci_heap_node *node = (struct fibonacci_heap_node *)malloc(sizeof(struct fibonacci_heap_node));
+    node->if_lost_child = 0;
+    node->degree = 0;
+    node->parent = NULL;
+    node->left = NULL;
+    node->right = NULL;
+    node->child = NULL;
+    node->key = NULL;
+    return node;
+}
+
+static void fibonacci_heap_node_list_insert(struct fibonacci_heap_node *list_node, struct fibonacci_heap_node *node)
 {
     node->right = list_node->right;
     list_node->right = node;
@@ -8,7 +22,7 @@ void fibonacci_heap_node_list_insert(struct fibonacci_heap_node *list_node, stru
     node->right->left = node;
 }
 
-struct fibonacci_heap_node *fibonacci_heap_node_list_remove(struct fibonacci_heap_node *node)
+static struct fibonacci_heap_node *fibonacci_heap_node_list_remove(struct fibonacci_heap_node *node)
 {
     if (node->left == node)
         return NULL;
@@ -19,7 +33,7 @@ struct fibonacci_heap_node *fibonacci_heap_node_list_remove(struct fibonacci_hea
     return right;
 }
 
-void fibonacci_heap_node_list_link_two_list(struct fibonacci_heap_node *node1, struct fibonacci_heap_node *node2)
+static void fibonacci_heap_node_list_link_two_list(struct fibonacci_heap_node *node1, struct fibonacci_heap_node *node2)
 {
     if (node1 == NULL || node2 == NULL)
         return;
@@ -31,20 +45,9 @@ void fibonacci_heap_node_list_link_two_list(struct fibonacci_heap_node *node1, s
     node1_left->right = node2;
 }
 
-#define _MALLOC_(t, n) ((t *)malloc(sizeof(t) * (n)))
-#define _FREE_(p)      \
-    do                 \
-    {                  \
-        if (p != NULL) \
-        {              \
-            free(p);   \
-            p = NULL;  \
-        }              \
-    } while (0);
-
 struct fibonacci_heap *fibonacci_heap_alloc(fibonacci_key_cmp_t key_cmp, fibonacci_key_min_t key_min, fibonacci_key_pr_t key_pr)
 {
-    struct fibonacci_heap *fh = _MALLOC_(struct fibonacci_heap, 1);
+    struct fibonacci_heap *fh = (struct fibonacci_heap *)malloc(sizeof(struct fibonacci_heap));
     fh->n = 0;
     fh->min = 0;
     fh->key_cmp = key_cmp;
@@ -54,7 +57,7 @@ struct fibonacci_heap *fibonacci_heap_alloc(fibonacci_key_cmp_t key_cmp, fibonac
     return fh;
 }
 
-void fibonacci_heap_free_node_list(struct fibonacci_heap_node *node)
+static void fibonacci_heapfreenode_list(struct fibonacci_heap_node *node)
 {
     if (node == NULL)
         return;
@@ -62,21 +65,21 @@ void fibonacci_heap_free_node_list(struct fibonacci_heap_node *node)
     while (_node != node)
     {
         if (node->degree > 0)
-            fibonacci_heap_free_node_list(node->child);
+            fibonacci_heapfreenode_list(node->child);
         _node = _node->right;
-        _FREE_(_node->left);
+        free(_node->left);
     }
     if (node->degree > 0)
-        fibonacci_heap_free_node_list(node->child);
-    _FREE_(node);
+        fibonacci_heapfreenode_list(node->child);
+    free(node);
 }
 
 void fibonacci_heap_free(struct fibonacci_heap *fh)
 {
     if (fh == NULL)
         return;
-    fibonacci_heap_free_node_list(fh->min);
-    _FREE_(fh);
+    fibonacci_heapfreenode_list(fh->min);
+    free(fh);
 }
 
 struct fibonacci_heap *fibonacci_heap_union(struct fibonacci_heap *fh_1, struct fibonacci_heap *fh_2)
@@ -92,8 +95,8 @@ struct fibonacci_heap *fibonacci_heap_union(struct fibonacci_heap *fh_1, struct 
             fh->n = fh_1->n;
             fh->min = fh_1->min;
         }
-        _FREE_(fh_1);
-        _FREE_(fh_2);
+        free(fh_1);
+        free(fh_2);
         return fh;
     }
 
@@ -102,7 +105,7 @@ struct fibonacci_heap *fibonacci_heap_union(struct fibonacci_heap *fh_1, struct 
         fh = fibonacci_heap_alloc(fh_1->key_cmp, fh_1->key_min, fh_1->key_pr);
         if (fh_1->n == 0)
         {
-            _FREE_(fh_1);
+            free(fh_1);
             fh_1 = fh_2;
         }
         if (fh_1->n != 0)
@@ -110,8 +113,8 @@ struct fibonacci_heap *fibonacci_heap_union(struct fibonacci_heap *fh_1, struct 
             fh->n = fh_1->n;
             fh->min = fh_1->min;
         }
-        _FREE_(fh_1);
-        _FREE_(fh_2);
+        free(fh_1);
+        free(fh_2);
         return fh;
     }
 
@@ -123,22 +126,9 @@ struct fibonacci_heap *fibonacci_heap_union(struct fibonacci_heap *fh_1, struct 
     struct fibonacci_heap_node *node1 = fh_1->min;
     struct fibonacci_heap_node *node2 = fh_2->min;
     fibonacci_heap_node_list_link_two_list(node1, node2);
-    _FREE_(fh_1);
-    _FREE_(fh_2);
+    free(fh_1);
+    free(fh_2);
     return fh;
-}
-
-struct fibonacci_heap_node *fibonacci_heap_node_alloc()
-{
-    struct fibonacci_heap_node *node = _MALLOC_(struct fibonacci_heap_node, 1);
-    node->if_lost_child = 0;
-    node->degree = 0;
-    node->parent = NULL;
-    node->left = NULL;
-    node->right = NULL;
-    node->child = NULL;
-    node->key = NULL;
-    return node;
 }
 
 void fibonacci_heap_insert_node(struct fibonacci_heap *fh, struct fibonacci_heap_node *node)
@@ -169,15 +159,21 @@ struct fibonacci_heap_node *fibonacci_heap_get_min_node(struct fibonacci_heap *f
     return fh->min;
 }
 
-void fibonacci_heap_extract_min_node_fix(struct fibonacci_heap *fh)
+static void fibonacci_heap_extract_min_node_fix(struct fibonacci_heap *fh)
 {
     if (fh == NULL || fh->n == 0)
         return;
 
-    int D = (log(fh->n)) / (log(2)) + 1;
+    size_t D = 0;
 
-    struct fibonacci_heap_node **A = _MALLOC_(struct fibonacci_heap_node *, D);
-    for (int i = 0; i < D; ++i)
+    while (((size_t)(1 << D)) > ((size_t)fh->n))
+    {
+        D++;
+    }
+    D++;
+
+    struct fibonacci_heap_node **A = (struct fibonacci_heap_node **)malloc(sizeof(struct fibonacci_heap_node) * (size_t)D);
+    for (size_t i = 0; i < D; ++i)
         A[i] = NULL;
 
     struct fibonacci_heap_node *start_node = fh->min, *node = NULL;
@@ -199,7 +195,7 @@ void fibonacci_heap_extract_min_node_fix(struct fibonacci_heap *fh)
             do
             {
                 if (next_node == start_node)
-                    break; 
+                    break;
                 if (y == next_node)
                 {
                     next_node = next_node->right;
@@ -234,7 +230,7 @@ void fibonacci_heap_extract_min_node_fix(struct fibonacci_heap *fh)
         next_node = next_node->right;
     } while (node != start_node);
     fh->min = NULL;
-    for (int i = 0; i < D; ++i)
+    for (size_t i = 0; i < D; ++i)
     {
         if (A[i] != NULL)
         {
@@ -287,7 +283,19 @@ struct fibonacci_heap_node *fibonacci_heap_extract_min_node(struct fibonacci_hea
     return min_node;
 }
 
-void fibonacci_heap_decrease_key_cascading_cut(struct fibonacci_heap *fh, struct fibonacci_heap_node *node)
+static void fibonacci_heap_decrease_key_cut(struct fibonacci_heap *fh, struct fibonacci_heap_node *child, struct fibonacci_heap_node *parent)
+{
+    parent->child = fibonacci_heap_node_list_remove(child);
+    parent->degree -= 1;
+    if (parent->degree == 0)
+        parent->child = NULL;
+
+    fibonacci_heap_node_list_insert(fh->min, child);
+    child->parent = NULL;
+    child->if_lost_child = 0;
+}
+
+static void fibonacci_heap_decrease_key_cascading_cut(struct fibonacci_heap *fh, struct fibonacci_heap_node *node)
 {
     struct fibonacci_heap_node *parent = node->parent;
     if (parent != NULL)
@@ -302,18 +310,6 @@ void fibonacci_heap_decrease_key_cascading_cut(struct fibonacci_heap *fh, struct
             fibonacci_heap_decrease_key_cascading_cut(fh, parent);
         }
     }
-}
-
-void fibonacci_heap_decrease_key_cut(struct fibonacci_heap *fh, struct fibonacci_heap_node *child, struct fibonacci_heap_node *parent)
-{
-    parent->child = fibonacci_heap_node_list_remove(child);
-    parent->degree -= 1;
-    if (parent->degree == 0)
-        parent->child = NULL;
-
-    fibonacci_heap_node_list_insert(fh->min, child);
-    child->parent = NULL;
-    child->if_lost_child = 0;
 }
 
 void *fibonacci_heap_decrease_key_by_node(struct fibonacci_heap *fh, struct fibonacci_heap_node *node, void *key)
@@ -344,11 +340,16 @@ void fibonacci_heap_delete_node(struct fibonacci_heap *fh, struct fibonacci_heap
 {
     if (fh == NULL || node == NULL)
         return;
-    decrease_key_by_node(fh, node, fh->key_min());
-    extract_min_node(fh);
+    fibonacci_heap_decrease_key_by_node(fh, node, fh->key_min());
+    fibonacci_heap_extract_min_node(fh);
 }
 
-struct fibonacci_heap_node *fibonacci_heap_node_list_search(
+static struct fibonacci_heap_node *fibonacci_heap_node_list_search(
+    struct fibonacci_heap *fh,
+    struct fibonacci_heap_node *node,
+    void *key);
+
+static struct fibonacci_heap_node *fibonacci_heap_node_list_search(
     struct fibonacci_heap *fh,
     struct fibonacci_heap_node *node,
     void *key)
@@ -390,7 +391,7 @@ struct fibonacci_heap_node *fibonacci_heap_search_key(struct fibonacci_heap *fh,
     return fibonacci_heap_node_list_search(fh, fh->min, key);
 }
 
-void fibonacci_heap_node_pr(struct fibonacci_heap *fh, struct fibonacci_heap_node *node, int deep)
+static void fibonacci_heap_node_pr(struct fibonacci_heap *fh, struct fibonacci_heap_node *node, int deep)
 {
     if (node == NULL)
         return;

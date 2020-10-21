@@ -1,6 +1,6 @@
-#include <scheduler/thin_heap_scheduler.h>
+#include <scheduler/fibonacci_heap_scheduler.h>
 
-static int cmp(const void *lhs, const void *rhs)
+static int cmp(void *lhs, void *rhs)
 {
     fiber *first = (fiber *)lhs;
     fiber *second = (fiber *)rhs;
@@ -40,23 +40,14 @@ static int cmp(const void *lhs, const void *rhs)
     }
 }
 
-static void swp(struct thin_heap_node *first, struct thin_heap_node *second)
+static void *key_min(void)
 {
-    fiber_node *f = (fiber_node *)first;
-    fiber_node *s = (fiber_node *)second;
-    fiber *temp;
-
-    temp = f->fib;
-    f->fib = s->fib;
-    s->fib = temp;
+    struct fibonacci_heap_node *node = fibonacci_heap_node_alloc();
+    node->key = NULL;
+    return node;
 }
 
-void *key_min()
-{
-    return NULL;
-}
-
-void key_pr(void *key)
+static void key_pr(void *key)
 {
 }
 
@@ -66,7 +57,7 @@ int create_scheduler_manager(scheduler *sched)
     scheduler_manager *manager = sched->manager;
     init_spinlock(&manager->lock);
 
-    manager->heap = fibonacci_heap_alloc(manager->heap, cmp, key_min, key_pr);
+    manager->heap = fibonacci_heap_alloc((fibonacci_key_cmp_t)cmp, (fibonacci_key_min_t)key_min, (fibonacci_key_pr_t)key_pr);
     asm volatile("mfence" ::
                      : "memory");
     return 0;
@@ -79,14 +70,16 @@ fiber *get_from_pool()
     struct fibonacci_heap *heap = current_scheduler->manager->heap;
 
     lock_spinlock(&current_scheduler->manager->lock);
-    fiber *node = extract_min_node(heap);
+    struct fibonacci_heap_node *node = fibonacci_heap_extract_min_node(heap);
     unlock_spinlock(&current_scheduler->manager->lock);
     asm volatile("mfence" ::
                      : "memory");
 
-    if (node)
-    {
-        return node;
+    if (node != NULL)
+    {      
+        fiber* fib = (fiber*)node->key;
+        free(node);
+        return fib;
     }
     else
     {
@@ -98,13 +91,13 @@ void return_to_pool(scheduler *sched, fiber *fib)
 {
     asm volatile("mfence" ::
                      : "memory");
-    struct fibonacci_heap_node *node = (struct fibonacci_heap_node *)malloc(sizeof(struct fibonacci_heap_node));
+    struct fibonacci_heap_node *node = fibonacci_heap_node_alloc();
     node->key = fib;
     asm volatile("mfence" ::
                      : "memory");
 
     lock_spinlock(&sched->manager->lock);
-    insert_node(sched->manager->heap, node);
+    fibonacci_heap_insert_node(sched->manager->heap, node);
     unlock_spinlock(&sched->manager->lock);
     asm volatile("mfence" ::
                      : "memory");
