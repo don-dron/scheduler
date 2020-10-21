@@ -10,7 +10,7 @@
 #include <structures/list.h>
 
 #ifndef TEST_LEVEL
-#define TEST_LEVEL 2
+#define TEST_LEVEL 16
 #endif
 
 #if RB_TREE
@@ -19,6 +19,8 @@
 #include <scheduler/local_queues_scheduler.h>
 #elif THIN_HEAP
 #include <scheduler/thin_heap_scheduler.h>
+#elif FIBONACCI_HEAP
+#include <scheduler/fibonacci_heap_scheduler.h>
 #elif SPLAY_TREE
 #include <scheduler/splay_tree_scheduler.h>
 #elif LOCAL_QUEUES_WITH_STEAL

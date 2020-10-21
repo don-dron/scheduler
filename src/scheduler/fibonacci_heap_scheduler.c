@@ -2,24 +2,34 @@
 
 static int cmp(const void *lhs, const void *rhs)
 {
-    fiber_node *first = (fiber_node *)lhs;
-    fiber_node *second = (fiber_node *)rhs;
+    fiber *first = (fiber *)lhs;
+    fiber *second = (fiber *)rhs;
 
-    if (first->fib->level < second->fib->level)
+    if (lhs == NULL)
     {
-        return 0;
+        return -1;
     }
-    else if (first->fib->level > second->fib->level)
+
+    if (rhs == NULL)
+    {
+        return 11;
+    }
+
+    if (first->level < second->level)
+    {
+        return -1;
+    }
+    else if (first->level > second->level)
     {
         return 1;
     }
     else
     {
-        if (first->fib->vruntime < second->fib->vruntime)
+        if (first->vruntime < second->vruntime)
         {
-            return 0;
+            return -1;
         }
-        else if (first->fib->vruntime > second->fib->vruntime)
+        else if (first->vruntime > second->vruntime)
         {
             return 1;
         }
@@ -41,14 +51,22 @@ static void swp(struct thin_heap_node *first, struct thin_heap_node *second)
     s->fib = temp;
 }
 
+void *key_min()
+{
+    return NULL;
+}
+
+void key_pr(void *key)
+{
+}
+
 int create_scheduler_manager(scheduler *sched)
 {
     sched->manager = (scheduler_manager *)malloc(sizeof(scheduler_manager));
     scheduler_manager *manager = sched->manager;
     init_spinlock(&manager->lock);
 
-    manager->heap = (struct thin_heap *)malloc(sizeof(struct thin_heap));
-    heap_init(manager->heap, (heap_prio_t)cmp, (swap_f)swp);
+    manager->heap = fibonacci_heap_alloc(manager->heap, cmp, key_min, key_pr);
     asm volatile("mfence" ::
                      : "memory");
     return 0;
@@ -58,19 +76,17 @@ fiber *get_from_pool()
 {
     asm volatile("mfence" ::
                      : "memory");
-    struct thin_heap *heap = current_scheduler->manager->heap;
+    struct fibonacci_heap *heap = current_scheduler->manager->heap;
 
     lock_spinlock(&current_scheduler->manager->lock);
-    fiber_node *node = (fiber_node *)heap_take(heap);
+    fiber *node = extract_min_node(heap);
     unlock_spinlock(&current_scheduler->manager->lock);
     asm volatile("mfence" ::
                      : "memory");
 
     if (node)
     {
-        fiber *res = node->fib;
-        free(node);
-        return res;
+        return node;
     }
     else
     {
@@ -82,13 +98,13 @@ void return_to_pool(scheduler *sched, fiber *fib)
 {
     asm volatile("mfence" ::
                      : "memory");
-    fiber_node *fib_node = (fiber_node *)malloc(sizeof(fiber_node));
-    fib_node->fib = fib;
+    struct fibonacci_heap_node *node = (struct fibonacci_heap_node *)malloc(sizeof(struct fibonacci_heap_node));
+    node->key = fib;
     asm volatile("mfence" ::
                      : "memory");
 
     lock_spinlock(&sched->manager->lock);
-    heap_insert(sched->manager->heap, (struct thin_heap_node *)fib_node);
+    insert_node(sched->manager->heap, node);
     unlock_spinlock(&sched->manager->lock);
     asm volatile("mfence" ::
                      : "memory");
