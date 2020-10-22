@@ -7,7 +7,7 @@ static void func(void *args)
     volatile int i = 5;
     while (i > 0)
     {
-        usleep(5000);
+        sleep_for(3000);
         --i;
     }
 }

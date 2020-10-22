@@ -4,8 +4,7 @@
 
 static void func(void *args)
 {
-    usleep(5000);
-    sleep_for(5000);
+    sleep_for(2000);
 }
 
 static void test()

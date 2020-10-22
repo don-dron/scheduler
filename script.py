@@ -267,10 +267,6 @@ for interrupt_flag in interrupt_flags:
                 c = get_color(names.index(kind))
                 ax1.plot(data['thread'], data['time'],
                          color=c, label=name)
-                ax2.plot(data['thread'], data['interrupt'],
-                         color=c, label=name)
-                ax3.plot(data['thread'], data['interrupt_fail'],
-                         color=c, label=name)
                 ax4.plot(data['thread'], data['switch'],
                          color=c, label=name)
 

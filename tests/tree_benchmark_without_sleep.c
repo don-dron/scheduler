@@ -20,7 +20,7 @@ static void internal_routine()
     sum++;
 
     // FOR TEST
-    usleep(5000);
+    usleep(3000);
 
     __atomic_fetch_add(&atom, 1, __ATOMIC_SEQ_CST);
     sum++;
@@ -33,7 +33,7 @@ static void internal_routine()
     sum++;
 
     // FOR TEST
-    usleep(5000);
+    usleep(1000);
 
     __atomic_fetch_add(&atom, 1, __ATOMIC_SEQ_CST);
     sum++;
