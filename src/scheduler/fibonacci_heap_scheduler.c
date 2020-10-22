@@ -17,11 +17,11 @@ static int cmp(struct fib_heap_data*lhs, struct fib_heap_data*rhs)
     {
         if (first->vruntime < second->vruntime)
         {
-            return 1;
+            return -1;
         }
         else if (first->vruntime > second->vruntime)
         {
-            return -1;
+            return 1;
         }
         else
         {

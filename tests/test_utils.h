@@ -10,7 +10,7 @@
 #include <structures/list.h>
 
 #ifndef TEST_LEVEL
-#define TEST_LEVEL 8
+#define TEST_LEVEL 18
 #endif
 
 #if RB_TREE
