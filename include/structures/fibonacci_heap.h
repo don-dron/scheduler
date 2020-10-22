@@ -1,48 +1,46 @@
 #pragma once
 
-#include <stddef.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <math.h>
-#include <stdlib.h>
 
-typedef int (*fibonacci_key_cmp_t)(void *k1, void *k2);
-typedef void *(*fibonacci_key_min_t)();
-typedef void (*fibonacci_key_pr_t)(void *key);
-
-struct fibonacci_heap_node
+struct fib_heap_data
 {
-    struct fibonacci_heap_node *parent;
-    struct fibonacci_heap_node *left;
-    struct fibonacci_heap_node *right;
-    struct fibonacci_heap_node *child;
-    int if_lost_child;
-    size_t degree;
-    void *key;
+    int key;
 };
 
-struct fibonacci_heap
+struct fib_heap_node
 {
-    struct fibonacci_heap_node *min;
-    size_t n;
-    fibonacci_key_cmp_t key_cmp;
-    fibonacci_key_min_t key_min;
-    fibonacci_key_pr_t key_pr;
+    struct fib_heap_data *data;
+    unsigned int degree;
+    char marked;
+    struct fib_heap_node *parent;
+    struct fib_heap_node *child;
+    struct fib_heap_node *left;
+    struct fib_heap_node *right;
 };
 
-struct fibonacci_heap *fibonacci_heap_alloc(fibonacci_key_cmp_t key_cmp, fibonacci_key_min_t key_min, fibonacci_key_pr_t key_pr);
-void fibonacci_heap_free(struct fibonacci_heap *fh);
-struct fibonacci_heap *fibonacci_heap_union(struct fibonacci_heap *fh_1, struct fibonacci_heap *fh_2);
-struct fibonacci_heap_node *fibonacci_heap_node_alloc(void);
+struct fib_heap
+{
+    struct fib_heap_node *the_one;
+    struct fib_heap_node **cons_array;
+    int (*compr)(struct fib_heap_data *, struct fib_heap_data *);
+    unsigned int total_nodes;
+};
 
-void fibonacci_heap_insert_node(struct fibonacci_heap *fh, struct fibonacci_heap_node *node);
-struct fibonacci_heap_node *fibonacci_heap_get_min_node(struct fibonacci_heap *fh);
-struct fibonacci_heap_node *fibonacci_heap_extract_min_node(struct fibonacci_heap *fh);
+struct fib_heap *fibheap_init(int (*compr)(struct fib_heap_data *, struct fib_heap_data *));
 
-void *fibonacci_heap_decrease_key_by_node(struct fibonacci_heap *fh, struct fibonacci_heap_node *node, void *key);
-void fibonacci_heap_delete_node(struct fibonacci_heap *fh, struct fibonacci_heap_node *node);
-struct fibonacci_heap_node *fibonacci_heap_search_key(struct fibonacci_heap *fh, void *key);
+struct fib_heap_node *fibheap_insert(struct fib_heap *H, struct fib_heap_data *d);
 
-void fibonacci_heap_pr(struct fibonacci_heap *fh);
+struct fib_heap_data *fibheap_read(struct fib_heap *H);
 
-struct fibonacci_heap_node *fibonacci_heap_node_alloc();
+struct fib_heap_data *fibheap_extract(struct fib_heap *H);
+
+struct fib_heap *fibheap_union(struct fib_heap *a, struct fib_heap *b);
+
+void fibheap_increase(struct fib_heap *H, struct fib_heap_node *node);
+
+void fibheap_decrease(struct fib_heap *H, struct fib_heap_node *node);
+
+void fibheap_delete(struct fib_heap *H, struct fib_heap_node *node);
+
+void fibheap_destroy(struct fib_heap *H);

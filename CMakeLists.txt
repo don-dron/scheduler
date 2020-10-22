@@ -39,7 +39,7 @@ option(RB_TREE "Rb tree" OFF)
 option(LOCAL_QUEUES_WITH_STEAL "Local queues with steal fibers" OFF)
 option(LOCAL_QUEUES "Local queues" OFF)
 option(SPLAY_TREE "Splay tree" OFF)
-#option(FIBONACCI_HEAP "Fibonacci heap" ON)
+option(FIBONACCI_HEAP "Fibonacci heap" OFF)
 
 if(DEBUG)
     add_compile_options(-DDEBUG=1)

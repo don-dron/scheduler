@@ -3,6 +3,6 @@
 
 struct scheduler_manager
 {
-    struct fibonacci_heap* heap;
+    struct fib_heap* heap;
     spinlock lock;
 };

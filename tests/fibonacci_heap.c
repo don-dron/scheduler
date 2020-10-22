@@ -13,7 +13,7 @@
 
 #define COUNT 100
 
-static int cmp(void *lhs, void *rhs)
+static int cmp(struct fib_heap_data* lhs, struct fib_heap_data* rhs)
 {
     if (((unsigned long)lhs) < ((unsigned long)rhs))
     {
@@ -29,45 +29,32 @@ static int cmp(void *lhs, void *rhs)
     }
 }
 
-static void *key_min(void)
-{
-    struct fibonacci_heap_node *node = fibonacci_heap_node_alloc();
-    node->key = NULL;
-    return node;
-}
-
-static void key_pr(void *key)
-{
-}
-
 static void test()
 {
-    struct fibonacci_heap *results = fibonacci_heap_alloc(cmp, key_min, key_pr);
+    struct fib_heap *results = fibheap_init(cmp);
 
     int *flags = (int *)malloc(sizeof(int) * COUNT);
     memset(flags, 0, sizeof(int) * COUNT);
 
     for (int i = 0; i < COUNT; i++)
     {
-        struct fibonacci_heap_node *node = fibonacci_heap_node_alloc();
-        node->key = (void *)(u_int64_t)(rand() % COUNT);
-        flags[(size_t)node->key] = 1;
-        fibonacci_heap_insert_node(results, node);
+        void* data = (void *)((__uint64_t)(rand() % COUNT) + 1);
+        flags[(size_t)data - 1] = 1;
+        fibheap_insert(results, data);
     }
 
-    struct fibonacci_heap_node *prev = (struct fibonacci_heap_node *)fibonacci_heap_extract_min_node(results);
+    __uint64_t prev = (__uint64_t)fibheap_extract(results);
 
     while (true)
     {
-        flags[(size_t)prev->key] = 0;
-        struct fibonacci_heap_node *current = (struct fibonacci_heap_node *)fibonacci_heap_extract_min_node(results);
+        flags[(size_t)prev - 1] = 0;
+        __uint64_t current = (__uint64_t)fibheap_extract(results);
 
-        if (current == NULL)
+        if (current == 0)
         {
             break;
         }
-        assert(current->key >= prev->key);
-        printf("%ld %ld\n", (unsigned long)current->key, (unsigned long)prev->key);
+        assert(current >= prev);
         prev = current;
     }
 
